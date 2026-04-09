@@ -1,5 +1,6 @@
 # Director Memos Index
 
+<<<<<<< HEAD
 ## Latest Memo
 - File: team-memos/director/FROM_atlas_TO_director_2026-04-09_alignment-confirmation.txt
 - Date: 2026-04-09
@@ -15,6 +16,6 @@
 ---
 
 ## Notes
-- This file is Director team's local memo lookup file.
-- Update it whenever a new memo is added to the Director folder.
+- This file is director team's local memo lookup file.
+- Update it whenever a new memo is sent to director.
 - Keep the newest memo at the top.
