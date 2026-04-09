@@ -1,4 +1,4 @@
-# Atlas Memos Index
+# Director Memos Index
 
 ## Latest Memo
 - File: team-memos/director/FROM_director_TO_all_2026-04-09_system-alignment-test.txt
@@ -8,6 +8,6 @@
 ---
 
 ## Notes
-- This file is Atlas team's local memo lookup file.
-- Update it whenever a new memo is sent to Atlas.
+- This file is Director team's local memo lookup file.
+- Update it whenever a new memo is added to the Director folder.
 - Keep the newest memo at the top.
