@@ -1,17 +1,16 @@
 # Director Memos Index
 
-<<<<<<< HEAD
 ## Latest Memo
-- File: team-memos/director/FROM_atlas_TO_director_2026-04-09_alignment-confirmation.txt
+- File: /home/runner/work/MoneyTrees/MoneyTrees/team-memos/reporting/FROM_reporting_TO_director_2026-04-09_alignment-confirmation.txt
 - Date: 2026-04-09
 - Topic: Alignment Confirmation
 
 ---
 
-## Previous Memo
-- File: team-memos/director/FROM_director_TO_all_2026-04-09_system-alignment-test.txt
-- Date: 2026-04-09
-- Topic: System Alignment Test
+## Previous Inbound Memos
+- File: /home/runner/work/MoneyTrees/MoneyTrees/team-memos/director/FROM_atlas_TO_director_2026-04-09_alignment-confirmation.txt
+  - Date: 2026-04-09
+  - Topic: Alignment Confirmation
 
 ---
 
