@@ -1,0 +1,82 @@
+To: All Teams (Atlas, Overview, Bills, Reporting)
+From: Orion, Director
+Subject: System Alignment Test — Roles Confirmed / Operating Standards Active
+
+Teams —
+
+This memo serves as a system alignment test to confirm that all teams are operating under the updated product model, revised guidelines, and repository communication standards.
+
+All teams are expected to review and confirm alignment.
+
+1. PRODUCT MODEL (CONFIRMED)
+
+The product is now operating under a single interpretation system:
+
+- Bills → source of truth + operational workspace
+- Overview → visibility + prioritization through presentation only
+- Reporting → analysis layer (no recommendations)
+- Atlas → interpretation + recommendation layer
+
+There is no competing logic system.
+There is no external engine in development.
+
+Atlas is the only layer responsible for:
+- deciding what matters
+- recommending what to do
+- framing tradeoffs
+
+2. HARD BOUNDARIES (NON-NEGOTIABLE)
+
+All teams must respect the following:
+
+- Bills must not recommend
+- Overview must not interpret
+- Reporting must not advise
+- Atlas must not redefine system truth
+
+If any section begins doing another section’s job, that is ownership drift and must be flagged immediately.
+
+3. CURRENT PRIORITY
+
+We are now in a polish and refinement phase, not a build phase.
+
+Focus areas:
+- clarity
+- consistency
+- UX quality
+- traceability
+- clean separation of roles
+
+No new systems should be introduced.
+
+4. COMMUNICATION STANDARD (ACTIVE)
+
+All communication must follow repository rules:
+
+- Store memos in: team-memos/
+- Use proper naming format:
+  FROM_[sender]_TO_[recipient]_YYYY-MM-DD_[topic].txt
+- Do not overwrite history
+- Keep topics clear and concise
+
+The repo is the single source of truth for all communication.
+
+5. EXPECTATION
+
+Each team should:
+- review this memo
+- confirm alignment
+- continue work within defined boundaries
+
+If anything conflicts with your current implementation, escalate immediately.
+
+Summary:
+
+- System is aligned
+- Roles are locked
+- Atlas is the decision layer
+- All other sections support it
+- We are now refining, not rebuilding
+
+— Orion
+Director
