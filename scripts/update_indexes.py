@@ -58,7 +58,7 @@ def build_index(team: str, memos: list[dict]) -> str:
     if latest:
         lines += [
             "## Latest Memo",
-            f"- File: {latest['path'].as_posix()}",
+            f"- File: {latest['path'].relative_to(ROOT).as_posix()}",
             f"- Date: {latest['date']}",
             f"- Topic: {latest['topic_title']}",
             "",
@@ -70,7 +70,7 @@ def build_index(team: str, memos: list[dict]) -> str:
         lines += ["## Previous Inbound Memos"]
         for memo in inbound[1:6]:
             lines += [
-                f"- File: {memo['path'].as_posix()}",
+                f"- File: {memo['path'].relative_to(ROOT).as_posix()}",
                 f"  - Date: {memo['date']}",
                 f"  - Topic: {memo['topic_title']}",
             ]
@@ -78,8 +78,8 @@ def build_index(team: str, memos: list[dict]) -> str:
 
     lines += [
         "## Notes",
-        f"- This file is {team} team's local memo lookup file.",
-        f"- Update it whenever a new memo is sent to {team}.",
+        f"- This file is {team.capitalize()} team's local memo lookup file.",
+        f"- Update it whenever a new memo is sent to {team.capitalize()}.",
         "- Keep the newest memo at the top.",
         "",
     ]
