@@ -1,0 +1,355 @@
+To: Orion, Director
+From: Debt Team
+Date: 2026-04-11
+Subject: Launch Approval Basis — Debt Section Proposal
+
+Director —
+
+Per your latest memo, this follow-up is structured as an approval-basis document rather than a broad feature pitch.
+
+It is meant to show:
+- bounded launch scope
+- clean Bills separation
+- Atlas compatibility
+- real end-to-end flows
+- trust / failure handling
+- UI containment
+- integration simplicity
+
+==================================================
+1. LAUNCH SCOPE TABLE
+==================================================
+
+IN FOR LAUNCH
+
+1) Debt account types
+- installment loans
+- auto loans
+- student loans
+- credit cards
+- BNPL plans
+- financed purchases
+
+2) Debt account inputs
+- account/provider name
+- debt type
+- original amount where relevant
+- current balance
+- APR / interest rate where relevant
+- term length or payment count where relevant
+- payment cadence
+- due date or next due date where relevant
+- status fields needed for debt-specific states
+
+3) Debt calculations / outputs
+- next minimum payment or next scheduled installment
+- remaining balance
+- remaining payment count where relevant
+- payoff schedule / installment schedule
+- payoff date projection
+- interest visibility where relevant
+- utilization for credit cards
+- completed vs remaining installments for BNPL / financed purchases
+
+4) Debt states for launch
+- active
+- deferment
+- no payment currently required
+- no interest currently accruing
+- interest accruing while no payment is currently required
+- closed account with remaining balance
+- behind / delinquent status flag
+
+5) User-facing Debt surfaces
+- debt summary view
+- debt account list
+- debt account detail view
+- debt-type filtering
+- upcoming-payment visibility
+- payoff/progress visibility
+
+6) Bills integration for launch
+- near-term upcoming debt obligations materialize in Bills
+- bounded forward population window of 60 days
+- debt-linked bill rows remain visibly tied to the source debt account
+
+7) Atlas integration for launch
+- Atlas consumes debt truth and debt-derived outputs
+- Atlas does not rely on debt-local advice or recommendations
+
+--------------------------------------------------
+OUT FOR LAUNCH
+--------------------------------------------------
+
+- mortgage escrow / tax / insurance complexity
+- refinance comparison tooling
+- advanced lender-by-lender edge-case modeling
+- debt consolidation planning tools
+- debt-local recommendation engine
+- debt-local priority scoring
+- fully custom billing-policy engines for every lender on day one
+- bulk import / sync from external institutions unless separately approved
+
+--------------------------------------------------
+FUTURE-READY ONLY
+--------------------------------------------------
+
+- mortgage expansion beyond schema-readiness
+- deeper student-loan program variants
+- advanced scenario planning inputs for Atlas
+- refinance / transfer comparison tools
+- advanced historical payoff experiments
+
+--------------------------------------------------
+EXPLICITLY DEFERRED
+--------------------------------------------------
+
+- debt as an all-in-one budgeting dashboard
+- debt-native reporting replacement surfaces
+- debt-native recommendation surfaces
+- debt-native risk scoring
+- debt-native urgency ranking
+
+==================================================
+2. BILLS INTEGRATION MAP
+==================================================
+
+A) What the user creates in Debt
+The user creates and manages:
+- debt accounts
+- debt account attributes
+- debt-specific statuses
+- debt schedule assumptions
+- debt-specific detail states such as deferment, closed-but-owed, installment progress, and behind status
+
+B) What becomes visible in Bills
+Bills receives only operational obligation entries derived from Debt, specifically:
+- near-term payment obligations inside the next 60 days
+- debt-linked obligation rows with source linkage back to the debt account
+- payment record entries tied to those bill rows
+
+C) What remains editable in Debt vs Bills
+Editable in Debt:
+- account-level details
+- balance
+- APR
+- term / payment count
+- deferment and no-payment-required state
+- closed-but-owed state
+- BNPL / installment plan structure
+- debt status assumptions and schedule logic
+
+Editable in Bills:
+- payment record capture
+- paid date
+- amount paid
+- payment method
+- note
+- operational row handling consistent with Bills rules
+
+D) How duplicate truth is prevented
+- Debt is the source of truth for debt account math and debt states
+- Bills is the source of truth for operational payment records and bill-row handling
+- Bills rows linked to Debt are derived operational rows, not independent debt accounts
+- editing debt account structure in Bills is not allowed
+- editing bill payment-record truth in Debt is not the primary workflow
+
+E) How debt-linked obligations appear operationally in Bills
+- as normal operational rows
+- with visible debt linkage / source reference
+- with enough payment detail to remain useful operationally
+- without expanding Bills into a full debt-management surface
+
+==================================================
+3. ATLAS INTEGRATION MAP
+==================================================
+
+A) Truth Atlas consumes from Debt
+Atlas should consume:
+- debt type
+- current balance
+- remaining payments where relevant
+- next minimum payment / installment
+- payoff date projection
+- utilization
+- debt state flags
+- interest visibility signals
+- promo / deferred-interest structure where present
+
+B) How Atlas uses that truth
+Atlas uses debt truth to:
+- explain what is happening
+- compare tradeoffs with other shared financial truth
+- include debt factors in recommendations
+- incorporate debt timing and burden into strategic reasoning
+
+C) What Atlas does NOT need
+Atlas does not need:
+- a debt-only advisor engine
+- a second debt-local recommendation model
+- debt-defined urgency labels
+- debt-owned scoring logic
+
+Debt strengthens Atlas by improving shared truth quality.
+Debt does not replace Atlas.
+
+==================================================
+4. END-TO-END USER FLOWS
+==================================================
+
+FLOW 1 — CREDIT CARD
+1. User creates a Chase credit card account in Debt.
+2. User enters current balance, APR, limit, due date, and current status.
+3. Debt calculates next minimum payment, utilization, payoff projection, and near-term obligation timing.
+4. Debt surfaces the card in the Debt account list and detail view.
+5. The next upcoming payment within the next 60 days appears in Bills as a debt-linked obligation row.
+6. User records payment in Bills.
+7. Payment record remains operationally true in Bills.
+8. Updated debt state and balance impact flow back through shared truth.
+9. Atlas can interpret the updated debt burden without using debt-local recommendation logic.
+
+FLOW 2 — AUTO LOAN
+1. User creates an auto loan account in Debt.
+2. User enters current balance, APR, term, monthly payment structure, and account status.
+3. Debt calculates remaining balance, payoff date, and remaining payment count.
+4. Debt account detail view shows progress and next scheduled payment.
+5. Near-term scheduled loan obligation appears in Bills.
+6. User can inspect the obligation in Bills and record payment normally.
+7. Debt remains the owner of loan math; Bills remains the owner of operational payment capture.
+8. Overview and Atlas can consume the resulting shared truth without ownership drift.
+
+FLOW 3 — BNPL PLAN
+1. User creates a BNPL / financed purchase account in Debt.
+2. User enters total amount, provider, payment count, cadence, and installment structure.
+3. Debt calculates completed vs remaining installments and next due dates.
+4. Debt detail view shows installment progress clearly.
+5. Only near-term installments inside the 60-day window appear in Bills.
+6. Bills stays uncluttered because the full lifetime schedule is not dumped there at once.
+7. Atlas and Overview can consume near-term debt burden and timing through shared truth.
+
+FLOW 4 — STUDENT LOAN WITH DEFERMENT
+1. User creates a student loan account in Debt.
+2. User marks the account as deferment / no-payment-required.
+3. User specifies whether interest is currently accruing or not.
+4. Debt reflects the account state accordingly in the account detail view.
+5. If no payment is currently required, no near-term payment obligation is pushed to Bills.
+6. If interest is accruing, Debt still reflects interest visibility where supported by the entered assumptions.
+7. Atlas can interpret the debt state using shared truth without inventing local debt advice.
+
+==================================================
+5. FAILURE SAFETY / TRUST RULES
+==================================================
+
+Debt is trust-sensitive, so the section must not fake precision.
+
+Rules:
+
+1. Incomplete inputs
+- if critical inputs are missing, Debt should show limited-output states rather than pretending a full calculation exists
+- the UI should clearly distinguish confirmed values from estimated values
+
+2. Unknown or imperfect APR / schedule assumptions
+- if APR or schedule assumptions are user-entered and incomplete, calculations should be labeled accordingly
+- Debt should degrade gracefully to partial visibility instead of false precision
+
+3. Conflicts between Debt and Bills
+- debt-account truth stays in Debt
+- payment-record truth stays in Bills
+- conflicting states should surface a clear mismatch indicator rather than silently choosing one side
+
+4. Partial promo / deferred-interest details
+- if promo terms are incomplete, Debt should not fabricate precise future exposure
+- it may show limited-status visibility and prompt for missing fields where needed
+
+5. Trust stance
+- no black-box debt math
+- no silent assumption drift
+- no hidden recommendation behavior inside Debt
+- no false exactness when user inputs are weak
+
+==================================================
+6. USER-FACING SURFACE MAP
+==================================================
+
+Debt user-facing surfaces for launch:
+
+1. Debt Summary View
+Purpose:
+- compact top-level debt picture
+- balance, burden, and upcoming payment visibility
+
+2. Debt Account List
+Purpose:
+- scan all debt accounts
+- filter by debt type
+- scan balances, next payments, and account states
+
+3. Debt Account Detail View
+Purpose:
+- inspect debt-specific truth
+- see payoff / installment schedule visibility
+- inspect debt states such as deferment, closed-but-owed, behind status, promo structure, and installment progress
+
+Debt should NOT include for launch:
+- large historical analytics surfaces that duplicate Reporting
+- recommendation cards that duplicate Atlas
+- prioritization surfaces that duplicate Overview
+- generic table-first bill management that belongs to Bills
+
+==================================================
+7. UI CONTAINMENT STANDARD
+==================================================
+
+Debt UI is contained if it stays focused on:
+- debt account truth
+- debt math
+- payment schedule visibility
+- payoff/progress visibility
+- debt-specific statuses
+
+Debt UI is out of bounds if it becomes:
+- a second Overview
+- a second Reporting page
+- a second Atlas surface
+- an all-purpose finance dashboard
+
+==================================================
+8. INTEGRATION SIMPLICITY STANDARD
+==================================================
+
+Debt launch remains viable only if integration stays simple.
+
+The intended model is:
+- Debt owns debt math and debt account state
+- Bills owns operational payment rows and payment capture
+- Overview surfaces factual signal
+- Reporting analyzes history and patterns
+- Atlas interprets shared truth
+
+This avoids:
+- duplicated status models
+- parallel recommendation logic
+- cross-section ownership confusion
+- unbounded row duplication in Bills
+- debt-local scoring systems
+
+==================================================
+9. FINAL POSITION
+==================================================
+
+Debt is requesting consideration for a broad first launch.
+
+That request is based on:
+- bounded scope
+- contained UI role
+- clean Bills separation
+- Atlas compatibility
+- trust-aware failure handling
+- simple integration boundaries
+- practical end-to-end user flows
+
+The launch should be broad, but it should not be shapeless.
+
+This memo is intended to define the launch contract clearly enough for approval review.
+
+— Debt Team
