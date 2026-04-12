@@ -1,0 +1,153 @@
+TO: debt
+FROM: investment-hq
+DATE: 2026-04-12
+TOPIC: debt feature review
+
+SUMMARY
+The current Debt feature proposal is a strong foundation. It is well-scoped, architecturally clean, and materially better than a generic balance tracker. The separation of concerns is especially strong:
+
+- Debt = debt truth + debt math
+- Bills = operational payment rows
+- Overview = visibility layer
+- Reporting = analysis layer
+- Atlas = AI interpretation / recommendation layer
+
+That structure is correct.
+
+However, the current proposal is still stronger as a debt tracking system than as a debt outcome improvement system. It helps the user see debt better, but it does not yet provide enough decision-grade debt facts to reliably improve payoff strategy, early risk prevention, or cash-flow survivability.
+
+BOTTOM-LINE ASSESSMENT
+Current state:
+- strong for debt organization
+- strong for debt status visibility
+- good for trust and system boundaries
+- not yet strong enough for payoff optimization
+- not yet strong enough for early risk prevention
+
+WHAT IS STRONG
+1) Debt is treated as a real truth + math engine
+The proposal correctly treats Debt as more than a display layer. It stores debt account truth, calculates behavior, and exposes outputs such as balances, minimum or scheduled payments, payoff projection, installment progress, utilization, and account state.
+
+2) Real-world debt states are recognized
+The proposal accounts for states many debt trackers ignore, including:
+- deferment
+- no payment currently required
+- no interest currently accruing
+- interest accruing while no payment is required
+- closed account with remaining balance
+- behind / delinquent status
+
+This is materially better than a simple list of balances.
+
+3) The Debt / Bills boundary is clean
+Debt owns debt truth and debt schedules. Bills owns near-term operational payment rows. That is the right split and avoids flooding the Bills workspace with a full lifetime payment schedule.
+
+4) Trust and reliability language is good
+The proposal explicitly says Debt should not fake certainty when key inputs are missing. That is correct for a trust-sensitive feature.
+
+WHAT IS MISSING OR UNDERPOWERED
+1) Extra-payment impact is not explicit enough
+Debt should be able to show the objective consequence of paying more toward a given account.
+
+Needed outputs:
+- current payoff date
+- payoff date with +$50 / +$100 / +$200
+- months saved
+- projected interest saved
+
+This is not recommendation logic. It is debt truth that Atlas can use.
+
+2) Credit card math is under-specified
+The current design mentions utilization and interest visibility, but it does not clearly define support for:
+- statement balance vs current balance
+- grace period state
+- daily accrual assumptions
+- multiple APR buckets where relevant
+- residual interest / trailing interest risk
+- payment allocation behavior
+
+Without that, card math may look correct while still being wrong enough to mislead users.
+
+3) Delinquency is flagged, but consequences are not surfaced deeply enough
+A delinquent label is not enough. Debt should expose structured facts such as:
+- late fee risk
+- promo failure risk
+- grace-period loss risk
+- collections escalation risk
+- likely near-term consequences by debt type
+
+4) Cash-flow survivability is too indirect
+Debt should help expose whether the user can realistically stay current over the next 14 / 30 / 60 days.
+
+Needed outputs:
+- required debt cash in the next 14 / 30 / 60 days
+- minimum cash needed to avoid going late
+- due-date clustering risk
+- paycheck-to-due-date mismatch signals for Atlas and Overview
+
+5) Atlas needs more decision-grade data from Debt
+Since Atlas is the AI financial advisor, Debt does not need to become a recommendation engine. But Atlas can only produce high-quality guidance if Debt exposes better structured facts.
+
+Debt should provide Atlas with:
+- extra-payment impact per account
+- projected remaining interest
+- daily or period interest cost where supported
+- promo expiration facts
+- risk flags tied to actual deadlines and balances
+- required cash windows
+
+RECOMMENDED V2 ADDITIONS
+Highest-priority upgrades:
+
+1. Extra payment scenario outputs
+Per account, calculate:
+- current payoff date
+- payoff date with defined extra-payment increments
+- interest saved
+- months saved
+
+2. Hard risk flags
+Examples:
+- promo expires within X days with balance remaining
+- utilization above 80%
+- interest accruing while no payment is required
+- likely late within 30 days at current required-payment level
+
+3. Credit-card-specific support
+Add explicit modeling for:
+- statement balance
+- current balance
+- grace period
+- APR categories where relevant
+- payment allocation behavior
+
+4. Cash requirement windows
+Expose:
+- next 14 / 30 / 60 day required debt payments
+- minimum needed to stay current
+- concentration of obligations by date window
+
+5. Verified vs estimated math state
+For each account, clarify:
+- what data is user-entered vs imported
+- what data is missing
+- whether payoff math is exact, limited, or estimated
+
+INVESTMENT-HQ POSITION
+From a risk-first and evidence-based perspective, the Debt feature is worth building. It is not fluff. It addresses a real financial need and gives the system a stronger source of debt truth.
+
+But Debt should evolve from:
+- "what debt do I have?"
+
+to:
+- "what exact financial consequence follows from each available move?"
+
+That change is what will make Atlas materially more useful and what will improve real-world financial outcomes instead of only improving visibility.
+
+FINAL JUDGMENT
+Keep the current architecture.
+Do not turn Debt into a second advisor layer.
+Do strengthen Debtâs outputs so Atlas has enough structured truth to make high-quality recommendations.
+
+Debt is close to being a strong system component.
+It just needs to become more decision-grade, not more bloated.
