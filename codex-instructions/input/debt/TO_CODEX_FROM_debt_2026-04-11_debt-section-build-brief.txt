@@ -1,0 +1,326 @@
+To: Codex
+From: Debt Team
+Date: 2026-04-11
+Subject: Debt Section Build Brief
+
+==================================================
+1. PURPOSE
+==================================================
+
+Debt is now an approved product section inside MoneyTrees.
+
+Debt must be built as:
+- a dedicated product section
+- a debt-truth and debt-math layer
+- a user-facing workspace for debt management
+- a shared source feeding Bills, Overview, Reporting, and Atlas where appropriate
+
+Debt must NOT become:
+- a second Overview
+- a second Reporting section
+- a second Atlas surface
+- a generic finance dashboard
+- a local recommendation or scoring engine
+
+Primary goal:
+Create the Debt section and its supporting logic so the user can track and inspect debt accounts cleanly across multiple debt classes.
+
+==================================================
+2. LAUNCH SCOPE — IN
+==================================================
+
+Build support for these debt account types:
+- installment loans
+- auto loans
+- student loans
+- credit cards
+- BNPL plans
+- financed purchases
+
+Required debt account inputs:
+- account/provider name
+- debt type
+- original amount where relevant
+- current balance
+- APR / interest rate where relevant
+- term length or payment count where relevant
+- payment cadence
+- due date or next due date where relevant
+- debt-specific state fields
+
+Required debt outputs / calculations:
+- next minimum payment or next scheduled installment
+- remaining balance
+- remaining payment count where relevant
+- payoff schedule / installment schedule
+- payoff date projection
+- interest visibility where relevant
+- utilization for credit cards
+- completed vs remaining installments for BNPL / financed purchases
+
+Required debt states:
+- active
+- deferment
+- no payment currently required
+- no interest currently accruing
+- interest accruing while no payment is currently required
+- closed account with remaining balance
+- behind / delinquent status flag
+
+Required user-facing Debt surfaces:
+- Debt summary view
+- Debt account list
+- Debt account detail view
+- debt-type filtering
+- upcoming-payment visibility
+- payoff / progress visibility
+
+==================================================
+3. LAUNCH SCOPE — OUT / DEFERRED
+==================================================
+
+Do NOT build the following into launch unless separately directed:
+- mortgage escrow / tax / insurance complexity
+- refinance comparison tooling
+- advanced lender-by-lender edge-case modeling
+- debt consolidation planning tools
+- debt-local recommendation engine
+- debt-local priority scoring
+- debt-native risk scoring
+- debt-native urgency ranking
+- generic budgeting dashboard behavior
+- large historical analytics surfaces that duplicate Reporting
+- recommendation cards that duplicate Atlas
+- generic bill management surfaces that belong to Bills
+- bulk import / external sync unless separately approved
+
+Future-ready only:
+- mortgage expansion beyond schema readiness
+- deeper student-loan program variants
+- advanced Atlas scenario inputs
+- refinance / transfer comparisons
+- advanced historical payoff experiments
+
+==================================================
+4. PRODUCT BOUNDARIES
+==================================================
+
+Debt owns:
+- debt account structure
+- debt-specific status logic
+- debt-specific calculation logic
+- debt payment schedule generation
+- interest accrual visibility logic
+- payoff projection logic
+- debt account detail views
+- debt-specific states such as deferment, closed-but-owed, installment progress, and behind status
+
+Bills owns:
+- operational bill-entry workspace
+- table-first bill management
+- canonical payment records
+- payment capture
+- paid date / amount paid / method / note
+- operational rows consistent with Bills rules
+
+Overview owns:
+- at-a-glance surfaced signal
+
+Reporting owns:
+- historical analysis and comparisons
+
+Atlas owns:
+- interpretation
+- tradeoff framing
+- recommendations
+
+Non-negotiable:
+Debt must not drift into Bills, Overview, Reporting, or Atlas roles.
+
+==================================================
+5. BILLS INTEGRATION REQUIREMENTS
+==================================================
+
+Debt must integrate with Bills cleanly.
+
+Rules:
+- the user creates and manages debt accounts in Debt
+- Bills receives only operational obligation entries derived from Debt
+- only near-term upcoming debt obligations should materialize in Bills
+- use a bounded forward population window of 60 days
+- debt-linked bill rows must remain visibly tied to the source debt account
+- Bills rows linked to Debt are derived operational rows, not independent debt accounts
+- editing debt account structure inside Bills is not allowed
+- Debt must not turn Bills into a debt-management clone
+
+What should appear in Bills:
+- near-term upcoming payment obligations inside the next 60 days
+- debt-linked obligation rows with source linkage back to the debt account
+- payment record entries tied to those rows
+
+What remains editable in Debt:
+- account-level details
+- balance
+- APR
+- term / payment count
+- deferment / no-payment-required state
+- closed-but-owed state
+- BNPL / installment plan structure
+- debt schedule assumptions and logic
+
+What remains editable in Bills:
+- payment record capture
+- paid date
+- amount paid
+- payment method
+- payment note
+
+==================================================
+6. ATLAS INTEGRATION REQUIREMENTS
+==================================================
+
+Debt must strengthen Atlas without creating a parallel recommendation model.
+
+Expose the following shared truth to Atlas:
+- debt type
+- current balance
+- remaining payments where relevant
+- next minimum payment / installment
+- payoff date projection
+- utilization
+- debt state flags
+- interest visibility signals
+- promo / deferred-interest structure where present
+
+Atlas may use this truth to:
+- explain what is happening
+- compare tradeoffs with other financial truth
+- incorporate debt timing and burden into recommendations
+
+Debt must NOT add:
+- debt-only advisor behavior
+- debt-local recommendation logic
+- debt-local urgency labels
+- debt-owned scoring logic
+
+==================================================
+7. TRUST / FAILURE HANDLING RULES
+==================================================
+
+Debt is trust-sensitive.
+The implementation must not fake precision.
+
+Required behavior:
+
+1. Incomplete inputs
+- if critical inputs are missing, show limited-output states
+- do not pretend full calculations exist
+- clearly distinguish confirmed values from estimated values
+
+2. Unknown or imperfect APR / schedule assumptions
+- label calculations accordingly when assumptions are incomplete
+- degrade gracefully to partial visibility instead of false precision
+
+3. Conflicts between Debt and Bills
+- debt-account truth stays in Debt
+- payment-record truth stays in Bills
+- surface clear mismatch indicators rather than silently choosing one side
+
+4. Partial promo / deferred-interest details
+- do not fabricate precise future exposure when terms are incomplete
+- allow limited-status visibility and request missing fields where appropriate
+
+5. General trust stance
+- no black-box debt math
+- no silent assumption drift
+- no hidden recommendation behavior inside Debt
+- no false exactness when user inputs are weak
+
+==================================================
+8. REQUIRED USER FLOWS
+==================================================
+
+Implement the section so the following flows are supported cleanly.
+
+FLOW 1 — CREDIT CARD
+1. User creates a credit card account in Debt.
+2. User enters balance, APR, limit, due date, and status.
+3. Debt calculates next minimum payment, utilization, payoff projection, and near-term obligation timing.
+4. Debt surfaces the card in the account list and detail view.
+5. The next upcoming payment inside the next 60 days appears in Bills as a debt-linked obligation row.
+6. User records payment in Bills.
+7. Updated debt state and balance impact flow back through shared truth.
+8. Atlas can consume the updated debt truth without debt-local advice logic.
+
+FLOW 2 — AUTO LOAN
+1. User creates an auto loan account in Debt.
+2. User enters current balance, APR, term, payment structure, and status.
+3. Debt calculates remaining balance, payoff date, and remaining payment count.
+4. Debt detail view shows progress and next scheduled payment.
+5. Near-term scheduled loan obligation appears in Bills.
+6. User records payment in Bills.
+7. Debt remains owner of loan math; Bills remains owner of operational payment capture.
+
+FLOW 3 — BNPL PLAN
+1. User creates a BNPL / financed purchase account in Debt.
+2. User enters total amount, provider, payment count, cadence, and installment structure.
+3. Debt calculates completed vs remaining installments and next due dates.
+4. Debt detail view shows installment progress.
+5. Only near-term installments inside the 60-day window appear in Bills.
+6. Bills stays uncluttered because the full lifetime schedule is not dumped there at once.
+
+FLOW 4 — STUDENT LOAN WITH DEFERMENT
+1. User creates a student loan account in Debt.
+2. User marks the account as deferment / no-payment-required.
+3. User specifies whether interest is currently accruing or not.
+4. Debt reflects the account state accordingly.
+5. If no payment is currently required, no near-term payment obligation is pushed to Bills.
+6. If interest is accruing, Debt still reflects interest visibility where supported by entered assumptions.
+
+==================================================
+9. USER-FACING SURFACE MAP
+==================================================
+
+Build these launch surfaces:
+
+1. Debt Summary View
+Purpose:
+- compact top-level debt picture
+- balance, burden, and upcoming payment visibility
+
+2. Debt Account List
+Purpose:
+- scan all debt accounts
+- filter by debt type
+- scan balances, next payments, and account states
+
+3. Debt Account Detail View
+Purpose:
+- inspect debt-specific truth
+- see payoff / installment schedule visibility
+- inspect debt states such as deferment, closed-but-owed, behind status, promo structure, and installment progress
+
+UI containment rules:
+- Debt summary must not become a second Overview
+- Debt detail views must not become Reporting clones
+- Debt must remain account-centric, not dashboard-centric
+
+==================================================
+10. DELIVERY EXPECTATION
+==================================================
+
+Produce implementation-ready output for Debt that is consistent with the approved section boundaries.
+
+Priority order:
+1. data model / state model
+2. calculation engine requirements
+3. Bills integration contract
+4. Atlas integration contract
+5. user-facing Debt section surface map
+6. trust / failure handling requirements
+
+Keep the design practical.
+Keep ownership clean.
+Do not invent new product roles.
+
+— Debt Team
