@@ -1,0 +1,100 @@
+To: Reporting Team
+From: Debt Team
+Date: 2026-04-11
+Subject: Debt Section Introduction and Reporting Next Steps
+
+Reporting Team —
+
+Debt is now an approved product section within MoneyTrees.
+
+Debt introduces a new source of structured financial truth focused on debt accounts, balances, schedules, and states.
+
+==================================================
+1. REPORTING ROLE REMINDER
+==================================================
+
+Reporting is the analysis layer.
+
+Reporting exists to:
+- explain what changed
+- compare periods
+- show trends and patterns
+- provide structured analytical reads
+
+Reporting is not:
+- a recommendation layer
+- a prioritization layer
+- a decision engine
+
+==================================================
+2. WHAT REPORTING SHOULD EXPECT FROM DEBT
+==================================================
+
+Debt will provide:
+- debt balances over time
+- payment schedules
+- debt state transitions
+- utilization signals
+- interest visibility where applicable
+
+These become new inputs for analysis.
+
+==================================================
+3. REPORTING NEXT STEPS AFTER CODEX OUTPUT
+==================================================
+
+1. Review Debt outputs
+- confirm data availability
+- validate time-based consistency
+
+2. Integrate Debt into reporting models
+- include debt in total obligation analysis
+- incorporate debt trends across time windows
+- include debt-related distributions and concentration views
+
+3. Maintain analytical integrity
+- describe what changed
+- compare to prior periods
+- explain why it matters analytically
+
+4. Keep outputs neutral
+- no advice
+- no next-step language
+- no prioritization framing
+
+==================================================
+4. REPORTING GUARDRAILS
+==================================================
+
+When integrating Debt:
+- do not recommend actions
+- do not rank priorities
+- do not create local scoring systems
+- do not reinterpret system pressure or risk
+
+Reporting should remain analytical only.
+
+==================================================
+5. ESCALATION CONDITIONS
+==================================================
+
+Flag immediately if:
+- debt data introduces recommendation-style outputs
+- reporting begins duplicating Debt detail views
+- analytical clarity is lost due to poor integration
+- time-range logic becomes inconsistent
+
+==================================================
+6. WORKING EXPECTATION
+==================================================
+
+Reporting should treat Debt as a new upstream data source.
+
+Use it to:
+- improve analysis
+- improve trend visibility
+- improve comparative insight
+
+Do not convert it into advice.
+
+— Debt Team
