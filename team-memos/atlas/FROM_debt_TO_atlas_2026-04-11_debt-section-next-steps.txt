@@ -1,0 +1,134 @@
+To: Atlas Team
+From: Debt Team
+Date: 2026-04-11
+Subject: Debt Team Introduction and Atlas Post-Codex Next Steps
+
+Atlas Team —
+
+Debt is now an approved product section within MoneyTrees.
+
+Debt has been approved to exist as:
+- a dedicated product section
+- a debt-truth and debt-math layer
+- a user-facing workspace for debt management
+- a shared source feeding Bills, Overview, Reporting, and Atlas where appropriate
+
+Debt is not being introduced as:
+- a second Overview
+- a second Reporting surface
+- a second Atlas surface
+- a local recommendation or scoring engine
+
+That boundary is especially important for Atlas because Atlas remains the interpretation and recommendation layer of the product.
+
+==================================================
+1. WHY THIS MEMO IS BEING SENT
+==================================================
+
+Debt has already sent the build brief to Codex.
+
+Once Codex completes the first implementation pass, Atlas will need to review the new Debt outputs and wire them into Atlas in a way that stays aligned with Atlas operating rules.
+
+Atlas exists to:
+- interpret shared financial truth
+- explain what is happening
+- recommend grounded next moves
+- frame tradeoffs
+- support follow-through
+
+Atlas does not own raw system truth or redefine upstream system logic.
+
+Debt is now one of those upstream truth sources.
+
+==================================================
+2. WHAT ATLAS SHOULD EXPECT FROM DEBT
+==================================================
+
+Once the Debt section is built, Debt should expose shared truth such as:
+- debt type
+- current balance
+- remaining payments where relevant
+- next minimum payment or installment
+- payoff date projection
+- utilization for credit cards
+- debt-specific state flags
+- interest visibility signals
+- promo / deferred-interest structure where present
+
+Atlas should treat those outputs as shared system truth inputs.
+
+==================================================
+3. ATLAS NEXT STEPS AFTER CODEX OUTPUT ARRIVES
+==================================================
+
+After Codex delivers the Debt implementation output, Atlas should:
+
+1. Review the Debt output package
+- open the latest Codex return file for Atlas-facing Debt integration details
+- verify what Debt fields, states, and outputs are available
+- confirm no hidden advisory behavior was embedded inside Debt-owned logic
+
+2. Define Atlas consumption rules for Debt truth
+- identify exactly which Debt outputs Atlas will read
+- map those outputs into Atlas explanation and recommendation flows
+- preserve traceability back to shared Debt truth
+
+3. Add Debt-aware recommendation handling where appropriate
+- incorporate debt burden, timing, and account states into recommendation framing
+- use Debt truth to support tradeoff comparisons
+- keep recommendation language grounded in upstream truth only
+
+4. Validate Debt-specific explainability
+- confirm Atlas can explain why a debt-related recommendation exists
+- ensure recommendation reasoning can be traced to Debt truth, Bills truth, Reporting signals, or shared system outputs
+- reject any Atlas output that implies hidden debt-local scoring
+
+5. Protect Atlas boundary discipline
+- Atlas must not calculate debt math itself
+- Atlas must not redefine debt states
+- Atlas must not create a second debt-only advisor engine
+- Atlas must not introduce debt-local urgency labels or scoring logic
+
+==================================================
+4. SPECIFIC ATLAS GUARDRAILS
+==================================================
+
+When Debt goes live, Atlas must remain aligned to these rules:
+- Atlas explains and recommends
+- Atlas does not redefine the system
+- Atlas is downstream of shared truth
+- Atlas must not replace Bills, Overview, Reporting, or Debt
+- Atlas recommendation quality matters more than recommendation volume
+
+So for Debt integration specifically:
+- use Debt truth directly
+- do not reinterpret debt state labels locally
+- do not create alternate debt severity language
+- do not let Debt recommendations appear inside Debt itself if they belong in Atlas
+
+==================================================
+5. WHAT ATLAS SHOULD FLAG IMMEDIATELY
+==================================================
+
+Escalate immediately if the Codex build introduces any of the following:
+- debt-local recommendation behavior
+- debt-local scoring logic
+- debt-local urgency language
+- unclear explainability for debt-related recommendations
+- Atlas drift into redefining debt truth instead of interpreting it
+- duplicated ownership between Debt and Atlas
+
+==================================================
+6. WORKING EXPECTATION
+==================================================
+
+Once Debt is built, Atlas should treat Debt the same way Atlas treats other upstream truth sources:
+- consume the truth
+- explain the truth
+- recommend from the truth
+- do not replace the truth
+
+Debt will own debt truth and debt math.
+Atlas should turn that into understandable guidance without creating a second system.
+
+— Debt Team
