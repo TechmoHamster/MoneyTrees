@@ -1,0 +1,204 @@
+To: Orion, Director
+From: Debt Team
+Date: 2026-04-11
+Subject: Follow-Up — Debt Product Position, Launch Scope, and V1 Boundary
+
+Director —
+
+Follow-up received.
+
+We understand the concern around scope control, product structure, and ownership boundaries.
+
+That said, we need to be explicit about product intent from the top:
+
+Debt is being requested as a real, dedicated product section — not merely a backend/shared layer and not merely a Bills subdomain.
+
+==================================================
+1. PRODUCT POSITION
+==================================================
+
+Debt should be a visible top-level section in the product.
+
+Reason:
+the requested user behavior is not limited to raw bill entry or backend calculation.
+
+The user wants a dedicated workspace where they can directly view and manage debt-specific realities such as:
+- next minimum payment on a credit card
+- current remaining auto-loan balance
+- remaining number of payments
+- interest accumulated since last payment
+- deferment / no-payment-required student loan status
+- BNPL installment progress and upcoming payment dates
+- closed credit card accounts that still carry balance
+- behind-status, carried balance, and late-fee conditions
+
+That is beyond a hidden domain layer.
+That is a user-facing product surface.
+
+==================================================
+2. OWNERSHIP BOUNDARY
+==================================================
+
+Debt should own:
+- debt account structure
+- debt-specific status logic
+- debt-specific calculation logic
+- debt payment schedule generation
+- interest accrual tracking
+- payoff projection logic
+- debt account detail views
+- debt-specific user states such as deferment, closed-but-owed, installment progress, and behind status
+
+Debt should NOT own:
+- generic bill table management
+- historical reporting interpretation
+- overview prioritization logic
+- Atlas recommendation logic
+
+Bills should continue to own:
+- operational bill-entry workspace
+- table-first bill management
+- canonical payment records
+- generic obligation rows
+- payment capture and payment-record truth
+
+Overview should continue to own:
+- at-a-glance surfaced signal
+
+Reporting should continue to own:
+- historical analysis and comparisons
+
+Atlas should continue to own:
+- interpretation, tradeoff framing, and recommendations
+
+==================================================
+3. LAUNCH POSITION
+==================================================
+
+We do not recommend reducing Debt into a thin phased starter version that omits major requested debt behaviors.
+
+The requested direction is a complete launch, followed by cleanup and hardening iterations afterward.
+
+That means:
+- launch broad feature coverage in one release
+- allow post-launch fixes, polish, and refinement
+- do not split the core user value across multiple staged mini-releases
+
+This is not a claim that launch will be perfect.
+It is a claim that launch should be functionally complete.
+
+==================================================
+4. REQUIRED LAUNCH CAPABILITIES
+==================================================
+
+The following are required for launch, not later:
+
+A) Loans
+Support:
+- standard installment loans
+- auto loans
+- student loans
+
+Track:
+- original amount
+- current balance
+- APR
+- term
+- monthly minimum
+- amortization/payoff schedule
+- payoff date
+- remaining number of payments
+- accrued interest visibility where relevant
+
+Support loan states such as:
+- active repayment
+- deferment
+- no-payment-required
+- no-interest-accruing
+- interest-accruing while not currently due
+
+B) Credit Cards
+Track:
+- issuer
+- card name
+- APR
+- credit limit
+- current balance
+- estimated or rule-based minimum payment
+- carried interest
+- current payoff projection
+- closed account with remaining balance
+- behind-on-payment status
+- late-fee implications where applicable
+
+C) BNPL / Financed Purchases
+Track:
+- total purchase amount
+- financing provider / merchant
+- plan type
+- payment count
+- installment amount
+- payments completed
+- payments remaining
+- next due dates
+- promo / interest structure where relevant
+
+D) Debt-to-Bills Integration
+Bills should be able to ingest and reflect upcoming debt obligations.
+
+Recommended behavior:
+- upcoming debt payments should auto-populate into Bills
+- populate a bounded forward window such as the next 60 days
+- avoid pushing the full lifetime schedule into the Bills workspace at once
+
+That gives the user practical visibility without overwhelming the operational layer.
+
+==================================================
+5. USER-FACING SURFACES
+==================================================
+
+Debt should introduce a dedicated visible section with at least:
+- debt summary view
+- debt account list
+- account detail view
+- debt-type filtering
+- upcoming-payment visibility
+- payoff/progress visibility
+- status handling for deferment / closed / behind / promo states
+
+This should not be hidden behind Bills row expansion alone.
+
+==================================================
+6. WHAT IS FUTURE-READY ONLY
+==================================================
+
+To keep the launch complete but still disciplined, future-ready items can be deferred only if they are not necessary for the core requested user experience.
+
+Examples of things that may be deferred:
+- advanced refinance comparison tools
+- highly specialized student-loan program variants
+- extreme edge-case lender logic
+- advanced Atlas scenario layers
+- expanded mortgage-specific escrow/tax complexity
+
+But the core debt workspace itself should not be deferred.
+
+==================================================
+7. FINAL POSITION
+==================================================
+
+Debt should be approved as:
+- a dedicated product section
+- a debt-truth and debt-math layer
+- a user-facing workspace for debt management
+- a shared source feeding Bills, Overview, Reporting, and Atlas where appropriate
+
+To be clear:
+
+We are not asking for a narrow phased starter slice.
+
+We are asking for a complete first launch of the Debt section, with the understanding that launch is followed by revision passes for UX polish, bug fixes, and refinement.
+
+That is the requested product direction.
+
+— Debt Team
