@@ -32,14 +32,12 @@ jobs:
           python-version: '3.11'
 
       - name: Update indexes
-        run: python scripts/update_indexes.py
+        run: python3 scripts/update_indexes.py
 
       - name: Commit and push index updates
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add team-memos/**/index.md
-          git add codex-instructions/input/index.md
-          git add codex-instructions/output/**/index.md
+          git add team-memos codex-instructions
           git diff --cached --quiet || git commit -m "Auto-update memo and Codex indexes"
           git push
