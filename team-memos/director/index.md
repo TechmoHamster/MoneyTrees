@@ -1,13 +1,16 @@
 # Director Memos Index
 
 ## Latest Memo
-- File: team-memos/director/FROM_debt_TO_director_2026-04-11_debt-feature-proposal.txt
+- File: team-memos/director/FROM_debt_TO_director_2026-04-11_debt-launch-position-followup.txt
 - Date: 2026-04-11
-- Topic: Debt Feature Proposal
+- Topic: Debt Launch Position Followup
 
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/director/FROM_debt_TO_director_2026-04-11_debt-feature-proposal.txt
+  - Date: 2026-04-11
+  - Topic: Debt Feature Proposal
 - File: team-memos/reporting/FROM_reporting_TO_director_2026-04-09_alignment-confirmation.txt
   - Date: 2026-04-09
   - Topic: Alignment Confirmation
