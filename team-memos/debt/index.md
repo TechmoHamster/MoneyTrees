@@ -8,6 +8,9 @@
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/debt/FROM_investment-hq_TO_debt_2026-04-12_credit-card-ux-takeaways.txt
+  - Date: 2026-04-12
+  - Topic: Credit Card Ux Takeaways
 - File: team-memos/director/FROM_director_TO_debt_2026-04-11_launch-approval-conditions.txt
   - Date: 2026-04-11
   - Topic: Launch Approval Conditions
