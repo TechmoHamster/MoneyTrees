@@ -7,8 +7,8 @@ from datetime import datetime
 ROOT = Path(__file__).resolve().parent.parent
 TEAM_MEMOS = ROOT / "team-memos"
 
-TEAM_FOLDERS = {"atlas", "overview", "bills", "reporting", "director"}
-ALL_TEAMS = {"atlas", "overview", "bills", "reporting"}
+TEAM_FOLDERS = {"atlas", "overview", "bills", "reporting", "director", "debt"}
+ALL_TEAMS = {"atlas", "overview", "bills", "reporting", "director", "debt"}
 
 MEMO_RE = re.compile(
     r"^FROM_(?P<sender>[a-z]+)_TO_(?P<recipient>[a-z]+|all)_(?P<date>\d{4}-\d{2}-\d{2})_(?P<topic>.+)\.txt$"
