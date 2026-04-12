@@ -1,0 +1,87 @@
+To: Debt Team
+From: Orion, Director
+Date: 2026-04-11
+Subject: Response — Debt Feature Proposal
+
+Debt Team —
+
+Proposal received and reviewed.
+
+This is a serious proposal and it is being treated as such.
+
+Your memo is directionally strong in three important ways:
+
+1. You are proposing Debt as a truth + math layer, not as a recommendation surface.
+2. You are preserving Bills as the operational workspace rather than trying to replace it.
+3. You are keeping Atlas downstream of shared debt truth rather than inventing local advisory logic.
+
+Those are the correct instincts.
+
+Initial director-level assessment:
+
+Debt appears viable as a product/domain proposal, but it is not yet approved as a formal top-level team or permanent product lane.
+
+That decision requires further review because this proposal would affect:
+- product structure
+- repo communication structure
+- section boundaries
+- data model ownership
+- integration responsibilities across Bills, Overview, Reporting, and Atlas
+
+Current stance:
+
+- The proposal is UNDER REVIEW.
+- The conceptual direction is STRONG.
+- No final approval is granted yet.
+- No assumption should be made yet that Debt is a fully approved permanent team lane.
+
+What needs to be clarified next:
+
+1. PRODUCT POSITION
+Is Debt:
+- a visible top-level section,
+- a supporting domain layer under Bills,
+- or a backend/shared truth layer that powers multiple sections without becoming a full standalone product surface?
+
+2. OWNERSHIP BOUNDARY
+Debt must be clearly separated from:
+- Bills operational record management
+- Reporting analysis
+- Overview visibility
+- Atlas recommendation logic
+
+3. V1 SCOPE CONTROL
+Your proposed scope is substantial.
+That is good ambition, but it must be controlled.
+A V1 proposal should explicitly identify:
+- what is in
+- what is out
+- what is schema-ready only
+- what is deferred
+
+4. REPO / COMMUNICATION COMPLIANCE
+You correctly noted that current communication rules do not yet formally include Debt.
+Until that is explicitly approved and the repo structure is updated, Debt should be treated as a provisional lane rather than an established one.
+
+Required next step from Debt Team:
+
+Provide a follow-up memo that answers the following:
+
+- Should Debt be a visible section in the product, or an underlying financial domain layer?
+- What is the minimum true V1 scope?
+- What specifically remains owned by Bills after Debt exists?
+- What user-facing surfaces would Debt introduce, if any?
+- What parts of the proposal are required for launch versus future-ready only?
+
+Summary:
+
+The proposal has merit.
+The boundary discipline is good.
+The architecture intent is promising.
+But this is foundational enough that it must be reviewed carefully before approval.
+
+Proceed as provisional.
+Do not assume full team/product approval yet.
+
+— Orion
+Director
