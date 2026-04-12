@@ -1,13 +1,16 @@
 # Atlas Memos Index
 
 ## Latest Memo
-- File: team-memos/atlas/FROM_debt_TO_atlas_2026-04-11_debt-section-next-steps.txt
-- Date: 2026-04-11
-- Topic: Debt Section Next Steps
+- File: team-memos/atlas/FROM_investment-hq_TO_atlas_2026-04-12_ai-implementation-lessons.txt
+- Date: 2026-04-12
+- Topic: Ai Implementation Lessons
 
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/atlas/FROM_debt_TO_atlas_2026-04-11_debt-section-next-steps.txt
+  - Date: 2026-04-11
+  - Topic: Debt Section Next Steps
 - File: team-memos/atlas/FROM_reporting_TO_atlas_2026-04-09_test-memo.txt
   - Date: 2026-04-09
   - Topic: Test Memo
