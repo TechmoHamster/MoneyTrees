@@ -1,0 +1,172 @@
+TO: debt
+FROM: investment-hq
+DATE: 2026-04-12
+TOPIC: debt ui memo
+
+Team,
+
+Here is the UI guidance for the Debt feature based on what leading budgeting apps do well and where they still fall short.
+
+CORE UI PRINCIPLE
+The best apps do not try to show everything at once.
+They keep the first screen calm, scannable, and decision-focused.
+Then they let the user drill down.
+
+Debt should follow that same pattern.
+
+RECOMMENDED UI STRUCTURE
+Design Debt around three layers:
+
+1) Summary layer
+This is the top-level debt screen.
+It should answer one question:
+- what needs attention right now?
+
+Show only the highest-value signals such as:
+- total debt
+- required debt payments in next 30 days
+- next payment due
+- high-utilization cards
+- promo expirations soon
+- delinquent or at-risk accounts
+
+Do not overload this screen with full schedules, dense charts, or detailed account math.
+
+2) Account list layer
+This is the main scan view.
+It should answer:
+- which accounts are healthy and which are risky?
+
+Each account row or card should show only the essentials:
+- lender name
+- debt type
+- current balance
+- minimum due or next required payment
+- due date
+- utilization where relevant
+- account state
+- one compact risk badge
+
+The goal is that a user can scan the list in a few seconds and know where to focus.
+
+3) Account detail layer
+This is the deeper inspection view.
+It should answer:
+- what exactly is happening with this account?
+
+This is where the richer detail belongs:
+- payment history
+- payoff projection
+- statement balance vs current balance where relevant
+- interest behavior
+- promo terms
+- extra payment scenarios
+- supporting notes and assumptions
+
+Do not push this level of detail into the top-level summary.
+
+UI LESSONS FROM THE MARKET
+1) Use progressive disclosure
+Monarch, Simplifi, and Copilot all keep the first screens cleaner by separating overview, transactions, bills, and deeper details.
+Debt should do the same.
+
+2) Keep each screen focused on one job
+A good finance screen usually answers one main question.
+For Debt, that means:
+- summary = what needs attention
+- account list = what is risky vs stable
+- account detail = what is happening here
+- payment planning = what must be paid soon
+
+3) Make the UI scannable first
+Users should not have to read paragraphs or inspect long tables to understand their debt situation.
+Use compact sections, consistent rows, and strong visual hierarchy.
+
+4) Use color sparingly and only for meaning
+Color should indicate things like:
+- risk
+- due soon
+- promo ending
+- high utilization
+- paid / healthy / inactive states
+
+Do not use color as decoration.
+A stylish interface comes more from spacing, hierarchy, and restraint than from loud visuals.
+
+5) Separate tracking from advice
+Debt should present debt truth clearly.
+Atlas advice should appear in a dedicated card, panel, or section.
+Do not mix explanatory AI guidance into every row and widget or the UI will become noisy.
+
+STYLE DIRECTION
+Debt should feel:
+- modern
+- calm
+- premium
+- readable
+- confident
+
+That means:
+- strong typography hierarchy
+- generous spacing
+- minimal borders
+- compact status badges
+- charts only where they improve a decision
+- clear empty states and incomplete-data states
+
+The target should be closer to:
+- Monarch for structure
+- Copilot for polish
+- Simplifi for clarity
+- YNAB for behavioral usefulness
+
+WHAT TO AVOID
+Avoid:
+- giant all-in-one dashboards
+- repeated data across multiple widgets
+- walls of small numbers
+- too many charts on the first screen
+- burying due dates inside detailed views
+- mixing operations, analysis, and advice all together
+
+RECOMMENDED TOP-LEVEL DEBT SCREEN
+Suggested sections in order:
+
+1. headline summary
+- total debt
+- next 30-day required debt cash
+- number of accounts at risk
+
+2. immediate attention section
+- next due payment
+- late accounts
+- promo expirations soon
+- high utilization alerts
+
+3. account list
+- simple sortable list or cards
+- filter by type, state, and risk
+
+4. optional Atlas panel
+- one concise recommendation block
+- no more than one or two high-value recommendations at a time
+
+RECOMMENDED ACCOUNT DETAIL SCREEN
+Suggested sections:
+- key account snapshot
+- payment details
+- utilization / interest section
+- payoff projection
+- extra payment scenarios
+- notes / assumptions / data quality state
+
+FINAL PRODUCT DIRECTION
+Make Debt feel familiar on the surface and smarter underneath.
+
+The UI should feel easy because it is well-layered.
+The UI should feel clean because it avoids overload.
+The UI should feel stylish because it uses restraint, spacing, and hierarchy.
+
+If the team gets that right, Debt will feel much closer to a premium finance app than a spreadsheet with cards.
+
+- investment-hq
