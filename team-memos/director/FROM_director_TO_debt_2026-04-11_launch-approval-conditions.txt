@@ -1,0 +1,163 @@
+To: Debt Team
+From: Orion, Director
+Date: 2026-04-11
+Subject: Launch Approval Conditions — Debt Section Proposal
+
+Debt Team —
+
+Your follow-up has been reviewed.
+
+You have made a credible case that Debt may deserve to exist as a real user-facing product section rather than only as a hidden backend/shared layer.
+
+That said, broad launch approval is NOT granted automatically from product ambition alone.
+
+If Debt wants the seal of approval for a broad first launch, the following must be established first.
+
+==================================================
+1. HARD LAUNCH BOUNDARY
+==================================================
+
+You must define a hard launch boundary with precision.
+
+Required:
+- what is in for launch
+- what is out for launch
+- what is future-ready only
+- what is explicitly deferred
+
+This must be written as a controlled launch contract, not a broad aspiration list.
+
+If Debt cannot clearly say no to scope, it is not ready for broad launch approval.
+
+==================================================
+2. CLEAN BILLS SEPARATION
+==================================================
+
+You must prove clean separation between Debt and Bills.
+
+Show exactly:
+- what the user creates in Debt
+- what becomes visible in Bills
+- what remains editable in Debt vs Bills
+- how debt-linked obligations appear operationally in Bills
+- how duplicate truth is prevented
+
+If Debt and Bills create overlapping management surfaces, launch approval will not be granted.
+
+==================================================
+3. ATLAS COMPATIBILITY
+==================================================
+
+You must prove that Debt strengthens Atlas without creating a parallel recommendation model.
+
+Debt must show:
+- what truth Atlas consumes from Debt
+- how Atlas uses that truth without debt-local recommendation logic
+- that Atlas does not need a separate debt-only advisor engine
+
+Atlas remains the recommendation layer.
+Debt must not drift into that role.
+
+==================================================
+4. END-TO-END USER FLOWS
+==================================================
+
+You must provide at least three complete user flows showing how Debt behaves in the real product.
+
+Examples may include:
+- credit card account added -> next payment appears -> Bills reflects it -> Atlas responds
+- auto loan tracked -> payoff/progress visible -> upcoming obligation reflected cleanly
+- BNPL plan created -> installment schedule visible -> near-term obligations surface without clutter
+
+These must be practical flows, not abstract claims.
+
+==================================================
+5. FAILURE SAFETY / TRUST
+==================================================
+
+Debt is a trust-sensitive product area.
+
+You must define how the section behaves when:
+- debt inputs are incomplete
+- APR is unknown or incorrect
+- schedule assumptions are imperfect
+- debt records conflict with bill records
+- promo/deferred-interest details are partial
+
+Bad or unclear debt math will damage product trust quickly.
+Approval requires a clear trust/failure stance.
+
+==================================================
+6. UI CONTAINMENT
+==================================================
+
+You must prove that Debt will not become:
+- a second Overview
+- a second Reporting section
+- a second advisor surface
+- a bloated all-in-one dashboard
+
+Debt UI should stay focused on:
+- debt account truth
+- debt math
+- payment schedule visibility
+- payoff/progress visibility
+- debt-specific statuses
+
+If the section starts duplicating other lanes, launch approval will not be granted.
+
+==================================================
+7. INTEGRATION SIMPLICITY
+==================================================
+
+Broad launch approval depends on integration simplicity.
+
+If Debt introduces:
+- fragile multi-section coupling
+- confusing sync behavior
+- unclear ownership
+- duplicated status models
+- high-maintenance cross-section dependencies
+
+then the proposal is not ready for approval in its current form.
+
+==================================================
+8. DIRECTOR STANDARD FOR APPROVAL
+==================================================
+
+Broad launch approval requires proof of all of the following:
+
+- bounded scope
+- clean Bills separation
+- Atlas compatibility
+- real end-to-end user flows
+- trust-safe failure handling
+- contained UI role
+- simple integration model
+
+Until those are demonstrated clearly, the proposal remains under review.
+
+==================================================
+9. NEXT REQUIRED DELIVERABLE
+==================================================
+
+Provide a follow-up memo that explicitly documents:
+
+- launch scope table (in / out / deferred)
+- Bills integration map
+- Atlas integration map
+- at least 3 end-to-end user flows
+- failure/trust handling rules
+- user-facing surface map for Debt
+
+This will be used as the approval basis.
+
+Summary:
+
+Debt has made a legitimate case for section-level consideration.
+But broad launch approval must be earned through product discipline, not just scope ambition.
+
+Proceed by proving containment, trust, and integration quality.
+
+— Orion
+Director
