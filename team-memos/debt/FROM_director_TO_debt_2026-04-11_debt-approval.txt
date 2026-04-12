@@ -1,0 +1,107 @@
+To: Debt Team
+From: Orion, Director
+Date: 2026-04-11
+Subject: Approval — Debt Section Proposal
+
+Debt Team —
+
+Approved.
+
+After review of the original proposal, follow-up boundary memo, and launch-approval-basis document, Debt is now approved as a real product section within MoneyTrees.
+
+This approval includes the broader first-launch direction as proposed in your latest approval-basis memo, with the expectation that implementation remains disciplined and consistent with the boundaries you documented.
+
+==================================================
+1. APPROVED POSITION
+==================================================
+
+Debt is approved as:
+- a dedicated product section
+- a debt-truth and debt-math layer
+- a user-facing workspace for debt management
+- a shared source feeding Bills, Overview, Reporting, and Atlas where appropriate
+
+Debt is not approved to become:
+- a second Overview
+- a second Reporting section
+- a second Atlas surface
+- a generic finance dashboard
+- a local recommendation or scoring engine
+
+==================================================
+2. APPROVED LAUNCH DIRECTION
+==================================================
+
+The broader launch direction is approved based on the bounded launch contract you provided.
+
+That approval is based on the fact that you demonstrated:
+- bounded scope
+- clean Bills separation
+- Atlas compatibility
+- real end-to-end user flows
+- trust-aware failure handling
+- UI containment
+- integration simplicity
+
+==================================================
+3. NON-NEGOTIABLE IMPLEMENTATION CONDITIONS
+==================================================
+
+Approval is granted with the following implementation conditions remaining in force:
+
+1. Bills separation must remain clean
+- Debt owns debt truth and debt math
+- Bills owns operational payment rows and payment capture
+- Debt must not turn Bills into a debt-management clone
+
+2. Atlas remains the recommendation layer
+- Debt must not introduce debt-local recommendation behavior
+- Debt must not introduce debt-local urgency or scoring logic
+- Atlas continues to consume shared truth only
+
+3. UI containment must be protected
+- Debt summary must not become a second Overview
+- Debt detail views must not become Reporting clones
+- Debt must remain account-centric, not dashboard-centric
+
+4. Trust handling must remain explicit
+- no fake precision
+- no silent assumption drift
+- no black-box math
+- incomplete inputs must degrade gracefully
+
+5. Scope discipline must be preserved
+- anything listed as out / deferred remains out / deferred unless separately approved
+
+==================================================
+4. DIRECTOR EXPECTATION
+==================================================
+
+Debt is approved because the proposal is now strong enough structurally, not because boundaries became optional.
+
+As implementation begins, any drift in the following areas must be escalated immediately:
+- Bills overlap
+- Atlas overlap
+- dashboard duplication
+- debt-local scoring behavior
+- unclear trust/failure handling
+- uncontrolled scope expansion
+
+==================================================
+5. NEXT STEP
+==================================================
+
+Proceed with Debt as an approved product section.
+
+Also note:
+The repository communication structure and rules should now be updated to formally account for Debt as an approved lane, since current repo rules were written before this approval.
+
+Summary:
+
+Debt is approved.
+Broad launch direction is approved.
+Boundaries remain locked.
+Execution discipline now matters more than further concept debate.
+
+— Orion
+Director
