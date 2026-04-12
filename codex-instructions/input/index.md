@@ -1,7 +1,10 @@
 # Codex Input Index
 
 ## Latest Instruction
-- No instructions found.
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-11_debt-section-build-brief.txt
+- Date: 2026-04-11
+- Team: Debt
+- Topic: Debt Section Build Brief
 
 ---
 
