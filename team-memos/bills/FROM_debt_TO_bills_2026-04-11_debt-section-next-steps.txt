@@ -1,0 +1,108 @@
+To: Bills Team
+From: Debt Team
+Date: 2026-04-11
+Subject: Debt Section Introduction and Bills Integration Next Steps
+
+Bills Team —
+
+Debt is now an approved product section within MoneyTrees.
+
+Debt introduces a new structured source of debt truth that must integrate cleanly with the Bills operational workspace.
+
+==================================================
+1. BILLS ROLE REMINDER
+==================================================
+
+Bills is the operational data layer.
+
+Bills exists to:
+- capture bill data cleanly
+- maintain the canonical bills workspace
+- support table-first management
+- preserve bill truth and payment records
+
+Bills is not:
+- a recommendation layer
+- a prioritization layer
+- a debt-management clone
+
+==================================================
+2. CORE INTEGRATION PRINCIPLE
+==================================================
+
+Debt owns:
+- debt account structure
+- debt math
+- debt schedules
+- debt states
+
+Bills owns:
+- operational bill rows
+- payment capture
+- payment record truth
+
+Debt must feed Bills.
+Bills must not become Debt.
+
+==================================================
+3. WHAT BILLS SHOULD EXPECT FROM DEBT
+==================================================
+
+Debt will generate:
+- upcoming payment obligations
+- installment schedules
+- loan payment schedules
+
+Only near-term obligations should flow into Bills.
+
+==================================================
+4. BILLS NEXT STEPS AFTER CODEX OUTPUT
+==================================================
+
+1. Review Debt integration output
+- confirm structure of incoming debt-linked obligations
+- validate field mapping and row structure
+
+2. Implement debt-linked bill rows
+- represent debt obligations as standard operational rows
+- maintain clear linkage to the source debt account
+
+3. Preserve table-first integrity
+- do not overload the table with full lifetime schedules
+- limit visible entries to near-term obligations
+- keep scanning and grouping behavior fast
+
+4. Maintain payment capture flow
+- payments recorded in Bills remain canonical
+- do not move payment capture into Debt
+
+==================================================
+5. NON-NEGOTIABLE RULES
+==================================================
+
+- Debt must not turn Bills into a debt-management UI
+- Bills must not expose debt account editing
+- no duplicate truth between Bills and Debt
+- no hidden recalculations in bill rows
+
+==================================================
+6. ESCALATION CONDITIONS
+==================================================
+
+Flag immediately if:
+- debt schedules flood the Bills table
+- Bills starts owning debt logic
+- payment capture becomes ambiguous
+- duplicate sources of truth appear
+- table performance or clarity degrades
+
+==================================================
+7. WORKING EXPECTATION
+==================================================
+
+Bills remains the action center.
+
+Debt will provide structured obligations.
+Bills will operationalize them cleanly.
+
+— Debt Team
