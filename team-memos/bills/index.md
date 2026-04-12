@@ -15,6 +15,6 @@
 ---
 
 ## Notes
-- This file is Bills team's local memo lookup file.
+- This file is Bills's local memo lookup file.
 - Update it whenever a new memo is sent to Bills.
 - Keep the newest memo at the top.

@@ -15,6 +15,6 @@
 ---
 
 ## Notes
-- This file is Overview team's local memo lookup file.
+- This file is Overview's local memo lookup file.
 - Update it whenever a new memo is sent to Overview.
 - Keep the newest memo at the top.

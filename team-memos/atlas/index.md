@@ -18,6 +18,6 @@
 ---
 
 ## Notes
-- This file is Atlas team's local memo lookup file.
+- This file is Atlas's local memo lookup file.
 - Update it whenever a new memo is sent to Atlas.
 - Keep the newest memo at the top.

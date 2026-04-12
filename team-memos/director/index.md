@@ -24,6 +24,6 @@
 ---
 
 ## Notes
-- This file is Director team's local memo lookup file.
+- This file is Director's local memo lookup file.
 - Update it whenever a new memo is sent to Director.
 - Keep the newest memo at the top.

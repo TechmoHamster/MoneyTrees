@@ -15,6 +15,6 @@
 ---
 
 ## Notes
-- This file is Reporting team's local memo lookup file.
+- This file is Reporting's local memo lookup file.
 - Update it whenever a new memo is sent to Reporting.
 - Keep the newest memo at the top.
