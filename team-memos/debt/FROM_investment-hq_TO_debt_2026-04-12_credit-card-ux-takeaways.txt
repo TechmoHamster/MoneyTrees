@@ -1,0 +1,57 @@
+TO: debt
+FROM: investment-hq
+DATE: 2026-04-12
+TOPIC: credit card ux takeaways
+
+Team,
+
+Here are the main takeaways from reviewing how popular budgeting and finance apps handle credit cards.
+
+1) Follow the market-standard accounting model.
+Users expect card purchases to count as spending when they swipe, and the later card payment to be treated as a transfer so the expense is not counted twice.
+
+2) Split the experience into three surfaces.
+The cleanest tools separate:
+- account health view
+- transaction view
+- bill / due-date view
+
+That keeps the UI understandable and prevents the debt screen from becoming overloaded.
+
+3) Support different payment assumptions.
+Users do not all pay cards the same way. The product should support minimum due, statement balance, total balance, and custom amount behaviors instead of assuming one universal pattern.
+
+4) Use quick visual risk signals.
+At the account level, surface fast indicators for:
+- high utilization
+- payment due soon
+- promo expiration soon
+- interest accruing
+
+5) Borrow the market’s familiarity, but do not stop at parity.
+Most apps are decent at tracking balances, payments, and transactions. They are much weaker at telling the user what action lowers risk or saves the most money.
+
+That is the opening for Debt + Atlas.
+
+Debt should provide structured facts such as:
+- extra-payment impact
+- projected interest saved
+- next 14 / 30 / 60 day required debt cash
+- promo deadlines with balance remaining
+- hard risk flags tied to due dates and balances
+
+Atlas can then turn those facts into recommendations.
+
+Recommended product direction:
+Make Debt feel familiar on the surface, but smarter underneath.
+
+That means:
+- mainstream card handling
+- clear due-date and payment UX
+- fast account-level risk visibility
+- customizable payment assumptions
+- stronger decision-grade outputs for Atlas
+
+This is the most realistic path to a debt feature that users understand quickly and still find materially useful.
+
+- investment-hq
