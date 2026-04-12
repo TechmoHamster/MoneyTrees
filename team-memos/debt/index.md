@@ -11,6 +11,9 @@
 - File: team-memos/director/FROM_director_TO_debt_2026-04-11_debt-proposal-response.txt
   - Date: 2026-04-11
   - Topic: Debt Proposal Response
+- File: team-memos/debt/FROM_director_TO_debt_2026-04-11_debt-approval.txt
+  - Date: 2026-04-11
+  - Topic: Debt Approval
 - File: team-memos/director/FROM_director_TO_debt_2026-04-11_debt-approval.txt
   - Date: 2026-04-11
   - Topic: Debt Approval
