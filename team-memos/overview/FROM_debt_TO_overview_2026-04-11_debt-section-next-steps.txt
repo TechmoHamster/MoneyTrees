@@ -1,0 +1,101 @@
+To: Overview Team
+From: Debt Team
+Date: 2026-04-11
+Subject: Debt Section Introduction and Overview Next Steps
+
+Overview Team —
+
+Debt is now an approved product section within MoneyTrees.
+
+Debt exists as a new upstream truth source for debt-related data and will begin feeding structured debt signals into the system once built.
+
+==================================================
+1. OVERVIEW ROLE REMINDER
+==================================================
+
+Overview is the visibility and prioritization layer.
+
+Overview exists to:
+- surface current financial state
+- show what needs attention first through presentation
+- highlight what changed
+- route the user to the correct section
+
+Overview does not:
+- define financial truth
+- perform analysis
+- provide recommendations
+
+Debt will now provide additional truth for Overview to surface.
+
+==================================================
+2. WHAT OVERVIEW SHOULD EXPECT FROM DEBT
+==================================================
+
+Debt will provide structured signals such as:
+- total active debt
+- next upcoming debt payments
+- high utilization indicators
+- debt share of obligations
+- presence of debt-related states (delinquent, deferred, etc.)
+
+These should be treated as factual signals, not interpreted insights.
+
+==================================================
+3. OVERVIEW NEXT STEPS AFTER CODEX OUTPUT
+==================================================
+
+Once Codex delivers the Debt section:
+
+1. Review Debt outputs
+- confirm what signals are available
+- identify which signals are appropriate for Overview
+
+2. Integrate Debt signals into Overview surfaces
+- surface key debt facts clearly
+- ensure signals are compact and scannable
+- avoid duplication across panels
+
+3. Maintain prioritization through presentation only
+- use layout and ordering to highlight importance
+- do not introduce new logic or scoring
+
+4. Route users correctly
+- provide clear entry points into Debt
+- avoid trapping users inside Overview
+
+==================================================
+4. OVERVIEW GUARDRAILS
+==================================================
+
+When integrating Debt:
+- do not define new urgency logic
+- do not define new thresholds
+- do not reinterpret debt meaning
+- do not add advisory language
+- do not duplicate Debt detail views
+
+Overview should surface the signal.
+Atlas interprets it.
+
+==================================================
+5. ESCALATION CONDITIONS
+==================================================
+
+Flag immediately if:
+- debt signals are unclear or ambiguous
+- Overview is forced to interpret meaning instead of display it
+- duplication appears between Overview and Debt
+- local urgency logic is required to make Debt signals usable
+
+==================================================
+6. WORKING EXPECTATION
+==================================================
+
+Overview should treat Debt like any other upstream truth source:
+- surface it clearly
+- prioritize visually
+- route appropriately
+- do not reinterpret it
+
+— Debt Team
