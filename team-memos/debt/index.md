@@ -1,13 +1,16 @@
 # Debt Memos Index
 
 ## Latest Memo
-- File: team-memos/debt/FROM_investment-hq_TO_debt_2026-04-13_debt-v3-10-of-10-review.txt
+- File: team-memos/debt/FROM_debt_TO_debt_2026-04-13_v2c-review-concerns.txt
 - Date: 2026-04-13
-- Topic: Debt V3 10 Of 10 Review
+- Topic: V2C Review Concerns
 
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/debt/FROM_investment-hq_TO_debt_2026-04-13_debt-v3-10-of-10-review.txt
+  - Date: 2026-04-13
+  - Topic: Debt V3 10 Of 10 Review
 - File: team-memos/debt/FROM_debt_TO_debt_2026-04-13_v2b-review-concerns.txt
   - Date: 2026-04-13
   - Topic: V2B Review Concerns
