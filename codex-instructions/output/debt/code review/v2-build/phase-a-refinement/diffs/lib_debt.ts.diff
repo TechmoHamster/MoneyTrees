@@ -1,0 +1,277 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-a/source/lib/debt.ts	2026-04-13 00:39:05
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/debt.ts	2026-04-13 01:45:31
+@@ -116,24 +116,123 @@
+   return 0;
+ }
+ 
++function hasInstallmentStructure(account: DebtAccount): boolean {
++  return (
++    account.debtType !== "Credit Card" &&
++    (typeof account.termLengthMonths === "number" ||
++      typeof account.totalPaymentCount === "number")
++  );
++}
++
+ function getPaymentAmountTrustState(account: DebtAccount, scheduledAmount: number): DebtMathTrustState {
+   if (scheduledAmount <= 0) {
+     return "Limited";
+   }
+ 
+-  if (
+-    typeof account.scheduledPaymentAmount === "number" &&
+-    account.scheduledPaymentAmount > 0 &&
+-    typeof account.minimumPayment === "number" &&
+-    account.minimumPayment > 0 &&
+-    normalizeAmount(account.scheduledPaymentAmount) !== normalizeAmount(account.minimumPayment)
+-  ) {
++  const hasScheduledPayment =
++    typeof account.scheduledPaymentAmount === "number" && account.scheduledPaymentAmount > 0;
++  const hasMinimumPayment =
++    typeof account.minimumPayment === "number" && account.minimumPayment > 0;
++  const hasFixedInstallmentContext = hasInstallmentStructure(account);
++  const scheduleOverridesMinimum =
++    hasScheduledPayment &&
++    hasMinimumPayment &&
++    normalizeAmount(account.scheduledPaymentAmount as number) !==
++      normalizeAmount(account.minimumPayment as number);
++
++  if (account.debtType === "Credit Card") {
++    if (scheduleOverridesMinimum) {
++      return "Custom";
++    }
++
++    if (hasMinimumPayment) {
++      return "Limited";
++    }
++
++    return hasScheduledPayment ? "Manual" : "Limited";
++  }
++
++  if (scheduleOverridesMinimum) {
+     return "Custom";
+   }
+ 
+-  return "Manual";
++  if (hasScheduledPayment && hasFixedInstallmentContext && account.interestAccrual === "No Interest Accruing") {
++    return "Exact";
++  }
++
++  if (hasScheduledPayment && hasFixedInstallmentContext) {
++    return "Estimated";
++  }
++
++  if (hasScheduledPayment) {
++    return "Manual";
++  }
++
++  if (hasMinimumPayment) {
++    return "Estimated";
++  }
++
++  return "Limited";
+ }
+ 
++function getInterestModelTrustState(account: DebtAccount): DebtMathTrustState {
++  if (account.interestAccrual === "No Interest Accruing") {
++    return "Exact";
++  }
++
++  if (typeof account.apr === "number" && account.apr > 0) {
++    return account.debtType === "Credit Card" ? "Limited" : "Estimated";
++  }
++
++  return "Limited";
++}
++
++function getProjectionTrustState(
++  account: DebtAccount,
++  paymentAmountTrustState: DebtMathTrustState,
++): DebtMathTrustState {
++  if (account.debtType === "Credit Card") {
++    return "Limited";
++  }
++
++  if (account.interestAccrual === "No Interest Accruing") {
++    return paymentAmountTrustState;
++  }
++
++  if (paymentAmountTrustState === "Custom") {
++    return "Custom";
++  }
++
++  if (paymentAmountTrustState === "Manual") {
++    return "Manual";
++  }
++
++  return "Estimated";
++}
++
++function getScenarioTrustState(
++  account: DebtAccount,
++  paymentAmountTrustState: DebtMathTrustState,
++): DebtMathTrustState {
++  if (account.debtType === "Credit Card") {
++    return "Limited";
++  }
++
++  if (account.interestAccrual === "No Interest Accruing") {
++    return paymentAmountTrustState;
++  }
++
++  if (paymentAmountTrustState === "Custom") {
++    return "Custom";
++  }
++
++  if (paymentAmountTrustState === "Manual") {
++    return "Manual";
++  }
++
++  return "Estimated";
++}
++
+ function getDebtRemainingPaymentCount(account: DebtAccount, scheduledAmount: number): number | undefined {
+   if (
+     typeof account.totalPaymentCount === "number" &&
+@@ -181,18 +280,6 @@
+   return account.debtType === "Credit Card" ? 3 : 4;
+ }
+ 
+-function getProjectionBaseTrustState(account: DebtAccount): DebtMathTrustState {
+-  if (account.debtType === "Credit Card") {
+-    return "Limited";
+-  }
+-
+-  if (account.interestAccrual === "No Interest Accruing") {
+-    return "Exact";
+-  }
+-
+-  return "Estimated";
+-}
+-
+ type DebtProjectionComputation = {
+   payoffDate: string;
+   totalInterest: number;
+@@ -204,6 +291,7 @@
+   scheduledAmount: number,
+   paymentAmountTrustState: DebtMathTrustState,
+ ): DebtMathInspectableItem[] {
++  const interestModelTrustState = getInterestModelTrustState(account);
+   const inputs: DebtMathInspectableItem[] = [
+     {
+       label: "Current balance",
+@@ -230,8 +318,12 @@
+       note:
+         paymentAmountTrustState === "Custom"
+           ? "Using the custom scheduled payment instead of the minimum payment."
++          : paymentAmountTrustState === "Exact"
++            ? "Using a fixed installment payment supported by the current installment structure."
++            : paymentAmountTrustState === "Estimated"
++              ? "Using a recurring payment amount inferred from the entered debt structure or fallback payment detail."
+           : paymentAmountTrustState === "Manual"
+-            ? "Using the manually entered recurring payment amount."
++            ? "Using the manually entered recurring payment amount without full amortization support."
+             : "A recurring payment amount is required for payoff projection.",
+     },
+     {
+@@ -242,17 +334,14 @@
+           : typeof account.apr === "number" && account.apr > 0
+             ? `${normalizeAmount(account.apr).toFixed(2)}% APR`
+             : "APR missing",
+-      state:
+-        account.interestAccrual === "No Interest Accruing"
+-          ? "Exact"
+-          : typeof account.apr === "number" && account.apr > 0
+-            ? "Manual"
+-            : "Limited",
++      state: interestModelTrustState,
+       note:
+         account.interestAccrual === "No Interest Accruing"
+           ? "Projection uses a zero-interest payoff path."
+           : typeof account.apr === "number" && account.apr > 0
+-            ? "APR is treated as stable for the projection."
++            ? account.debtType === "Credit Card"
++              ? "APR is available, but credit-card payoff math remains trust-limited in V2A."
++              : "APR is treated as stable for the projection."
+             : "Interest is accruing, but APR is missing, so interest-aware payoff math is limited.",
+     },
+   ];
+@@ -282,8 +371,17 @@
+       value:
+         paymentAmountTrustState === "Custom"
+           ? "Custom payment amount stays fixed"
++          : paymentAmountTrustState === "Exact"
++            ? "Fixed installment amount stays constant"
+           : "Entered payment amount stays fixed",
+-      state: paymentAmountTrustState === "Custom" ? "Custom" : "Estimated",
++      state:
++        paymentAmountTrustState === "Custom"
++          ? "Custom"
++          : paymentAmountTrustState === "Exact"
++            ? "Exact"
++            : paymentAmountTrustState === "Manual"
++              ? "Manual"
++              : "Estimated",
+       note: "V2A assumes the recurring payment amount does not change between due dates.",
+     },
+   ];
+@@ -313,6 +411,16 @@
+       note: "Projection cannot estimate remaining interest without APR.",
+     });
+   }
++
++  assumptions.push({
++    label: "Behavior stays static",
++    value:
++      account.debtType === "Credit Card"
++        ? "No new charges, minimum-rule changes, or promo changes are modeled"
++        : "No skipped payments, rate changes, or behavior changes are modeled",
++    state: account.debtType === "Credit Card" ? "Limited" : "Estimated",
++    note: "V2A is a static projection. It does not simulate future behavior changes.",
++  });
+ 
+   return assumptions;
+ }
+@@ -527,7 +635,7 @@
+   const trustNotes: string[] = [];
+   const projectionInputs = buildProjectionInputs(account, scheduledAmount, paymentAmountTrustState);
+   const projectionAssumptions = buildProjectionAssumptions(account, paymentAmountTrustState);
+-  const projectionBaseTrustState = getProjectionBaseTrustState(account);
++  const projectionBaseTrustState = getProjectionTrustState(account, paymentAmountTrustState);
+   const startingDate = account.nextDueDate ? getDateOnly(account.nextDueDate) : null;
+   let payoffTrustState: DebtMathTrustState = "Limited";
+   let payoffDateProjection: string | undefined;
+@@ -543,6 +651,12 @@
+ 
+   if (scheduledAmount <= 0) {
+     trustNotes.push("Payment amount is missing, so payoff projection is limited.");
++  } else if (paymentAmountTrustState === "Custom") {
++    trustNotes.push("Projection uses a custom recurring payment instead of the baseline minimum payment.");
++  } else if (paymentAmountTrustState === "Manual") {
++    trustNotes.push("Projection uses a manually entered recurring payment amount without full amortization support.");
++  } else if (paymentAmountTrustState === "Estimated") {
++    trustNotes.push("Projection uses a recurring payment amount inferred from the current debt structure or fallback payment detail.");
+   }
+ 
+   if (typeof account.apr !== "number" && account.interestAccrual === "Interest Accruing") {
+@@ -633,11 +747,18 @@
+             account.interestAccrual === "No Interest Accruing"
+               ? 0
+               : normalizeAmount(baseProjection.totalInterest - scenarioProjection.totalInterest),
+-          trustState: "Custom",
++          trustState: getScenarioTrustState(account, paymentAmountTrustState),
+           note:
+             account.debtType === "Credit Card"
+-              ? "Custom scenario assumes the entered credit-card payment stays fixed."
+-              : "Custom scenario uses the current recurring payment plus the added amount.",
++              ? "Limited scenario assumes the entered credit-card payment stays fixed and does not model changing minimum-payment rules."
++              : paymentAmountTrustState === "Custom"
++                ? "Custom scenario uses the current custom recurring payment plus the added amount."
++                : account.interestAccrual === "No Interest Accruing"
++                  ? "Exact scenario uses the current fixed payment plus the added amount."
++                  : paymentAmountTrustState === "Manual"
++                    ? "Manual scenario uses the entered recurring payment plus the added amount under a stable-APR model."
++                    : "Estimated scenario uses the current recurring payment plus the added amount under a stable-APR model."
++              ,
+         });
+       }
+     } else if (

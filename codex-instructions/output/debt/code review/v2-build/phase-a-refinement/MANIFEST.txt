@@ -1,0 +1,23 @@
+Debt V2A refinement review package manifest
+Generated: 2026-04-13
+Phase: V2A — Feedback pass / trust and test hardening
+Source repo: /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard
+
+Updated source files
+- source/lib/debt.ts
+- source/lib/debt.test.ts
+- source/components/DebtSection.tsx
+
+Diff files
+- diffs/lib_debt.ts.diff
+- diffs/lib_debt.test.ts.diff
+- diffs/components_DebtSection.tsx.diff
+
+Validation files
+- VALIDATION.txt
+
+Notes
+- This package is a refinement pass on top of the earlier V2A review package in:
+  codex-instructions/output/debt/code review/v2-build/phase-a/
+- Debt math trust-state enums did not require schema changes in this follow-up.
+- The actionable refinement work landed in the math logic, inspectability copy, and targeted test coverage.

@@ -1,0 +1,70 @@
+To: Debt Team
+From: Codex
+Date: 2026-04-13
+Subject: Debt V2A Feedback Follow-Up Complete
+
+Debt Team —
+
+I completed the requested V2A refinement pass and stayed inside V2A scope.
+
+Feedback items addressed
+1. Trust-state precision
+- Refined the math layer so extra-payment scenarios no longer overstate certainty when the payment basis is only manual or inferred.
+- Improved payment trust notes so the projection explicitly distinguishes:
+  - custom recurring payment overrides
+  - manually entered recurring payments without full amortization support
+  - inferred recurring payment amounts coming from debt structure or fallback payment detail
+- Improved the interest-setting inspectability row so it now reflects actual interest-model confidence instead of flattening APR-backed cases into a generic manual state.
+
+2. Extra-payment scenario labeling
+- Extra-payment scenarios no longer flatten no-interest manual cases into effectively exact-looking output.
+- Scenario trust now follows the underlying model quality more faithfully:
+  - exact when the payment basis is actually exact
+  - estimated when the model is interest-stable but inferred
+  - manual when the payment basis is user-entered but not fully corroborated
+  - custom when the recurring payment is explicitly overridden
+  - limited for credit cards and weak-input cases
+
+3. Credit-card limitation strictness
+- Left unchanged intentionally.
+- Credit-card payoff projections remain trust-limited.
+- V2A still does not model changing minimum-payment rules for cards.
+- Limitation language remains explicit and visible.
+
+4. Test coverage
+- Added targeted V2A math coverage for:
+  - exact no-interest fixed-payment paths
+  - manual no-interest payment paths
+  - custom scheduled-payment override paths
+  - APR-based estimated paths
+  - installment-count fallback timing when APR is missing
+  - credit-card strict limitation behavior
+  - weekly cadence payoff boundary behavior
+  - invalid due-date handling
+  - non-amortizing payment failure paths
+  - longer-tail amortizing stability
+  - explicit static-assumption inspectability
+
+5. Static projection assumptions
+- Kept V2A static-projection assumptions explicit.
+- Updated the contained Debt UI copy so the projection detail area now calls out static assumptions directly.
+
+What was intentionally left unchanged
+- DebtMathTrustState enum values remained unchanged. The current vocabulary was sufficient once the mapping logic was refined.
+- Credit-card minimum-payment behavior remains intentionally incomplete in V2A and was not expanded.
+- No V2B work was started.
+- No downstream advisor or broader dashboard work was introduced in this pass.
+
+Updated review package
+- codex-instructions/output/debt/code review/v2-build/phase-a-refinement/
+
+That package includes:
+- readable updated source files
+- diffs against the prior V2A review snapshot
+- updated manifest
+- validation evidence
+
+Phase gate statement
+- Updated V2A is ready for Debt Team review.
+- Codex is waiting for explicit Debt Team approval before proceeding to V2B.
+- Codex will not begin V2B until Debt Team explicitly authorizes the next phase.

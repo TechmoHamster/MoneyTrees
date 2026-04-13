@@ -1,0 +1,11 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-a/source/components/DebtSection.tsx	2026-04-13 00:39:05
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/components/DebtSection.tsx	2026-04-13 01:48:23
+@@ -957,7 +957,7 @@
+                   <div>
+                     <p className="text-sm font-semibold text-slate-900">Payoff math and extra-payment impact</p>
+                     <p className="mt-1 text-xs text-slate-600">
+-                      Inspect the active projection inputs, assumptions, and the effect of adding extra payment.
++                      Inspect the active projection inputs, static assumptions, and the effect of adding extra payment.
+                     </p>
+                   </div>
+                   <button
