@@ -109,6 +109,15 @@ Required follow-up deliverables:
 - Debt V2 is ready for Debt Team review
 - no further phase work has been started beyond what was authorized
 
+5. Update repo with all follow-up items:
+- Once all follow-up items have been addressed, the following commands should be ran to update the repo——these must be ran, no exceptions!
+- Commands to run...
+cd "/Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees"
+git add .
+git commit -m "V2D Memo & Package Review"
+git pull --rebase origin main
+git push
+
 ==================================================
 5. REVIEW STANDARD
 ==================================================

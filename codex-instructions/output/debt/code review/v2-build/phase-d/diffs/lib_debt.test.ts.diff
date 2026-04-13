@@ -1,0 +1,137 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-c/source/lib/debt.test.ts	2026-04-13 11:51:07
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/debt.test.ts	2026-04-13 14:42:12
+@@ -1,6 +1,9 @@
+ import { describe, expect, it } from "vitest";
+-import { calculateDebtDerivedMetrics } from "@/lib/debt";
+-import { calculateDebtSummary } from "@/lib/debt";
++import {
++  buildDebtDownstreamSnapshot,
++  calculateDebtDerivedMetrics,
++  calculateDebtSummary,
++} from "@/lib/debt";
+ import type { Bill, DebtAccount } from "@/lib/types";
+ 
+ function createDebtAccount(overrides: Partial<DebtAccount> = {}): DebtAccount {
+@@ -453,5 +456,122 @@
+     expect(summary.minimumCashNeededIn30Days).toBe(400);
+     expect(summary.timingClusterCount).toBe(2);
+     expect(summary.timingClusterNote).toContain("2 required payments land between");
++  });
++});
++
++describe("buildDebtDownstreamSnapshot", () => {
++  it("builds bounded downstream obligations and structured account facts", () => {
++    const account = createDebtAccount({
++      id: "debt-1",
++      providerName: "Debt One",
++      debtType: "Installment Loan",
++      currentBalance: 1600,
++      minimumPayment: 200,
++      scheduledPaymentAmount: 200,
++      termLengthMonths: 12,
++      interestAccrual: "No Interest Accruing",
++      pastDueAmount: 60,
++    });
++
++    const bills = [
++      createDebtBill({
++        id: "near-1",
++        sourceDebtAccountId: "debt-1",
++        dueDate: "2026-04-15",
++        amount: 200,
++        status: "Upcoming",
++      }),
++      createDebtBill({
++        id: "near-2",
++        sourceDebtAccountId: "debt-1",
++        dueDate: "2026-05-10",
++        amount: 200,
++        status: "Upcoming",
++      }),
++      createDebtBill({
++        id: "far-1",
++        sourceDebtAccountId: "debt-1",
++        dueDate: "2026-07-20",
++        amount: 200,
++        status: "Upcoming",
++      }),
++    ];
++
++    const snapshot = buildDebtDownstreamSnapshot([account], bills);
++
++    expect(snapshot.boundedOperationalWindowDays).toBe(60);
++    expect(snapshot.nearTermObligations).toHaveLength(2);
++    expect(snapshot.nearTermObligations[0]).toMatchObject({
++      billId: "near-1",
++      accountId: "debt-1",
++      providerName: "Debt One",
++      debtType: "Installment Loan",
++      dueDate: "2026-04-15",
++      amount: 200,
++    });
++    expect(snapshot.accountFacts).toHaveLength(1);
++    expect(snapshot.accountFacts[0]).toMatchObject({
++      accountId: "debt-1",
++      providerName: "Debt One",
++      nextScheduledPaymentAmount: 200,
++      payoffTrustState: "Exact",
++      primaryConfidenceState: "Exact",
++    });
++    expect(snapshot.accountFacts[0]?.paymentAssumption).toMatchObject({
++      label: "Scheduled Payment",
++      amount: 200,
++      trustState: "Exact",
++    });
++    expect(snapshot.accountFacts[0]?.linkedSchedule).toMatchObject({
++      billCount: 2,
++      boundedWindowDays: 60,
++      editableInBills: false,
++      owner: "Debt",
++    });
++    expect(snapshot.accountFacts[0]?.extraPaymentImpact).toHaveLength(3);
++    expect(snapshot.accountFacts[0]?.factualFlags).toEqual(
++      expect.arrayContaining([expect.objectContaining({ type: "Payment Due Soon" })]),
++    );
++    expect(snapshot.flaggedAccountCount).toBeGreaterThanOrEqual(1);
++    expect(snapshot.confidenceSummary.Exact).toBe(1);
+   });
++
++  it("keeps limited-confidence credit-card outputs strict for downstream consumers", () => {
++    const account = createDebtAccount({
++      id: "card-1",
++      providerName: "Card One",
++      debtType: "Credit Card",
++      currentBalance: 900,
++      minimumPayment: 80,
++      scheduledPaymentAmount: 80,
++      apr: 18,
++      interestAccrual: "Interest Accruing",
++      statementBalance: 900,
++      statementMinimumDue: 80,
++      paymentAssumptionMode: "Minimum Due",
++      minimumPaymentMode: "Manual Minimum Amount",
++    });
++
++    const bills = [
++      createDebtBill({
++        id: "card-bill-1",
++        sourceDebtAccountId: "card-1",
++        dueDate: "2026-04-15",
++        amount: 80,
++      }),
++    ];
++
++    const snapshot = buildDebtDownstreamSnapshot([account], bills);
++    const fact = snapshot.accountFacts[0];
++
++    expect(fact?.primaryConfidenceState).toBe("Limited");
++    expect(fact?.paymentAssumption).toMatchObject({
++      label: "Minimum Due",
++      amount: 80,
++      trustState: "Manual",
++    });
++    expect(fact?.projectedRemainingInterestTrustState).toBe("Limited");
++    expect(fact?.extraPaymentImpact[0]?.trustState).toBe("Limited");
++    expect(snapshot.limitedConfidenceAccountCount).toBe(1);
++  });
+ });

@@ -1,0 +1,48 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/inital-build/source/components/FinanceDashboard.tsx	2026-04-12 20:05:19
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/components/FinanceDashboard.tsx	2026-04-13 13:06:11
+@@ -31,7 +31,11 @@
+ import type { AdvisorHubResponse, AdvisorResponse } from "@/lib/advisor-contracts";
+ import { createAvatarSeed } from "@/lib/avatar";
+ import { getCsrfRequestHeaders } from "@/lib/client-security";
+-import { calculateDebtSummary, mergeDebtBills } from "@/lib/debt";
++import {
++  buildDebtDownstreamSnapshot,
++  calculateDebtSummary,
++  mergeDebtBills,
++} from "@/lib/debt";
+ import {
+   billMatchesSearchQuery,
+   buildSmartInsights,
+@@ -613,8 +617,16 @@
+ 
+   const debtSummary = useMemo(
+     () => calculateDebtSummary(debtAccounts, ledgerBills),
++    [debtAccounts, ledgerBills],
++  );
++  const debtDownstreamSnapshot = useMemo(
++    () => buildDebtDownstreamSnapshot(debtAccounts, ledgerBills),
+     [debtAccounts, ledgerBills],
+   );
++  const debtAccountsById = useMemo(
++    () => new Map(debtAccounts.map((account) => [account.id, account])),
++    [debtAccounts],
++  );
+ 
+   const summary = useMemo(
+     () => calculateSummary(ledgerBills, startingBalance, includePaidInTotals),
+@@ -1995,6 +2007,7 @@
+             onBulkRemoveLateFee={handleBulkRemoveLateFee}
+             onBulkRecordPayment={handleRecordPayment}
+             onBulkDelete={handleBulkDelete}
++            debtAccountsById={debtAccountsById}
+             onEdit={(bill) => {
+               if (bill.sourceType === "debt-derived") {
+                 openDebtAccountFromBill(bill);
+@@ -2017,6 +2030,7 @@
+             accounts={debtAccounts}
+             bills={ledgerBills}
+             summary={debtSummary}
++            downstreamSnapshot={debtDownstreamSnapshot}
+             focusedAccountId={focusedDebtAccountId ?? undefined}
+             onSaveAccount={handleSaveDebtAccount}
+             onDeleteAccount={handleDeleteDebtAccount}

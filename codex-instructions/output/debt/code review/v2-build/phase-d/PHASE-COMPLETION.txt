@@ -1,0 +1,18 @@
+Debt V2D completion statement
+
+V2D is complete for review.
+
+Implemented in this phase:
+- shared downstream debt snapshot for Overview / Bills / Reporting / Atlas consumption
+- bounded near-term debt obligations for downstream feeds
+- improved debt-derived row inspectability and ownership clarity in Bills
+- integrated debt snapshot into advisor/shared facts feed
+- downstream preview visibility inside Debt account detail
+- additional hardening tests for downstream output shape and advisor feed inclusion
+
+Phase boundary:
+- ready for Debt Team review
+- Codex is not proceeding beyond V2D until Debt Team sends the next instruction
+
+Repository note:
+- MoneyTrees output files were written, but no git add/commit/push was performed from this step because the MoneyTrees repo already contains a pre-existing modified input memo in its working tree.

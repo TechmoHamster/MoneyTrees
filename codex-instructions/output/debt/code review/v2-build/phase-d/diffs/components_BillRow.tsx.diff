@@ -1,0 +1,43 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/inital-build/source/components/BillRow.tsx	2026-04-12 20:05:19
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/components/BillRow.tsx	2026-04-13 13:08:59
+@@ -11,12 +11,13 @@
+ } from "lucide-react";
+ import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+ import { createPortal } from "react-dom";
+-import type { Bill, RunningBalanceRow } from "@/lib/types";
++import type { Bill, DebtAccount, RunningBalanceRow } from "@/lib/types";
+ import { categoryIcons, statusIcons } from "@/components/iconMaps";
+ import { formatCurrency, formatDate, getBillLateFeeAmount, getBillTotalAmount } from "@/lib/utils";
+ 
+ type BillRowProps = {
+   bill: Bill;
++  linkedDebtAccount?: DebtAccount;
+   runningBalance: RunningBalanceRow;
+   includePaidInTotals: boolean;
+   isSelected: boolean;
+@@ -35,6 +36,7 @@
+ 
+ export function BillRow({
+   bill,
++  linkedDebtAccount,
+   runningBalance,
+   includePaidInTotals,
+   isSelected,
+@@ -220,7 +222,17 @@
+             <span className="mt-1 inline-flex items-center rounded-full border border-blue-300 bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700">
+               Linked to Debt
+             </span>
++          ) : null}
++          {isDebtDerived && linkedDebtAccount ? (
++            <p className="mt-1 text-[11px] leading-relaxed text-slate-600">
++              {linkedDebtAccount.providerName} • {linkedDebtAccount.debtType}
++            </p>
+           ) : null}
++          {isDebtDerived ? (
++            <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
++              Operational row only. Edit account truth in Debt.
++            </p>
++          ) : null}
+           {hasLateFee ? (
+             <span className="mt-1 inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+               Fee applied

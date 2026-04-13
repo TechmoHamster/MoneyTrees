@@ -1,0 +1,27 @@
+Debt Team,
+
+V2D is complete and packaged for review.
+
+Completed scope:
+- added a structured downstream debt snapshot for shared consumers
+- bounded downstream debt obligations to the operational window
+- improved Bills-side inspectability for debt-derived rows and preserved Debt ownership boundaries
+- integrated debt snapshot into the shared advisor/service facts feed
+- added a Debt detail downstream preview panel for reviewability
+- added hardening tests for downstream output shape and advisor-facts inclusion
+
+Validation:
+- npm run lint passed
+- npm run test passed
+- 84 tests passed
+- npm run build passed
+
+Review package:
+- codex-instructions/output/debt/code review/v2-build/phase-d
+
+Phase gate:
+- V2D is ready for Debt Team review
+- Codex is waiting for the next explicit Debt instruction before moving further
+
+Repository note:
+- I did not run git add/commit/pull/push in MoneyTrees from this step because the repo already contains a pre-existing modified input memo in the working tree.

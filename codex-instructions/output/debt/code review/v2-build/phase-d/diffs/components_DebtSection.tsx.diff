@@ -1,0 +1,153 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-c/source/components/DebtSection.tsx	2026-04-13 11:51:07
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/components/DebtSection.tsx	2026-04-13 13:26:24
+@@ -40,6 +40,8 @@
+   type DebtCashWindow,
+   type DebtConsequenceItem,
+   type DebtDerivedMetrics,
++  type DebtDownstreamAccountFact,
++  type DebtDownstreamSnapshot,
+   type DebtFactualFlag,
+   type DebtGracePeriodStatus,
+   type DebtInterestAccrual,
+@@ -67,6 +69,7 @@
+   accounts: DebtAccount[];
+   bills: Bill[];
+   summary: DebtSummary;
++  downstreamSnapshot: DebtDownstreamSnapshot;
+   focusedAccountId?: string;
+   onSaveAccount: (account: DebtAccount) => void;
+   onDeleteAccount: (accountId: string) => void;
+@@ -663,6 +666,7 @@
+   accounts,
+   bills,
+   summary,
++  downstreamSnapshot,
+   focusedAccountId,
+   onSaveAccount,
+   onDeleteAccount,
+@@ -723,6 +727,15 @@
+     () => (selectedAccount ? getDebtSchedule(selectedAccount, bills) : []),
+     [bills, selectedAccount],
+   );
++  const selectedDownstreamFact = useMemo<DebtDownstreamAccountFact | null>(
++    () =>
++      selectedAccount
++        ? downstreamSnapshot.accountFacts.find(
++            (fact) => fact.accountId === selectedAccount.id,
++          ) ?? null
++        : null,
++    [downstreamSnapshot.accountFacts, selectedAccount],
++  );
+   const draftCreditCardAccount = useMemo(() => {
+     if (!isCreditCardForm) {
+       return null;
+@@ -939,6 +952,23 @@
+                 {summary.timingClusterNote ?? "No tight debt due-date cluster is currently visible in the next 60 days."}
+               </p>
+             </div>
++          </div>
++
++          <div className="mt-3 rounded-2xl border border-slate-200 bg-white/85 px-4 py-3">
++            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">
++              Downstream Feed Readiness
++            </p>
++            <p className="mt-2 text-sm font-medium text-slate-900">
++              {downstreamSnapshot.nearTermObligations.length} bounded operational row
++              {downstreamSnapshot.nearTermObligations.length === 1 ? "" : "s"} currently feed Bills in the next{" "}
++              {downstreamSnapshot.boundedOperationalWindowDays} days.
++            </p>
++            <p className="mt-1 text-xs leading-relaxed text-slate-600">
++              {downstreamSnapshot.flaggedAccountCount} account
++              {downstreamSnapshot.flaggedAccountCount === 1 ? "" : "s"} currently surface factual risk flags, and{" "}
++              {downstreamSnapshot.limitedConfidenceAccountCount} remain limited-confidence. Bills stays operational;
++              downstream consumers receive factual debt outputs, not debt-owned recommendations.
++            </p>
+           </div>
+         </section>
+ 
+@@ -2370,7 +2400,85 @@
+                   <div className="mt-4">{renderConsequences(selectedMetrics.consequences)}</div>
+                 </div>
+               </div>
++
++              {selectedDownstreamFact ? (
++                <div className="dashboard-shell-inner rounded-2xl p-4">
++                  <div className="flex flex-wrap items-center justify-between gap-3">
++                    <div>
++                      <p className="text-sm font-semibold text-slate-900">
++                        Downstream output preview
++                      </p>
++                      <p className="mt-1 text-xs text-slate-600">
++                        This is the factual debt payload shape other sections can consume
++                        without Debt taking over their role.
++                      </p>
++                    </div>
++                    {renderTrustStateBadge(selectedDownstreamFact.primaryConfidenceState)}
++                  </div>
++
++                  <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
++                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-3">
++                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
++                        Bills Feed
++                      </p>
++                      <p className="mt-2 text-xl font-semibold text-slate-950">
++                        {selectedDownstreamFact.linkedSchedule.billCount}
++                      </p>
++                      <p className="mt-1 text-xs leading-relaxed text-slate-600">
++                        {selectedDownstreamFact.linkedSchedule.firstDueDate
++                          ? `Rows through ${formatDate(
++                              selectedDownstreamFact.linkedSchedule.lastDueDate ??
++                                selectedDownstreamFact.linkedSchedule.firstDueDate,
++                            )}.`
++                          : "No bounded operational rows are currently projected."}
++                      </p>
++                    </div>
++                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-3">
++                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
++                        Payment Assumption
++                      </p>
++                      <p className="mt-2 text-base font-semibold text-slate-950">
++                        {selectedDownstreamFact.paymentAssumption.label}
++                      </p>
++                      <p className="mt-1 text-xs leading-relaxed text-slate-600">
++                        {typeof selectedDownstreamFact.paymentAssumption.amount === "number"
++                          ? `${formatCurrency(selectedDownstreamFact.paymentAssumption.amount)} • ${selectedDownstreamFact.paymentAssumption.trustState}`
++                          : selectedDownstreamFact.paymentAssumption.trustState}
++                      </p>
++                    </div>
++                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-3">
++                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
++                        Factual Signals
++                      </p>
++                      <p className="mt-2 text-xl font-semibold text-slate-950">
++                        {selectedDownstreamFact.factualFlags.length}
++                      </p>
++                      <p className="mt-1 text-xs leading-relaxed text-slate-600">
++                        {selectedDownstreamFact.consequences.length} consequence signal
++                        {selectedDownstreamFact.consequences.length === 1 ? "" : "s"} carried
++                        with the account.
++                      </p>
++                    </div>
++                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-3">
++                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
++                        Extra-Payment Read
++                      </p>
++                      <p className="mt-2 text-xl font-semibold text-slate-950">
++                        {selectedDownstreamFact.extraPaymentImpact.length}
++                      </p>
++                      <p className="mt-1 text-xs leading-relaxed text-slate-600">
++                        Alternative payoff-date comparisons available for downstream
++                        interpretation.
++                      </p>
++                    </div>
++                  </div>
+ 
++                  <p className="mt-3 text-xs leading-relaxed text-slate-600">
++                    {selectedDownstreamFact.linkedSchedule.boundaryNote}
++                  </p>
++                </div>
++              ) : null}
++
+               <div className="grid gap-4 lg:grid-cols-[1fr_0.95fr]">
+                 <div className="dashboard-shell-inner rounded-2xl p-4">
+                   <div className="flex items-center gap-2">

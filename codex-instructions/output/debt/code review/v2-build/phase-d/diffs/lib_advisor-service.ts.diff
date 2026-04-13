@@ -1,0 +1,546 @@
+--- /dev/null	2026-04-13 14:46:53
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/advisor-service.ts	2026-04-13 13:03:52
+@@ -0,0 +1,543 @@
++import { createHash } from "node:crypto";
++import {
++  ADVISOR_FACTS_VERSION,
++  type AdvisorFacts,
++  type AdvisorHubResponse,
++  type AdvisorResponse,
++  type AdvisorRunRecord,
++} from "@/lib/advisor-contracts";
++import { buildDebtDownstreamSnapshot, mergeDebtBills } from "@/lib/debt";
++import { deterministicAdvisorProvider } from "@/lib/advisor-provider";
++import { buildAdvisorHubView, buildScopedAdvisorResponse } from "@/lib/advisor-v35";
++import {
++  createSupabaseAdvisorRepository,
++  getLegacyTrackingEventsFromDashboardState,
++  inferAssociatedFieldsFromAction,
++  mapRunToHistoryEntry,
++  type AdvisorRepository,
++} from "@/lib/advisor-persistence";
++import type {
++  AdvisorAction,
++  AdvisorContext,
++  AdvisorPreference,
++  AdvisorTrackingEvent,
++  DashboardState,
++  ReportingRange,
++} from "@/lib/types";
++import { calculateReportingSnapshot, calculateSummary, normalizeAmount } from "@/lib/utils";
++
++const DEFAULT_ADVISOR_PREFERENCE: AdvisorPreference = {
++  strategy: "reduce-overdue-count",
++  minimumCashBuffer: 200,
++};
++
++type AdvisorRequestInput = {
++  userId: string;
++  context: AdvisorContext;
++  reportingRange: ReportingRange;
++};
++
++type AdvisorResolvedState = {
++  preference: AdvisorPreference;
++  facts: AdvisorFacts;
++  dashboardState: DashboardState;
++};
++
++type AdvisorSnapshotResult = AdvisorResolvedState & {
++  response: AdvisorResponse | null;
++};
++
++type AdvisorHubResult = AdvisorResolvedState & {
++  hub: AdvisorHubResponse;
++};
++
++type AdvisorAnalysisResult = AdvisorResolvedState & {
++  response: AdvisorResponse;
++};
++
++function stableStringify(value: unknown): string {
++  if (value === null || typeof value !== "object") {
++    return JSON.stringify(value);
++  }
++
++  if (Array.isArray(value)) {
++    return `[${value.map((item) => stableStringify(item)).join(",")}]`;
++  }
++
++  const record = value as Record<string, unknown>;
++  return `{${Object.keys(record)
++    .sort()
++    .map((key) => `${JSON.stringify(key)}:${stableStringify(record[key])}`)
++    .join(",")}}`;
++}
++
++export function hashAdvisorFacts(facts: AdvisorFacts): string {
++  const materialFacts = {
++    version: facts.version,
++    reportingRange: facts.reportingRange,
++    startingBalance: facts.startingBalance,
++    includePaidInTotals: facts.includePaidInTotals,
++    preference: facts.preference,
++    bills: facts.bills,
++    debtAccounts: facts.source.debtAccounts,
++  };
++
++  return createHash("sha256").update(stableStringify(materialFacts)).digest("hex");
++}
++
++function createSummarySnapshot(
++  summary: ReturnType<typeof calculateSummary>,
++): AdvisorTrackingEvent["snapshot"] {
++  return {
++    balanceLeft: summary.balanceLeft,
++    negativeAmount: summary.negativeAmount,
++    pastDueCount: summary.pastDueCount,
++    unpaidTotal: summary.unpaidTotal,
++    totalLateFees: summary.totalLateFees,
++    dueIn7DaysCount: summary.dueIn7DaysCount,
++    dueIn7DaysTotal: summary.dueIn7DaysTotal,
++  };
++}
++
++function normalizePreference(preference: AdvisorPreference | null): AdvisorPreference {
++  if (!preference) {
++    return DEFAULT_ADVISOR_PREFERENCE;
++  }
++
++  return {
++    strategy: preference.strategy,
++    minimumCashBuffer: Math.max(0, normalizeAmount(preference.minimumCashBuffer)),
++  };
++}
++
++function mergeTracking(
++  primary: AdvisorTrackingEvent[],
++  fallback: AdvisorTrackingEvent[],
++): AdvisorTrackingEvent[] {
++  if (primary.length === 0) {
++    return fallback;
++  }
++
++  const byId = new Map<string, AdvisorTrackingEvent>();
++  for (const entry of [...primary, ...fallback]) {
++    byId.set(entry.id, entry);
++  }
++
++  return [...byId.values()]
++    .sort((left, right) => right.timestamp - left.timestamp)
++    .slice(0, 60);
++}
++
++export function buildAdvisorFacts(input: {
++  userId: string;
++  context: AdvisorContext;
++  reportingRange: ReportingRange;
++  dashboardState: DashboardState;
++  dashboardUpdatedAt?: string;
++  preference: AdvisorPreference;
++  tracking: AdvisorTrackingEvent[];
++}): AdvisorFacts {
++  const mergedBills = mergeDebtBills(
++    input.dashboardState.bills,
++    input.dashboardState.debtAccounts ?? [],
++  );
++  const summary = calculateSummary(
++    mergedBills,
++    input.dashboardState.startingBalance,
++    input.dashboardState.includePaidInTotals,
++  );
++  const reporting = calculateReportingSnapshot(mergedBills, input.reportingRange);
++
++  return {
++    version: ADVISOR_FACTS_VERSION,
++    context: input.context,
++    reportingRange: input.reportingRange,
++    startingBalance: input.dashboardState.startingBalance,
++    includePaidInTotals: input.dashboardState.includePaidInTotals,
++    preference: input.preference,
++    bills: mergedBills,
++    summary,
++    reporting,
++    tracking: input.tracking,
++    source: {
++      kind: "supabase",
++      userId: input.userId,
++      dashboardUpdatedAt: input.dashboardUpdatedAt,
++      debtAccounts: input.dashboardState.debtAccounts ?? [],
++      debtSnapshot: buildDebtDownstreamSnapshot(
++        input.dashboardState.debtAccounts ?? [],
++        mergedBills,
++      ),
++    },
++  };
++}
++
++function applyRunMetadata(
++  run: AdvisorRunRecord,
++  cacheStatus: AdvisorResponse["metadata"]["cacheStatus"],
++  currentFactsHash: string,
++): AdvisorResponse {
++  return {
++    ...run.response,
++    metadata: {
++      ...run.response.metadata,
++      runId: run.id,
++      analyzedAt: run.createdAt,
++      factsHash: currentFactsHash,
++      cacheStatus,
++      stale: cacheStatus === "stale",
++    },
++  };
++}
++
++function attachFreshMetadata(
++  response: AdvisorResponse,
++  factsHash: string,
++): AdvisorResponse {
++  return {
++    ...response,
++    metadata: {
++      ...response.metadata,
++      factsHash,
++      cacheStatus: "fresh",
++      stale: false,
++    },
++  };
++}
++
++async function resolveFacts(
++  input: AdvisorRequestInput,
++  repository: AdvisorRepository,
++): Promise<AdvisorResolvedState> {
++  const [dashboardResult, storedPreference, recentTracking] = await Promise.all([
++    repository.loadDashboardState(input.userId),
++    repository.loadAdvisorPreference(input.userId),
++    repository.listRecentTrackingEvents(input.userId),
++  ]);
++
++  const preference = normalizePreference(storedPreference);
++  const fallbackTracking = getLegacyTrackingEventsFromDashboardState(dashboardResult.state);
++  const tracking = mergeTracking(recentTracking, fallbackTracking);
++
++  return {
++    preference,
++    dashboardState: dashboardResult.state,
++    facts: buildAdvisorFacts({
++      userId: input.userId,
++      context: "all",
++      reportingRange: input.reportingRange,
++      dashboardState: dashboardResult.state,
++      dashboardUpdatedAt: dashboardResult.updatedAt,
++      preference,
++      tracking,
++    }),
++  };
++}
++
++async function loadBackboneRuns(
++  userId: string,
++  reportingRange: ReportingRange,
++  repository: AdvisorRepository,
++): Promise<{
++  latestRun: AdvisorRunRecord | null;
++  previousRun: AdvisorRunRecord | null;
++}> {
++  const runs = await repository.listAdvisorRuns(userId, {
++    context: "all",
++    reportingRange,
++    limit: 2,
++  });
++
++  return {
++    latestRun: runs[0] ?? null,
++    previousRun: runs[1] ?? null,
++  };
++}
++
++async function loadFallbackContextRun(
++  userId: string,
++  context: AdvisorContext,
++  reportingRange: ReportingRange,
++  repository: AdvisorRepository,
++): Promise<AdvisorRunRecord | null> {
++  if (context === "all") {
++    return null;
++  }
++
++  return repository.loadLatestAdvisorRun(userId, context, reportingRange);
++}
++
++export async function getAdvisorSnapshotForUser(
++  input: AdvisorRequestInput,
++  repository: AdvisorRepository = createSupabaseAdvisorRepository(),
++): Promise<AdvisorSnapshotResult> {
++  const { preference, facts, dashboardState } = await resolveFacts(input, repository);
++  const factsHash = hashAdvisorFacts(facts);
++  const { latestRun, previousRun } = await loadBackboneRuns(
++    input.userId,
++    input.reportingRange,
++    repository,
++  );
++
++  if (!latestRun) {
++    const fallbackRun = await loadFallbackContextRun(
++      input.userId,
++      input.context,
++      input.reportingRange,
++      repository,
++    );
++
++    if (fallbackRun) {
++      const isFresh =
++        fallbackRun.factsHash === factsHash &&
++        fallbackRun.provider === deterministicAdvisorProvider.name &&
++        fallbackRun.providerVersion === deterministicAdvisorProvider.version &&
++        fallbackRun.factsVersion === ADVISOR_FACTS_VERSION;
++
++      return {
++        preference,
++        facts,
++        dashboardState,
++        response: applyRunMetadata(fallbackRun, isFresh ? "cached" : "stale", factsHash),
++      };
++    }
++
++    return {
++      preference,
++      facts,
++      dashboardState,
++      response: null,
++    };
++  }
++
++  const isFresh =
++    latestRun.factsHash === factsHash &&
++    latestRun.provider === deterministicAdvisorProvider.name &&
++    latestRun.providerVersion === deterministicAdvisorProvider.version &&
++    latestRun.factsVersion === ADVISOR_FACTS_VERSION;
++
++  return {
++    preference,
++    facts,
++    dashboardState,
++        response: buildScopedAdvisorResponse({
++          backboneRun: latestRun,
++          facts,
++          context: input.context,
++          workspace: dashboardState.advisorWorkspace,
++          previousRun,
++          isFresh,
++          cacheStatus: isFresh ? "cached" : "stale",
++        }),
++      };
++}
++
++export async function runAdvisorAnalysisForUser(
++  input: AdvisorRequestInput & { force?: boolean },
++  repository: AdvisorRepository = createSupabaseAdvisorRepository(),
++): Promise<AdvisorAnalysisResult> {
++  const { preference, facts, dashboardState } = await resolveFacts(input, repository);
++  const factsHash = hashAdvisorFacts(facts);
++  const { latestRun: previousRun } = await loadBackboneRuns(
++    input.userId,
++    input.reportingRange,
++    repository,
++  );
++
++  if (!input.force) {
++    const cachedRun = await repository.loadMatchingAdvisorRun(
++      input.userId,
++      "all",
++      input.reportingRange,
++      factsHash,
++      deterministicAdvisorProvider.name,
++      deterministicAdvisorProvider.version,
++      ADVISOR_FACTS_VERSION,
++    );
++
++    if (cachedRun) {
++      return {
++        preference,
++        facts,
++        dashboardState,
++        response: buildScopedAdvisorResponse({
++          backboneRun: cachedRun,
++          facts,
++          context: input.context,
++          workspace: dashboardState.advisorWorkspace,
++          previousRun,
++          isFresh: true,
++          cacheStatus: "cached",
++        }),
++      };
++    }
++  }
++
++  const providerOutput = deterministicAdvisorProvider.analyze(facts);
++  const response = attachFreshMetadata(
++    {
++      ...providerOutput,
++      metadata: {
++        context: facts.context,
++        reportingRange: facts.reportingRange,
++        strategy: preference.strategy,
++        minimumCashBuffer: preference.minimumCashBuffer,
++        provider: deterministicAdvisorProvider.name,
++        providerVersion: deterministicAdvisorProvider.version,
++        factsVersion: ADVISOR_FACTS_VERSION,
++        freshness: "Fresh",
++        cacheStatus: "fresh",
++        stale: false,
++      },
++    },
++    factsHash,
++  );
++
++  const savedRun = await repository.saveAdvisorRun({
++    userId: input.userId,
++    context: "all",
++    reportingRange: facts.reportingRange,
++    strategy: preference.strategy,
++    minimumCashBuffer: preference.minimumCashBuffer,
++    provider: deterministicAdvisorProvider.name,
++    providerVersion: deterministicAdvisorProvider.version,
++    factsVersion: ADVISOR_FACTS_VERSION,
++    factsHash,
++    response,
++    summarySnapshot: createSummarySnapshot(facts.summary),
++    dataQualityLevel: response.trust.dataQuality.level,
++  });
++
++  return {
++    preference,
++    facts,
++    dashboardState,
++    response: buildScopedAdvisorResponse({
++      backboneRun: savedRun,
++      facts,
++      context: input.context,
++      workspace: dashboardState.advisorWorkspace,
++      previousRun,
++      isFresh: true,
++      cacheStatus: "fresh",
++    }),
++  };
++}
++
++export async function getAdvisorHubForUser(
++  input: AdvisorRequestInput & { historyLimit?: number },
++  repository: AdvisorRepository = createSupabaseAdvisorRepository(),
++): Promise<AdvisorHubResult> {
++  const [{ preference, facts, dashboardState }, runs] = await Promise.all([
++    resolveFacts(input, repository),
++    repository.listAdvisorRuns(input.userId, {
++      context: "all",
++      reportingRange: input.reportingRange,
++      limit: input.historyLimit ?? 12,
++    }),
++  ]);
++
++  const latestRun = runs[0] ?? null;
++  const previousRun = runs[1] ?? null;
++  const factsHash = hashAdvisorFacts(facts);
++  const latestAnalysis =
++    latestRun
++      ? buildScopedAdvisorResponse({
++          backboneRun: latestRun,
++          facts,
++          context: "all",
++          workspace: dashboardState.advisorWorkspace,
++          previousRun,
++          isFresh:
++            latestRun.factsHash === factsHash &&
++            latestRun.provider === deterministicAdvisorProvider.name &&
++            latestRun.providerVersion === deterministicAdvisorProvider.version &&
++            latestRun.factsVersion === ADVISOR_FACTS_VERSION,
++          cacheStatus:
++            latestRun.factsHash === factsHash &&
++            latestRun.provider === deterministicAdvisorProvider.name &&
++            latestRun.providerVersion === deterministicAdvisorProvider.version &&
++            latestRun.factsVersion === ADVISOR_FACTS_VERSION
++              ? "cached"
++              : "stale",
++        })
++      : null;
++
++  return {
++    preference,
++    facts,
++    dashboardState,
++    hub: buildAdvisorHubView({
++      facts,
++      latestAnalysis,
++      history: runs.map((run) => mapRunToHistoryEntry(run)),
++      workspace: dashboardState.advisorWorkspace,
++    }),
++  };
++}
++
++export async function saveAdvisorPreferenceForUser(
++  userId: string,
++  preference: AdvisorPreference,
++  repository: AdvisorRepository = createSupabaseAdvisorRepository(),
++): Promise<AdvisorPreference> {
++  return repository.saveAdvisorPreference(userId, preference);
++}
++
++export async function recordAdvisorActionForUser(
++  input: AdvisorRequestInput & {
++    sourceKind: "recommendation" | "scenario";
++    sourceId?: string;
++    sourceLabel?: string;
++    actionType: AdvisorTrackingEvent["type"];
++    runId?: string;
++    action?: AdvisorAction;
++    dataQualityLevel?: AdvisorResponse["trust"]["dataQuality"]["level"];
++    shownRecommendationIds?: string[];
++    shownRecommendationTypes?: string[];
++    shownFocusBillIds?: string[];
++    shownFocusCategories?: string[];
++    shownScenarioTypes?: string[];
++  },
++  repository: AdvisorRepository = createSupabaseAdvisorRepository(),
++): Promise<void> {
++  const [dashboardResult, storedPreference] = await Promise.all([
++    repository.loadDashboardState(input.userId),
++    repository.loadAdvisorPreference(input.userId),
++  ]);
++  const preference = normalizePreference(storedPreference);
++  const mergedBills = mergeDebtBills(
++    dashboardResult.state.bills,
++    dashboardResult.state.debtAccounts ?? [],
++  );
++  const summary = calculateSummary(
++    mergedBills,
++    dashboardResult.state.startingBalance,
++    dashboardResult.state.includePaidInTotals,
++  );
++  const associated = inferAssociatedFieldsFromAction(input.action);
++
++  await repository.saveAdvisorAction({
++    userId: input.userId,
++    advisorRunId: input.runId,
++    context: input.context,
++    reportingRange: input.reportingRange,
++    strategy: preference.strategy,
++    actionType: input.actionType,
++    sourceKind: input.sourceKind,
++    sourceId: input.sourceId,
++    sourceLabel: input.sourceLabel,
++    associatedBillId: associated.associatedBillId,
++    associatedCategory: associated.associatedCategory,
++    snapshot: createSummarySnapshot(summary),
++    metadata: {
++      action: input.action,
++      dataQualityLevel: input.dataQualityLevel,
++      shownRecommendationIds: input.shownRecommendationIds,
++      shownRecommendationTypes: input.shownRecommendationTypes,
++      shownFocusBillIds: input.shownFocusBillIds,
++      shownFocusCategories: input.shownFocusCategories,
++      shownScenarioTypes: input.shownScenarioTypes,
++    },
++  });
++}

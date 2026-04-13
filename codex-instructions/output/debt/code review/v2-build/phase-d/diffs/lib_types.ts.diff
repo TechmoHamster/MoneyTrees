@@ -1,0 +1,72 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-c/source/lib/types.ts	2026-04-13 11:51:07
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/types.ts	2026-04-13 12:55:31
+@@ -355,6 +355,69 @@
+   sourceBillId: string;
+ };
+ 
++export type DebtPaymentAssumptionFact = {
++  label: string;
++  amount?: number;
++  trustState: DebtMathTrustState;
++  detail: string;
++};
++
++export type DebtLinkedScheduleFact = {
++  billCount: number;
++  firstDueDate?: string;
++  lastDueDate?: string;
++  boundedWindowDays: number;
++  editableInBills: false;
++  owner: "Debt";
++  boundaryNote: string;
++};
++
++export type DebtDownstreamObligation = {
++  billId: string;
++  accountId: string;
++  providerName: string;
++  debtType: DebtType;
++  dueDate: string;
++  amount: number;
++  status: BillStatus;
++};
++
++export type DebtDownstreamAccountFact = {
++  accountId: string;
++  providerName: string;
++  debtType: DebtType;
++  lifecycleState: DebtLifecycleState;
++  paymentRequirement: DebtPaymentRequirement;
++  interestAccrual: DebtInterestAccrual;
++  currentBalance: number;
++  nextScheduledPaymentAmount: number;
++  nextScheduledPaymentDate?: string;
++  nextScheduledPaymentTrustState: DebtMathTrustState;
++  payoffDateProjection?: string;
++  payoffTrustState: DebtMathTrustState;
++  projectedRemainingInterest?: number;
++  projectedRemainingInterestTrustState: DebtMathTrustState;
++  paymentAssumption: DebtPaymentAssumptionFact;
++  cashWindows: DebtCashWindow[];
++  timingCluster?: DebtTimingCluster;
++  factualFlags: DebtFactualFlag[];
++  consequences: DebtConsequenceItem[];
++  extraPaymentImpact: DebtPayoffScenario[];
++  linkedSchedule: DebtLinkedScheduleFact;
++  primaryConfidenceState: DebtMathTrustState;
++};
++
++export type DebtDownstreamSnapshot = {
++  summary: DebtSummary;
++  accountFacts: DebtDownstreamAccountFact[];
++  nearTermObligations: DebtDownstreamObligation[];
++  confidenceSummary: Record<DebtMathTrustState, number>;
++  flaggedAccountCount: number;
++  consequenceAccountCount: number;
++  limitedConfidenceAccountCount: number;
++  boundedOperationalWindowDays: number;
++};
++
+ export type RunningBalanceRow = {
+   billId: string;
+   countedAmount: number;

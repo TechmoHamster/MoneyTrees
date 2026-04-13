@@ -1,0 +1,182 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-c/source/lib/debt.ts	2026-04-13 11:51:07
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/debt.ts	2026-04-13 14:38:13
+@@ -2,13 +2,18 @@
+   Bill,
+   BillStatus,
+   DebtAccount,
++  DebtDownstreamAccountFact,
++  DebtDownstreamObligation,
++  DebtDownstreamSnapshot,
+   DebtCashWindow,
+   DebtConsequenceItem,
+   DebtDerivedMetrics,
+   DebtFactualFlag,
++  DebtLinkedScheduleFact,
+   DebtMathInspectableItem,
+   DebtMathTrustState,
+   DebtPaymentCadence,
++  DebtPaymentAssumptionFact,
+   DebtPayoffProjection,
+   DebtPayoffScenario,
+   DebtScheduleItem,
+@@ -35,6 +40,8 @@
+ const HIGH_UTILIZATION_THRESHOLD = 80;
+ const TIMING_CLUSTER_GAP_DAYS = 7;
+ 
++export const DEBT_OPERATIONAL_WINDOW_DAYS = DEBT_FORWARD_WINDOW_DAYS;
++
+ type DateOnlyParts = {
+   year: number;
+   month: number;
+@@ -1407,3 +1414,151 @@
+     timingClusterNote: timingCluster?.note,
+   };
+ }
++
++function buildPaymentAssumptionFact(
++  account: DebtAccount,
++  metrics: DebtDerivedMetrics,
++): DebtPaymentAssumptionFact {
++  const creditCardMinimumSystem = metrics.creditCardMinimumSystem;
++  if (creditCardMinimumSystem) {
++    const paymentAssumptionAmount =
++      typeof creditCardMinimumSystem.paymentAssumptionAmount === "number"
++        ? normalizeAmount(creditCardMinimumSystem.paymentAssumptionAmount)
++        : undefined;
++
++    return {
++      label: creditCardMinimumSystem.paymentAssumptionMode,
++      amount: paymentAssumptionAmount,
++      trustState: creditCardMinimumSystem.paymentAssumptionTrustState,
++      detail:
++        paymentAssumptionAmount && paymentAssumptionAmount > 0
++          ? `Projection uses ${creditCardMinimumSystem.paymentAssumptionMode.toLowerCase()} at ${formatCurrency(
++              paymentAssumptionAmount,
++            )}.`
++          : `Projection uses the ${creditCardMinimumSystem.paymentAssumptionMode.toLowerCase()} payment assumption from Debt account truth.`,
++    };
++  }
++
++  return {
++    label: "Scheduled Payment",
++    amount: metrics.projection.paymentAmountUsed,
++    trustState: metrics.paymentAmountTrustState,
++    detail:
++      metrics.paymentAmountTrustState === "Custom"
++        ? "Projection uses a custom recurring payment captured in Debt."
++        : metrics.paymentAmountTrustState === "Manual"
++          ? "Projection uses the manually entered recurring payment from Debt."
++          : metrics.paymentAmountTrustState === "Estimated"
++            ? "Projection uses the current scheduled payment under a stable-APR or inferred-payment assumption."
++            : "Projection uses the current scheduled payment from Debt account truth.",
++  };
++}
++
++function buildLinkedScheduleFact(
++  account: DebtAccount,
++  bills: Bill[],
++): DebtLinkedScheduleFact {
++  const schedule = getDebtSchedule(account, bills);
++  const horizon = addDays(getToday(), DEBT_OPERATIONAL_WINDOW_DAYS);
++  const boundedSchedule = schedule.filter((item) => {
++    const dueDate = getDateOnly(item.dueDate);
++    return Boolean(dueDate && dueDate <= horizon);
++  });
++
++  return {
++    billCount: boundedSchedule.length,
++    firstDueDate: boundedSchedule[0]?.dueDate,
++    lastDueDate: boundedSchedule[boundedSchedule.length - 1]?.dueDate,
++    boundedWindowDays: DEBT_OPERATIONAL_WINDOW_DAYS,
++    editableInBills: false,
++    owner: "Debt",
++    boundaryNote:
++      "Bills receives bounded operational rows only. Edit account structure, payment assumptions, and debt truth in Debt.",
++  };
++}
++
++function buildNearTermObligations(
++  accounts: DebtAccount[],
++  bills: Bill[],
++): DebtDownstreamObligation[] {
++  const horizon = addDays(getToday(), DEBT_OPERATIONAL_WINDOW_DAYS);
++
++  return accounts
++    .flatMap((account) =>
++      getDebtSchedule(account, bills)
++        .filter((item) => {
++          const dueDate = getDateOnly(item.dueDate);
++          return Boolean(dueDate && dueDate <= horizon);
++        })
++        .map((item) => ({
++          billId: item.sourceBillId,
++          accountId: account.id,
++          providerName: account.providerName,
++          debtType: account.debtType,
++          dueDate: item.dueDate,
++          amount: item.amount,
++          status: item.status,
++        })),
++    )
++    .sort((left, right) => left.dueDate.localeCompare(right.dueDate));
++}
++
++export function buildDebtDownstreamSnapshot(
++  accounts: DebtAccount[],
++  bills: Bill[],
++): DebtDownstreamSnapshot {
++  const summary = calculateDebtSummary(accounts, bills);
++  const confidenceSummary: Record<DebtMathTrustState, number> = {
++    Exact: 0,
++    Estimated: 0,
++    Limited: 0,
++    Custom: 0,
++    Manual: 0,
++  };
++
++  const accountFacts: DebtDownstreamAccountFact[] = accounts.map((account) => {
++    const metrics = calculateDebtDerivedMetrics(account, bills);
++    const primaryConfidenceState = metrics.payoffTrustState;
++    confidenceSummary[primaryConfidenceState] += 1;
++
++    return {
++      accountId: account.id,
++      providerName: account.providerName,
++      debtType: account.debtType,
++      lifecycleState: account.lifecycleState,
++      paymentRequirement: account.paymentRequirement,
++      interestAccrual: account.interestAccrual,
++      currentBalance: normalizeAmount(account.currentBalance),
++      nextScheduledPaymentAmount: metrics.nextScheduledPaymentAmount,
++      nextScheduledPaymentDate: metrics.nextScheduledPaymentDate,
++      nextScheduledPaymentTrustState: metrics.paymentAmountTrustState,
++      payoffDateProjection: metrics.payoffDateProjection,
++      payoffTrustState: metrics.payoffTrustState,
++      projectedRemainingInterest: metrics.projectedRemainingInterest,
++      projectedRemainingInterestTrustState:
++        metrics.projectedRemainingInterestTrustState,
++      paymentAssumption: buildPaymentAssumptionFact(account, metrics),
++      cashWindows: metrics.cashWindows,
++      timingCluster: metrics.timingCluster,
++      factualFlags: metrics.factualFlags,
++      consequences: metrics.consequences,
++      extraPaymentImpact: metrics.projection.scenarios,
++      linkedSchedule: buildLinkedScheduleFact(account, bills),
++      primaryConfidenceState,
++    };
++  });
++
++  return {
++    summary,
++    accountFacts,
++    nearTermObligations: buildNearTermObligations(accounts, bills),
++    confidenceSummary,
++    flaggedAccountCount: accountFacts.filter((fact) => fact.factualFlags.length > 0).length,
++    consequenceAccountCount: accountFacts.filter((fact) => fact.consequences.length > 0)
++      .length,
++    limitedConfidenceAccountCount: accountFacts.filter(
++      (fact) => fact.primaryConfidenceState === "Limited",
++    ).length,
++    boundedOperationalWindowDays: DEBT_OPERATIONAL_WINDOW_DAYS,
++  };
++}

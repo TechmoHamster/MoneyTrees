@@ -1,0 +1,23 @@
+Debt V2D review package
+
+Phase:
+- V2D: integration, polish, and hardening
+
+Included source files:
+- components/DebtSection.tsx
+- components/FinanceDashboard.tsx
+- components/BillsTable.tsx
+- components/BillRow.tsx
+- lib/debt.ts
+- lib/types.ts
+- lib/dashboard-state.ts
+- lib/advisor-contracts.ts
+- lib/advisor-service.ts
+- lib/debt.test.ts
+- lib/advisor-service.test.ts
+
+Included artifacts:
+- VALIDATION.txt
+- PHASE-COMPLETION.txt
+- diffs/*.diff
+- source/**/*
