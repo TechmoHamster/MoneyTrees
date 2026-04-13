@@ -1,14 +1,18 @@
 # Codex Input Index
 
 ## Latest Instruction
-- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-12_debt-v2a-core-math-and-output-foundation.txt
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-12_debt-v2b-credit-card-model-and-min-payment-system.txt
 - Date: 2026-04-12
 - Team: Debt
-- Topic: Debt V2A Core Math And Output Foundation
+- Topic: Debt V2B Credit Card Model And Min Payment System
 
 ---
 
 ## Previous Instructions
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-12_debt-v2a-core-math-and-output-foundation.txt
+  - Date: 2026-04-12
+  - Team: Debt
+  - Topic: Debt V2A Core Math And Output Foundation
 - File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-11_debt-section-build-brief.txt
   - Date: 2026-04-11
   - Team: Debt
