@@ -1,14 +1,18 @@
 # Codex Input Index
 
 ## Latest Instruction
-- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-12_debt-v2b-credit-card-model-and-min-payment-system.txt
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-12_debt-v2c-risk-consequence-and-cash-windows.txt
 - Date: 2026-04-12
 - Team: Debt
-- Topic: Debt V2B Credit Card Model And Min Payment System
+- Topic: Debt V2C Risk Consequence And Cash Windows
 
 ---
 
 ## Previous Instructions
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-12_debt-v2b-credit-card-model-and-min-payment-system.txt
+  - Date: 2026-04-12
+  - Team: Debt
+  - Topic: Debt V2B Credit Card Model And Min Payment System
 - File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-12_debt-v2a-core-math-and-output-foundation.txt
   - Date: 2026-04-12
   - Team: Debt
