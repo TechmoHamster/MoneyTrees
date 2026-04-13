@@ -137,6 +137,15 @@ Required follow-up deliverables:
 - V2C is ready for Debt Team review
 - Codex is waiting for explicit Debt Team approval before starting V2D
 
+5. Update repo with all follow-up items:
+- Once all follow-up items have been addressed, the following commands should be ran to update the repo
+- Commands to run...
+cd "/Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees"
+git add .
+git commit -m "V2C Memo & Package Review"
+git pull --rebase origin main
+git push
+
 Codex must not begin V2D until Debt Team sends a new Codex instruction file authorizing it.
 
 ==================================================

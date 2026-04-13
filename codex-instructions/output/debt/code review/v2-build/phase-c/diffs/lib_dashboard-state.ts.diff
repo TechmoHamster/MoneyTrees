@@ -1,0 +1,241 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/inital-build/source/lib/dashboard-state.ts	2026-04-12 20:05:19
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/dashboard-state.ts	2026-04-13 11:22:02
+@@ -12,11 +12,18 @@
+   AdvisorTrackingEventType,
+   AdvisorWatch,
+   AdvisorWorkspaceState,
++  CreditCardCustomMinimumRule,
++  CreditCardCustomRuleOperationMode,
++  CreditCardMinimumPaymentMode,
++  CreditCardPaymentAssumptionMode,
++  CreditCardPresetRuleId,
++  DebtGracePeriodStatus,
+   DebtAccount,
+   DebtInterestAccrual,
+   DebtLifecycleState,
+   DebtPaymentCadence,
+   DebtPaymentRequirement,
++  DebtPromoType,
+   DebtType,
+   DashboardState,
+ } from "@/lib/types";
+@@ -132,6 +139,75 @@
+   return value === "Interest Accruing" || value === "No Interest Accruing";
+ }
+ 
++function isDebtPromoType(value: unknown): value is DebtPromoType {
++  return value === "Intro APR" || value === "Deferred Interest";
++}
++
++function isDebtGracePeriodStatus(value: unknown): value is DebtGracePeriodStatus {
++  return value === "Grace Period Active" || value === "Grace Period Lost";
++}
++
++function isCreditCardMinimumPaymentMode(value: unknown): value is CreditCardMinimumPaymentMode {
++  return (
++    value === "Preset Rule" ||
++    value === "Custom Rule" ||
++    value === "Manual Minimum Amount"
++  );
++}
++
++function isCreditCardPaymentAssumptionMode(
++  value: unknown,
++): value is CreditCardPaymentAssumptionMode {
++  return (
++    value === "Minimum Due" ||
++    value === "Statement Balance" ||
++    value === "Total Balance" ||
++    value === "Custom Amount"
++  );
++}
++
++function isCreditCardPresetRuleId(value: unknown): value is CreditCardPresetRuleId {
++  return (
++    value === "greater-of-flat-or-percent-statement" ||
++    value === "interest-fees-plus-percent-principal" ||
++    value === "percent-of-statement-balance" ||
++    value === "percent-of-current-balance" ||
++    value === "full-balance-below-threshold" ||
++    value === "flat-minimum-unless-smaller" ||
++    value === "flat-minimum-plus-past-due" ||
++    value === "percent-plus-interest-fees-past-due"
++  );
++}
++
++function isCreditCardCustomRuleOperationMode(
++  value: unknown,
++): value is CreditCardCustomRuleOperationMode {
++  return (
++    value === "Percent Only" ||
++    value === "Flat Only" ||
++    value === "Percent Plus Flat" ||
++    value === "Greater Of Flat Or Percent" ||
++    value === "Lesser Of Flat Or Percent"
++  );
++}
++
++function isCreditCardRuleVariable(
++  value: unknown,
++): value is CreditCardCustomMinimumRule["principalVariable"] {
++  return (
++    value === "statement_balance" ||
++    value === "current_balance" ||
++    value === "interest_charged" ||
++    value === "fees_charged" ||
++    value === "past_due_amount" ||
++    value === "late_fee_amount" ||
++    value === "promo_balance" ||
++    value === "regular_purchase_balance" ||
++    value === "cash_advance_balance" ||
++    value === "balance_subject_to_minimum"
++  );
++}
++
+ function isAdvisorContext(value: unknown): value is AdvisorContext {
+   return (
+     value === "overview" ||
+@@ -145,6 +221,53 @@
+   return value !== null && value !== undefined;
+ }
+ 
++function normalizeOptionalAmount(value: unknown): number | undefined {
++  return typeof value === "number" && Number.isFinite(value) ? normalizeAmount(value) : undefined;
++}
++
++function normalizeOptionalDate(value: unknown): string | undefined {
++  return typeof value === "string" && isValidDateOnly(value) ? value : undefined;
++}
++
++function normalizeOptionalString(value: unknown): string | undefined {
++  return typeof value === "string" && value.trim().length > 0 ? value.trim() : undefined;
++}
++
++function normalizeCreditCardCustomRule(
++  value: unknown,
++): CreditCardCustomMinimumRule | undefined {
++  if (typeof value !== "object" || value === null) {
++    return undefined;
++  }
++
++  const candidate = value as Partial<CreditCardCustomMinimumRule>;
++  if (
++    typeof candidate.name !== "string" ||
++    candidate.name.trim().length === 0 ||
++    !isCreditCardRuleVariable(candidate.principalVariable) ||
++    !isCreditCardCustomRuleOperationMode(candidate.operationMode)
++  ) {
++    return undefined;
++  }
++
++  return {
++    name: candidate.name.trim(),
++    principalVariable: candidate.principalVariable,
++    operationMode: candidate.operationMode,
++    percentageValue: normalizeOptionalAmount(candidate.percentageValue),
++    fixedAmount: normalizeOptionalAmount(candidate.fixedAmount),
++    thresholdAmount: normalizeOptionalAmount(candidate.thresholdAmount),
++    useFullBalanceBelowThreshold: candidate.useFullBalanceBelowThreshold === true,
++    includeInterestCharged: candidate.includeInterestCharged === true,
++    includeFeesCharged: candidate.includeFeesCharged === true,
++    includePastDueAmount: candidate.includePastDueAmount === true,
++    includeLateFeeAmount: candidate.includeLateFeeAmount === true,
++    includePromoBalance: candidate.includePromoBalance === true,
++    includeRegularPurchaseBalance: candidate.includeRegularPurchaseBalance === true,
++    includeCashAdvanceBalance: candidate.includeCashAdvanceBalance === true,
++  };
++}
++
+ export function normalizeTrackingEvents(value: unknown): AdvisorTrackingEvent[] | undefined {
+   if (!Array.isArray(value)) {
+     return undefined;
+@@ -599,19 +722,32 @@
+       return {
+         id: candidate.id.trim(),
+         providerName: candidate.providerName.trim(),
++        issuerName: normalizeOptionalString(candidate.issuerName),
+         debtType: candidate.debtType,
+         currentBalance: normalizeAmount(candidate.currentBalance),
+-        originalAmount:
+-          typeof candidate.originalAmount === "number" && Number.isFinite(candidate.originalAmount)
+-            ? normalizeAmount(candidate.originalAmount)
++        originalAmount: normalizeOptionalAmount(candidate.originalAmount),
++        statementBalance: normalizeOptionalAmount(candidate.statementBalance),
++        statementMinimumDue: normalizeOptionalAmount(candidate.statementMinimumDue),
++        apr: normalizeOptionalAmount(candidate.apr),
++        creditLimit: normalizeOptionalAmount(candidate.creditLimit),
++        interestCharged: normalizeOptionalAmount(candidate.interestCharged),
++        feesCharged: normalizeOptionalAmount(candidate.feesCharged),
++        pastDueAmount: normalizeOptionalAmount(candidate.pastDueAmount),
++        daysPastDue:
++          typeof candidate.daysPastDue === "number" &&
++          Number.isInteger(candidate.daysPastDue) &&
++          candidate.daysPastDue >= 0
++            ? candidate.daysPastDue
+             : undefined,
+-        apr: typeof candidate.apr === "number" && Number.isFinite(candidate.apr)
+-          ? normalizeAmount(candidate.apr)
++        lateFeeAmount: normalizeOptionalAmount(candidate.lateFeeAmount),
++        promoType: isDebtPromoType(candidate.promoType) ? candidate.promoType : undefined,
++        promoEndDate: normalizeOptionalDate(candidate.promoEndDate),
++        promoBalance: normalizeOptionalAmount(candidate.promoBalance),
++        regularPurchaseBalance: normalizeOptionalAmount(candidate.regularPurchaseBalance),
++        cashAdvanceBalance: normalizeOptionalAmount(candidate.cashAdvanceBalance),
++        gracePeriodStatus: isDebtGracePeriodStatus(candidate.gracePeriodStatus)
++          ? candidate.gracePeriodStatus
+           : undefined,
+-        creditLimit:
+-          typeof candidate.creditLimit === "number" && Number.isFinite(candidate.creditLimit)
+-            ? normalizeAmount(candidate.creditLimit)
+-            : undefined,
+         termLengthMonths:
+           typeof candidate.termLengthMonths === "number" &&
+           Number.isInteger(candidate.termLengthMonths) &&
+@@ -631,27 +767,30 @@
+             ? candidate.completedPaymentCount
+             : undefined,
+         paymentCadence: candidate.paymentCadence,
+-        nextDueDate:
+-          typeof candidate.nextDueDate === "string" && isValidDateOnly(candidate.nextDueDate)
+-            ? candidate.nextDueDate
+-            : undefined,
+-        minimumPayment:
+-          typeof candidate.minimumPayment === "number" && Number.isFinite(candidate.minimumPayment)
+-            ? normalizeAmount(candidate.minimumPayment)
+-            : undefined,
+-        scheduledPaymentAmount:
+-          typeof candidate.scheduledPaymentAmount === "number" &&
+-          Number.isFinite(candidate.scheduledPaymentAmount)
+-            ? normalizeAmount(candidate.scheduledPaymentAmount)
+-            : undefined,
++        nextDueDate: normalizeOptionalDate(candidate.nextDueDate),
++        minimumPayment: normalizeOptionalAmount(candidate.minimumPayment),
++        scheduledPaymentAmount: normalizeOptionalAmount(candidate.scheduledPaymentAmount),
++        minimumPaymentMode: isCreditCardMinimumPaymentMode(candidate.minimumPaymentMode)
++          ? candidate.minimumPaymentMode
++          : undefined,
++        minimumPaymentPresetId: isCreditCardPresetRuleId(candidate.minimumPaymentPresetId)
++          ? candidate.minimumPaymentPresetId
++          : undefined,
++        minimumPaymentCustomRule: normalizeCreditCardCustomRule(
++          candidate.minimumPaymentCustomRule,
++        ),
++        paymentAssumptionMode: isCreditCardPaymentAssumptionMode(candidate.paymentAssumptionMode)
++          ? candidate.paymentAssumptionMode
++          : undefined,
++        paymentAssumptionCustomAmount: normalizeOptionalAmount(
++          candidate.paymentAssumptionCustomAmount,
++        ),
++        lastVerifiedAgainstStatement: normalizeOptionalDate(candidate.lastVerifiedAgainstStatement),
+         lifecycleState: candidate.lifecycleState,
+         paymentRequirement: candidate.paymentRequirement,
+         interestAccrual: candidate.interestAccrual,
+         isDelinquent: candidate.isDelinquent === true,
+-        notes:
+-          typeof candidate.notes === "string" && candidate.notes.trim().length > 0
+-            ? candidate.notes.trim()
+-            : undefined,
++        notes: normalizeOptionalString(candidate.notes),
+       } satisfies DebtAccount;
+     })
+     .filter(isDefined)

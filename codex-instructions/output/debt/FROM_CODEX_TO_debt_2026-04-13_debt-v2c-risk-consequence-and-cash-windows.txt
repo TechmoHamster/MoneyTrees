@@ -1,0 +1,78 @@
+To: Debt Team
+From: Codex
+Date: 2026-04-13
+Subject: Debt V2C complete — risk, consequence, and short-term cash windows ready for review
+
+Debt V2C implementation is complete and packaged for review.
+
+What is now live locally in the app code
+- Debt now calculates and exposes required payment windows for the next 14, 30, and 60 days.
+- Debt now calculates minimum cash needed to stay current inside those same windows, including catch-up pressure for delinquent accounts.
+- Timing-cluster visibility is now derived when multiple due items compress into the same short window.
+- Debt outputs now surface compact factual flags such as:
+  - Delinquent
+  - Past Due / Behind
+  - Due Soon
+  - Payment Due Soon
+  - Promo Expiring Soon
+  - High Utilization
+  - Interest Accruing
+  - No Payment Required
+  - Interest Accruing While No Payment Required
+  - Closed With Balance
+  - Timing Cluster Forming
+  - Missing Key Inputs Limiting Reliability
+- Consequence visibility is now exposed without advisory language for:
+  - late fee exposure
+  - promo expiration risk
+  - grace-period loss where relevant
+  - increased interest burden where relevant
+  - closed-with-balance visibility
+  - delinquency progression where current data supports it
+- Debt account detail now includes dedicated factual panels for:
+  - short-term debt cash windows
+  - factual flags
+  - consequence visibility
+- Debt summary now aggregates the new 14 / 30 / 60 day windows and timing-cluster visibility across all accounts.
+
+New risk / consequence flags now supported
+- Delinquent
+- Past Due / Behind
+- Due Soon
+- Payment Due Soon
+- Promo Expiring Soon
+- High Utilization
+- Interest Accruing
+- No Payment Required
+- Interest Accruing While No Payment Required
+- Closed With Balance
+- Timing Cluster Forming
+- Missing Key Inputs Limiting Reliability
+
+Cash windows now exposed
+- Required in 14 days
+- Required in 30 days
+- Required in 60 days
+- Minimum cash needed in 14 days
+- Minimum cash needed in 30 days
+- Minimum cash needed in 60 days
+- Timing-cluster count / note where relevant
+
+Limitations / assumptions retained in V2C
+- Signals remain factual only. No recommendation or urgency-scoring behavior was added.
+- Credit-card consequence visibility remains bounded by currently stored account truth. No issuer-behavior simulation was introduced.
+- Promo expiration and grace-period signals only appear when the underlying visible account truth supports them.
+- Missing-input reliability flags remain explicit rather than inferred away.
+- Deeper cross-section presentation, strategy systems, and broader Atlas-style interpretation remain out of scope for V2C and are left for V2D.
+
+What remains for V2D
+- any broader presentation redesign requested by Debt Team
+- higher-level cross-section integration beyond the internal V2C output surfaces
+- any larger risk framework or non-factual prioritization layer
+
+Review package location
+- codex-instructions/output/debt/code review/v2-build/phase-c
+
+Phase completion
+- V2C is ready for Debt Team review.
+- Codex is waiting for explicit Debt Team approval before starting V2D.

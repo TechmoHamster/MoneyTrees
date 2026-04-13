@@ -1,0 +1,24 @@
+Debt V2C review package
+Date: 2026-04-13
+Phase: V2C — Risk, Consequence, and Short-Term Cash Windows
+
+Changed source files
+- components/DebtSection.tsx
+- lib/debt.ts
+- lib/debt.test.ts
+- lib/types.ts
+- lib/dashboard-state.ts
+
+Readable source package
+- source/components/DebtSection.tsx
+- source/lib/debt.ts
+- source/lib/debt.test.ts
+- source/lib/types.ts
+- source/lib/dashboard-state.ts
+
+Diff package
+- diffs/components_DebtSection.tsx.diff
+- diffs/lib_debt.ts.diff
+- diffs/lib_debt.test.ts.diff
+- diffs/lib_types.ts.diff
+- diffs/lib_dashboard-state.ts.diff

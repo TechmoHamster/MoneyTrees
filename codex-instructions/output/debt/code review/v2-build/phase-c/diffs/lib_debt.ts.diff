@@ -1,0 +1,589 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-b/source/lib/debt.ts	2026-04-13 10:22:02
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/debt.ts	2026-04-13 11:25:50
+@@ -2,7 +2,10 @@
+   Bill,
+   BillStatus,
+   DebtAccount,
++  DebtCashWindow,
++  DebtConsequenceItem,
+   DebtDerivedMetrics,
++  DebtFactualFlag,
+   DebtMathInspectableItem,
+   DebtMathTrustState,
+   DebtPaymentCadence,
+@@ -10,10 +13,12 @@
+   DebtPayoffScenario,
+   DebtScheduleItem,
+   DebtSummary,
++  DebtTimingCluster,
+ } from "@/lib/types";
+ import { buildCreditCardMinimumSystem } from "@/lib/debt-credit-card";
+ import {
+   formatCurrency,
++  formatDate,
+   getBillLateFeeAmount,
+   getBillTotalAmount,
+   isValidDateOnly,
+@@ -22,7 +27,13 @@
+ 
+ const DEBT_FORWARD_WINDOW_DAYS = 60;
+ const DEBT_EXTRA_PAYMENT_OPTIONS = [50, 100, 200] as const;
++const DEBT_CASH_WINDOW_DAYS = [14, 30, 60] as const;
+ const MAX_PROJECTION_PERIODS = 1_200;
++const PROMO_EXPIRING_SOON_DAYS = 30;
++const DUE_SOON_DAYS = 14;
++const PAYMENT_DUE_SOON_DAYS = 7;
++const HIGH_UTILIZATION_THRESHOLD = 80;
++const TIMING_CLUSTER_GAP_DAYS = 7;
+ 
+ type DateOnlyParts = {
+   year: number;
+@@ -291,6 +302,432 @@
+   }
+ 
+   return account.debtType === "Credit Card" ? 3 : 4;
++}
++
++function getDifferenceInDays(from: Date, to: Date): number {
++  return Math.round((to.getTime() - from.getTime()) / (24 * 60 * 60 * 1000));
++}
++
++function getScheduleDatesWithinWindow(
++  scheduleItems: DebtScheduleItem[],
++  startDate: Date,
++  endDate: Date,
++): Array<DebtScheduleItem & { date: Date }> {
++  return scheduleItems
++    .filter((item) => item.status !== "Paid")
++    .map((item) => {
++      const date = getDateOnly(item.dueDate);
++      return date ? { ...item, date } : null;
++    })
++    .filter((item): item is DebtScheduleItem & { date: Date } => item !== null)
++    .filter((item) => item.date >= startDate && item.date <= endDate)
++    .sort((left, right) => left.dueDate.localeCompare(right.dueDate));
++}
++
++function sumScheduleAmounts(items: Array<{ amount: number }>): number {
++  return normalizeAmount(items.reduce((sum, item) => sum + item.amount, 0));
++}
++
++function buildTimingClusterFromEntries(
++  entries: Array<{ dueDate: string; amount: number }>,
++): DebtTimingCluster | undefined {
++  const today = getToday();
++  const horizon = addDays(today, DEBT_FORWARD_WINDOW_DAYS);
++  const datedEntries = entries
++    .map((entry) => {
++      const date = getDateOnly(entry.dueDate);
++      return date ? { ...entry, date } : null;
++    })
++    .filter((entry): entry is { dueDate: string; amount: number; date: Date } => entry !== null)
++    .filter((entry) => entry.date >= today && entry.date <= horizon)
++    .sort((left, right) => left.dueDate.localeCompare(right.dueDate));
++
++  if (datedEntries.length < 2) {
++    return undefined;
++  }
++
++  let bestCluster: Array<{ dueDate: string; amount: number; date: Date }> = [];
++  let currentCluster: Array<{ dueDate: string; amount: number; date: Date }> = [];
++
++  for (const entry of datedEntries) {
++    if (currentCluster.length === 0) {
++      currentCluster = [entry];
++      continue;
++    }
++
++    const previous = currentCluster[currentCluster.length - 1];
++    if (getDifferenceInDays(previous.date, entry.date) <= TIMING_CLUSTER_GAP_DAYS) {
++      currentCluster.push(entry);
++      continue;
++    }
++
++    if (
++      currentCluster.length > bestCluster.length ||
++      (currentCluster.length === bestCluster.length &&
++        sumScheduleAmounts(currentCluster) > sumScheduleAmounts(bestCluster))
++    ) {
++      bestCluster = currentCluster;
++    }
++
++    currentCluster = [entry];
++  }
++
++  if (
++    currentCluster.length > bestCluster.length ||
++    (currentCluster.length === bestCluster.length &&
++      sumScheduleAmounts(currentCluster) > sumScheduleAmounts(bestCluster))
++  ) {
++    bestCluster = currentCluster;
++  }
++
++  if (bestCluster.length < 2) {
++    return undefined;
++  }
++
++  const startDate = bestCluster[0].dueDate;
++  const endDate = bestCluster[bestCluster.length - 1].dueDate;
++  const totalAmount = sumScheduleAmounts(bestCluster);
++
++  return {
++    count: bestCluster.length,
++    startDate,
++    endDate,
++    totalAmount,
++    note: `${bestCluster.length} required payment${bestCluster.length === 1 ? "" : "s"} land between ${formatDate(
++      startDate,
++    )} and ${formatDate(endDate)} totaling ${formatCurrency(totalAmount)}.`,
++  };
++}
++
++function getPastDueCatchUpAmount(
++  account: DebtAccount,
++  scheduleItems: DebtScheduleItem[],
++): number {
++  const today = getToday();
++  const pastDueScheduledTotal = sumScheduleAmounts(
++    getScheduleDatesWithinWindow(scheduleItems, new Date(2000, 0, 1), addDays(today, -1)),
++  );
++  return normalizeAmount(Math.max(account.pastDueAmount ?? 0, pastDueScheduledTotal));
++}
++
++function buildDebtCashWindows(
++  account: DebtAccount,
++  scheduleItems: DebtScheduleItem[],
++): {
++  cashWindows: DebtCashWindow[];
++  timingCluster?: DebtTimingCluster;
++  pastDueCatchUpAmount: number;
++} {
++  const today = getToday();
++  const futureUnpaidEntries = getScheduleDatesWithinWindow(
++    scheduleItems,
++    today,
++    addDays(today, DEBT_FORWARD_WINDOW_DAYS),
++  );
++  const pastDueCatchUpAmount = getPastDueCatchUpAmount(account, scheduleItems);
++  const timingCluster = buildTimingClusterFromEntries(futureUnpaidEntries);
++
++  const cashWindows: DebtCashWindow[] = DEBT_CASH_WINDOW_DAYS.map((windowDays) => {
++    const endDate = addDays(today, windowDays);
++    const windowEntries = futureUnpaidEntries.filter((entry) => entry.date <= endDate);
++    const requiredPaymentTotal = sumScheduleAmounts(windowEntries);
++    const minimumCashNeededToStayCurrent = normalizeAmount(
++      requiredPaymentTotal + pastDueCatchUpAmount,
++    );
++    const activeCluster =
++      timingCluster && getDateOnly(timingCluster.endDate)
++        ? getDateOnly(timingCluster.endDate)! <= endDate
++          ? timingCluster
++          : undefined
++        : undefined;
++
++    return {
++      windowDays,
++      requiredPaymentTotal,
++      minimumCashNeededToStayCurrent,
++      dueCount: windowEntries.length,
++      nextDueDate: windowEntries[0]?.dueDate,
++      timingPressureNote:
++        activeCluster?.note ??
++        (windowEntries.length > 1
++          ? `${windowEntries.length} required payments fall inside the next ${windowDays} days.`
++          : undefined),
++    };
++  });
++
++  return {
++    cashWindows,
++    timingCluster,
++    pastDueCatchUpAmount,
++  };
++}
++
++function buildReliabilityIssues(
++  account: DebtAccount,
++  scheduledAmount: number,
++  scheduleItems: DebtScheduleItem[],
++): string[] {
++  const issues = new Set<string>();
++
++  if (
++    account.paymentRequirement === "Payment Required" &&
++    account.lifecycleState !== "Deferment" &&
++    (!account.nextDueDate || !isValidDateOnly(account.nextDueDate))
++  ) {
++    issues.add("Next due date is missing.");
++  }
++
++  if (account.paymentRequirement === "Payment Required" && scheduledAmount <= 0) {
++    issues.add("Required payment amount is missing.");
++  }
++
++  if (account.interestAccrual === "Interest Accruing" && (!account.apr || account.apr <= 0)) {
++    issues.add("APR is missing while interest is accruing.");
++  }
++
++  if (typeof account.promoBalance === "number" && account.promoBalance > 0 && !account.promoEndDate) {
++    issues.add("Promo balance is present, but promo end date is missing.");
++  }
++
++  if ((account.isDelinquent || (account.pastDueAmount ?? 0) > 0) && !account.daysPastDue) {
++    issues.add("Days past due is not recorded.");
++  }
++
++  if (scheduleItems.length === 0 && account.paymentRequirement === "Payment Required") {
++    issues.add("No debt-linked schedule rows are available in the current 60-day window.");
++  }
++
++  return [...issues];
++}
++
++function buildDebtFactualFlags(input: {
++  account: DebtAccount;
++  scheduledAmount: number;
++  utilizationPercent?: number;
++  timingCluster?: DebtTimingCluster;
++  reliabilityIssues: string[];
++}): DebtFactualFlag[] {
++  const { account, scheduledAmount, utilizationPercent, timingCluster, reliabilityIssues } =
++    input;
++  const today = getToday();
++  const flags: DebtFactualFlag[] = [];
++  const nextDueDate = account.nextDueDate && isValidDateOnly(account.nextDueDate) ? getDateOnly(account.nextDueDate) : null;
++  const daysUntilDue = nextDueDate ? getDifferenceInDays(today, nextDueDate) : undefined;
++  const promoEndDate = account.promoEndDate && isValidDateOnly(account.promoEndDate) ? getDateOnly(account.promoEndDate) : null;
++  const daysUntilPromoEnd = promoEndDate ? getDifferenceInDays(today, promoEndDate) : undefined;
++  const noPaymentRequired =
++    account.paymentRequirement === "No Payment Required" || account.lifecycleState === "Deferment";
++  const behindAmount = normalizeAmount(account.pastDueAmount ?? 0);
++
++  if (account.isDelinquent || (typeof account.daysPastDue === "number" && account.daysPastDue >= 30)) {
++    flags.push({
++      id: `${account.id}-flag-delinquent`,
++      type: "Delinquent",
++      label: "Delinquent",
++      detail:
++        typeof account.daysPastDue === "number"
++          ? `${account.daysPastDue} days past due.`
++          : "Account is marked delinquent in debt truth.",
++    });
++  }
++
++  if (behindAmount > 0 || account.isDelinquent) {
++    flags.push({
++      id: `${account.id}-flag-behind`,
++      type: "Past Due / Behind",
++      label: "Past Due / Behind",
++      detail:
++        behindAmount > 0
++          ? `${formatCurrency(behindAmount)} is currently recorded as past due.`
++          : "Account is behind based on current debt truth.",
++    });
++  }
++
++  if (typeof daysUntilDue === "number" && daysUntilDue >= 0 && daysUntilDue <= PAYMENT_DUE_SOON_DAYS) {
++    flags.push({
++      id: `${account.id}-flag-payment-due-soon`,
++      type: "Payment Due Soon",
++      label: "Payment Due Soon",
++      detail:
++        scheduledAmount > 0
++          ? `${formatCurrency(scheduledAmount)} is due ${formatDate(account.nextDueDate as string)}.`
++          : `A due date is set for ${formatDate(account.nextDueDate as string)}.`,
++    });
++  } else if (typeof daysUntilDue === "number" && daysUntilDue > PAYMENT_DUE_SOON_DAYS && daysUntilDue <= DUE_SOON_DAYS) {
++    flags.push({
++      id: `${account.id}-flag-due-soon`,
++      type: "Due Soon",
++      label: "Due Soon",
++      detail: `Next due date is ${formatDate(account.nextDueDate as string)}.`,
++    });
++  }
++
++  if (
++    typeof daysUntilPromoEnd === "number" &&
++    daysUntilPromoEnd >= 0 &&
++    daysUntilPromoEnd <= PROMO_EXPIRING_SOON_DAYS &&
++    typeof account.promoBalance === "number" &&
++    account.promoBalance > 0
++  ) {
++    flags.push({
++      id: `${account.id}-flag-promo-expiring`,
++      type: "Promo Expiring Soon",
++      label: "Promo Expiring Soon",
++      detail: `${account.promoType ?? "Promo"} balance ends ${formatDate(account.promoEndDate as string)}.`,
++    });
++  }
++
++  if (typeof utilizationPercent === "number" && utilizationPercent >= HIGH_UTILIZATION_THRESHOLD) {
++    flags.push({
++      id: `${account.id}-flag-utilization`,
++      type: "High Utilization",
++      label: "High Utilization",
++      detail: `${utilizationPercent.toFixed(1)}% of the current credit limit is in use.`,
++    });
++  }
++
++  if (account.interestAccrual === "Interest Accruing" && account.currentBalance > 0) {
++    flags.push({
++      id: `${account.id}-flag-interest-accruing`,
++      type: "Interest Accruing",
++      label: "Interest Accruing",
++      detail: "Balance is currently accruing interest.",
++    });
++  }
++
++  if (noPaymentRequired) {
++    flags.push({
++      id: `${account.id}-flag-no-payment-required`,
++      type: "No Payment Required",
++      label: "No Payment Required",
++      detail:
++        account.lifecycleState === "Deferment"
++          ? "Account is in deferment."
++          : "Payment is currently not required.",
++    });
++  }
++
++  if (noPaymentRequired && account.interestAccrual === "Interest Accruing") {
++    flags.push({
++      id: `${account.id}-flag-interest-no-payment`,
++      type: "Interest Accruing While No Payment Required",
++      label: "Interest Accruing While No Payment Required",
++      detail: "Interest is still accruing even though payment is not currently required.",
++    });
++  }
++
++  if (account.lifecycleState === "Closed With Balance" && account.currentBalance > 0) {
++    flags.push({
++      id: `${account.id}-flag-closed-balance`,
++      type: "Closed With Balance",
++      label: "Closed With Balance",
++      detail: `${formatCurrency(account.currentBalance)} remains on a closed account.`,
++    });
++  }
++
++  if (timingCluster) {
++    flags.push({
++      id: `${account.id}-flag-timing-cluster`,
++      type: "Timing Cluster Forming",
++      label: "Timing Cluster Forming",
++      detail: timingCluster.note,
++    });
++  }
++
++  if (reliabilityIssues.length > 0) {
++    flags.push({
++      id: `${account.id}-flag-missing-inputs`,
++      type: "Missing Key Inputs Limiting Reliability",
++      label: "Missing Key Inputs Limiting Reliability",
++      detail: reliabilityIssues.join(" "),
++    });
++  }
++
++  return flags;
++}
++
++function buildDebtConsequences(input: {
++  account: DebtAccount;
++  estimatedMonthlyInterest?: number;
++  pastDueCatchUpAmount: number;
++}): DebtConsequenceItem[] {
++  const { account, estimatedMonthlyInterest, pastDueCatchUpAmount } = input;
++  const items: DebtConsequenceItem[] = [];
++
++  if (typeof account.lateFeeAmount === "number" && account.lateFeeAmount > 0) {
++    items.push({
++      id: `${account.id}-consequence-late-fee`,
++      type: "Late Fee Exposure",
++      label: "Late Fee Exposure",
++      detail: `${formatCurrency(account.lateFeeAmount)} in late fees is already applied to this account.`,
++    });
++  }
++
++  if (
++    typeof account.promoBalance === "number" &&
++    account.promoBalance > 0 &&
++    account.promoEndDate &&
++    isValidDateOnly(account.promoEndDate)
++  ) {
++    items.push({
++      id: `${account.id}-consequence-promo`,
++      type: "Promo Expiration Risk",
++      label: "Promo Expiration Risk",
++      detail: `${formatCurrency(account.promoBalance)} under ${account.promoType ?? "promo"} terms reaches its recorded end date on ${formatDate(account.promoEndDate)}.`,
++    });
++  }
++
++  if (account.gracePeriodStatus === "Grace Period Lost") {
++    items.push({
++      id: `${account.id}-consequence-grace`,
++      type: "Loss of Grace Period",
++      label: "Loss of Grace Period",
++      detail: "Grace-period loss is recorded for this account, so revolving balance costs can start immediately.",
++    });
++  }
++
++  if (
++    account.interestAccrual === "Interest Accruing" &&
++    typeof estimatedMonthlyInterest === "number" &&
++    estimatedMonthlyInterest > 0
++  ) {
++    items.push({
++      id: `${account.id}-consequence-interest`,
++      type: "Increased Interest Burden",
++      label: "Increased Interest Burden",
++      detail: `At the current balance, interest is adding about ${formatCurrency(estimatedMonthlyInterest)} per month under a stable-APR assumption.`,
++    });
++  }
++
++  if (account.lifecycleState === "Closed With Balance" && account.currentBalance > 0) {
++    items.push({
++      id: `${account.id}-consequence-closed-balance`,
++      type: "Closed Account Balance Still Owed",
++      label: "Closed Account Balance Still Owed",
++      detail: `${formatCurrency(account.currentBalance)} is still owed even though the account is marked closed.`,
++    });
++  }
++
++  if (typeof account.daysPastDue === "number" && account.daysPastDue > 0) {
++    items.push({
++      id: `${account.id}-consequence-delinquency`,
++      type: "Delinquency Progression",
++      label: "Delinquency Progression",
++      detail: `${account.daysPastDue} days past due is currently recorded on this account.`,
++    });
++  } else if (pastDueCatchUpAmount > 0 || account.isDelinquent) {
++    items.push({
++      id: `${account.id}-consequence-delinquency`,
++      type: "Delinquency Progression",
++      label: "Delinquency Progression",
++      detail:
++        pastDueCatchUpAmount > 0
++          ? `${formatCurrency(pastDueCatchUpAmount)} is recorded as currently behind.`
++          : "This account is marked delinquent, but days-past-due detail is not recorded yet.",
++    });
++  }
++
++  return items;
+ }
+ 
+ type DebtProjectionComputation = {
+@@ -657,11 +1094,17 @@
+       ? normalizeAmount((account.currentBalance * account.apr) / 1200)
+       : undefined;
+   const nextScheduledPaymentDate = account.nextDueDate;
++  const scheduleItems = getDebtSchedule(account, bills);
++  const { cashWindows, timingCluster, pastDueCatchUpAmount } = buildDebtCashWindows(
++    account,
++    scheduleItems,
++  );
+   const trustNotes: string[] = [];
+   const projectionInputs = buildProjectionInputs(account, projectionPaymentAmount, paymentAmountTrustState);
+   const projectionAssumptions = buildProjectionAssumptions(account, paymentAmountTrustState);
+   const projectionBaseTrustState = getProjectionTrustState(account, paymentAmountTrustState);
+   const startingDate = account.nextDueDate ? getDateOnly(account.nextDueDate) : null;
++  const reliabilityIssues = buildReliabilityIssues(account, scheduledAmount, scheduleItems);
+   let payoffTrustState: DebtMathTrustState = "Limited";
+   let payoffDateProjection: string | undefined;
+   let projectedRemainingInterest: number | undefined;
+@@ -698,6 +1141,14 @@
+     trustNotes.push("Interest is accruing, but APR is missing.");
+   }
+ 
++  if (typeof account.promoBalance === "number" && account.promoBalance > 0 && !account.promoEndDate) {
++    trustNotes.push("Promo balance is present, but promo end date is not recorded.");
++  }
++
++  if (account.isDelinquent && typeof account.daysPastDue !== "number") {
++    trustNotes.push("Delinquency is marked, but days past due is not recorded.");
++  }
++
+   const installmentProgressLabel =
+     typeof account.totalPaymentCount === "number" && typeof account.completedPaymentCount === "number"
+       ? `${account.completedPaymentCount} of ${account.totalPaymentCount} installments completed`
+@@ -838,6 +1289,19 @@
+     scenarios,
+   };
+ 
++  const factualFlags = buildDebtFactualFlags({
++    account,
++    scheduledAmount,
++    utilizationPercent,
++    timingCluster,
++    reliabilityIssues,
++  });
++  const consequences = buildDebtConsequences({
++    account,
++    estimatedMonthlyInterest,
++    pastDueCatchUpAmount,
++  });
++
+   return {
+     nextScheduledPaymentAmount: scheduledAmount,
+     nextScheduledPaymentDate,
+@@ -866,6 +1330,10 @@
+     installmentProgressLabel,
+     installmentProgressTrustState,
+     creditCardMinimumSystem,
++    cashWindows,
++    timingCluster,
++    factualFlags,
++    consequences,
+     trustNotes,
+     projection,
+   };
+@@ -886,6 +1354,32 @@
+   const nextBill = upcomingBills
+     .slice()
+     .sort((left, right) => left.dueDate.localeCompare(right.dueDate))[0];
++  const accountWindows = accounts.map((account) =>
++    buildDebtCashWindows(account, getDebtSchedule(account, bills)).cashWindows,
++  );
++  const requiredPaymentsIn14Days = normalizeAmount(
++    accountWindows.reduce((sum, windows) => sum + windows[0].requiredPaymentTotal, 0),
++  );
++  const requiredPaymentsIn30Days = normalizeAmount(
++    accountWindows.reduce((sum, windows) => sum + windows[1].requiredPaymentTotal, 0),
++  );
++  const requiredPaymentsIn60Days = normalizeAmount(
++    accountWindows.reduce((sum, windows) => sum + windows[2].requiredPaymentTotal, 0),
++  );
++  const minimumCashNeededIn14Days = normalizeAmount(
++    accountWindows.reduce((sum, windows) => sum + windows[0].minimumCashNeededToStayCurrent, 0),
++  );
++  const minimumCashNeededIn30Days = normalizeAmount(
++    accountWindows.reduce((sum, windows) => sum + windows[1].minimumCashNeededToStayCurrent, 0),
++  );
++  const minimumCashNeededIn60Days = normalizeAmount(
++    accountWindows.reduce((sum, windows) => sum + windows[2].minimumCashNeededToStayCurrent, 0),
++  );
++  const timingCluster = buildTimingClusterFromEntries(
++    relevantBills
++      .filter((bill) => bill.status !== "Paid")
++      .map((bill) => ({ dueDate: bill.dueDate, amount: getBillTotalAmount(bill) })),
++  );
+ 
+   return {
+     totalDebtBalance: normalizeAmount(
+@@ -898,10 +1392,18 @@
+         account.paymentRequirement === "No Payment Required" ||
+         account.lifecycleState === "Deferment",
+     ).length,
++    requiredPaymentsIn14Days,
++    requiredPaymentsIn30Days,
++    requiredPaymentsIn60Days,
++    minimumCashNeededIn14Days,
++    minimumCashNeededIn30Days,
++    minimumCashNeededIn60Days,
+     totalMinimumDueIn60Days: normalizeAmount(
+       upcomingBills.reduce((sum, bill) => sum + getBillTotalAmount(bill), 0),
+     ),
+     nextDebtDueDate: nextBill?.dueDate,
+     nextDebtDueAmount: nextBill ? getBillTotalAmount(nextBill) : 0,
++    timingClusterCount: timingCluster?.count ?? 0,
++    timingClusterNote: timingCluster?.note,
+   };
+ }

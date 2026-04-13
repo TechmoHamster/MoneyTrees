@@ -1,0 +1,462 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-b/source/components/DebtSection.tsx	2026-04-13 10:22:02
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/components/DebtSection.tsx	2026-04-13 11:20:54
+@@ -23,6 +23,8 @@
+   DEBT_LIFECYCLE_STATES,
+   DEBT_PAYMENT_CADENCES,
+   DEBT_PAYMENT_REQUIREMENTS,
++  DEBT_GRACE_PERIOD_STATUSES,
++  DEBT_PROMO_TYPES,
+   DEBT_TYPES,
+   CREDIT_CARD_CUSTOM_RULE_OPERATION_MODES,
+   CREDIT_CARD_MINIMUM_PAYMENT_MODES,
+@@ -35,13 +37,18 @@
+   type CreditCardPresetRuleId,
+   type CreditCardRuleValidationState,
+   type DebtAccount,
++  type DebtCashWindow,
++  type DebtConsequenceItem,
+   type DebtDerivedMetrics,
++  type DebtFactualFlag,
++  type DebtGracePeriodStatus,
+   type DebtInterestAccrual,
+   type DebtLifecycleState,
+   type DebtMathInspectableItem,
+   type DebtMathTrustState,
+   type DebtPaymentCadence,
+   type DebtPaymentRequirement,
++  type DebtPromoType,
+   type DebtScheduleItem,
+   type DebtSummary,
+   type DebtType,
+@@ -78,10 +85,14 @@
+   interestCharged: string;
+   feesCharged: string;
+   pastDueAmount: string;
++  daysPastDue: string;
+   lateFeeAmount: string;
++  promoType: DebtPromoType;
++  promoEndDate: string;
+   promoBalance: string;
+   regularPurchaseBalance: string;
+   cashAdvanceBalance: string;
++  gracePeriodStatus: DebtGracePeriodStatus;
+   termLengthMonths: string;
+   totalPaymentCount: string;
+   completedPaymentCount: string;
+@@ -184,10 +195,14 @@
+   interestCharged: "",
+   feesCharged: "",
+   pastDueAmount: "",
++  daysPastDue: "",
+   lateFeeAmount: "",
++  promoType: "Intro APR",
++  promoEndDate: "",
+   promoBalance: "",
+   regularPurchaseBalance: "",
+   cashAdvanceBalance: "",
++  gracePeriodStatus: "Grace Period Active",
+   termLengthMonths: "",
+   totalPaymentCount: "",
+   completedPaymentCount: "",
+@@ -278,8 +293,12 @@
+     feesCharged: typeof account.feesCharged === "number" ? account.feesCharged.toString() : "",
+     pastDueAmount:
+       typeof account.pastDueAmount === "number" ? account.pastDueAmount.toString() : "",
++    daysPastDue:
++      typeof account.daysPastDue === "number" ? account.daysPastDue.toString() : "",
+     lateFeeAmount:
+       typeof account.lateFeeAmount === "number" ? account.lateFeeAmount.toString() : "",
++    promoType: account.promoType ?? "Intro APR",
++    promoEndDate: account.promoEndDate ?? "",
+     promoBalance: typeof account.promoBalance === "number" ? account.promoBalance.toString() : "",
+     regularPurchaseBalance:
+       typeof account.regularPurchaseBalance === "number"
+@@ -287,6 +306,7 @@
+         : "",
+     cashAdvanceBalance:
+       typeof account.cashAdvanceBalance === "number" ? account.cashAdvanceBalance.toString() : "",
++    gracePeriodStatus: account.gracePeriodStatus ?? "Grace Period Active",
+     termLengthMonths:
+       typeof account.termLengthMonths === "number" ? account.termLengthMonths.toString() : "",
+     totalPaymentCount:
+@@ -395,10 +415,14 @@
+     interestCharged: parseOptionalAmount(formState.interestCharged),
+     feesCharged: parseOptionalAmount(formState.feesCharged),
+     pastDueAmount: parseOptionalAmount(formState.pastDueAmount),
++    daysPastDue: parseOptionalInteger(formState.daysPastDue),
+     lateFeeAmount: parseOptionalAmount(formState.lateFeeAmount),
++    promoType: isCreditCard ? formState.promoType : undefined,
++    promoEndDate: isCreditCard ? formState.promoEndDate.trim() || undefined : undefined,
+     promoBalance: parseOptionalAmount(formState.promoBalance),
+     regularPurchaseBalance: parseOptionalAmount(formState.regularPurchaseBalance),
+     cashAdvanceBalance: parseOptionalAmount(formState.cashAdvanceBalance),
++    gracePeriodStatus: isCreditCard ? formState.gracePeriodStatus : undefined,
+     termLengthMonths: parseOptionalInteger(formState.termLengthMonths),
+     totalPaymentCount: parseOptionalInteger(formState.totalPaymentCount),
+     completedPaymentCount: parseOptionalInteger(formState.completedPaymentCount),
+@@ -500,6 +524,104 @@
+           <p className="mt-1 text-sm font-semibold text-slate-900">{item.value}</p>
+           {item.note ? (
+             <p className="mt-1 text-xs leading-relaxed text-slate-500">{item.note}</p>
++          ) : null}
++        </div>
++      ))}
++    </div>
++  );
++}
++
++function getFactualFlagClasses(flag: DebtFactualFlag): string {
++  if (
++    flag.type === "Delinquent" ||
++    flag.type === "Past Due / Behind" ||
++    flag.type === "Closed With Balance"
++  ) {
++    return "border-rose-200 bg-rose-50 text-rose-700";
++  }
++
++  if (
++    flag.type === "Promo Expiring Soon" ||
++    flag.type === "High Utilization" ||
++    flag.type === "Timing Cluster Forming" ||
++    flag.type === "Missing Key Inputs Limiting Reliability"
++  ) {
++    return "border-amber-200 bg-amber-50 text-amber-800";
++  }
++
++  if (
++    flag.type === "Interest Accruing" ||
++    flag.type === "Interest Accruing While No Payment Required"
++  ) {
++    return "border-violet-200 bg-violet-50 text-violet-700";
++  }
++
++  return "border-slate-200 bg-slate-100 text-slate-700";
++}
++
++function renderFactualFlags(flags: DebtFactualFlag[]) {
++  if (flags.length === 0) {
++    return (
++      <p className="text-sm text-slate-600">
++        No additional short-term debt flags are active from the current account truth.
++      </p>
++    );
++  }
++
++  return (
++    <div className="space-y-3">
++      <div className="flex flex-wrap gap-2">
++        {flags.map((flag) => (
++          <span
++            key={flag.id}
++            className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getFactualFlagClasses(
++              flag,
++            )}`}
++          >
++            {flag.label}
++          </span>
++        ))}
++      </div>
++      <div className="space-y-2">
++        {flags.map((flag) => (
++          <div key={`${flag.id}-detail`} className="rounded-xl border border-slate-200 bg-white px-3 py-2">
++            <p className="text-sm font-semibold text-slate-900">{flag.label}</p>
++            {flag.detail ? (
++              <p className="mt-1 text-xs leading-relaxed text-slate-600">{flag.detail}</p>
++            ) : null}
++          </div>
++        ))}
++      </div>
++    </div>
++  );
++}
++
++function renderCashWindows(cashWindows: DebtCashWindow[]) {
++  return (
++    <div className="grid gap-3 md:grid-cols-3">
++      {cashWindows.map((window) => (
++        <div key={window.windowDays} className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
++          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">
++            Next {window.windowDays} Days
++          </p>
++          <p className="mt-2 text-xl font-semibold text-slate-950">
++            {formatCurrency(window.requiredPaymentTotal)}
++          </p>
++          <p className="mt-1 text-xs text-slate-600">
++            {window.dueCount === 0
++              ? "No required debt payments in this window."
++              : `${window.dueCount} required payment${window.dueCount === 1 ? "" : "s"}${window.nextDueDate ? ` • next ${formatDate(window.nextDueDate)}` : ""}`}
++          </p>
++          <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
++            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
++              Minimum Cash To Stay Current
++            </p>
++            <p className="mt-1 text-sm font-semibold text-slate-900">
++              {formatCurrency(window.minimumCashNeededToStayCurrent)}
++            </p>
++          </div>
++          {window.timingPressureNote ? (
++            <p className="mt-2 text-xs leading-relaxed text-slate-600">{window.timingPressureNote}</p>
+           ) : null}
+         </div>
+       ))}
+@@ -507,6 +629,27 @@
+   );
+ }
+ 
++function renderConsequences(consequences: DebtConsequenceItem[]) {
++  if (consequences.length === 0) {
++    return (
++      <p className="text-sm text-slate-600">
++        No additional consequence detail is currently supported from the entered account truth.
++      </p>
++    );
++  }
++
++  return (
++    <div className="space-y-2">
++      {consequences.map((item) => (
++        <div key={item.id} className="rounded-xl border border-slate-200 bg-white px-3 py-3">
++          <p className="text-sm font-semibold text-slate-900">{item.label}</p>
++          <p className="mt-1 text-xs leading-relaxed text-slate-600">{item.detail}</p>
++        </div>
++      ))}
++    </div>
++  );
++}
++
+ function formatMonthsSaved(value: number | undefined): string {
+   if (typeof value !== "number" || value <= 0) {
+     return "No time saved";
+@@ -722,7 +865,7 @@
+             </div>
+           </div>
+ 
+-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
++          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+             <div className="dashboard-shell-inner rounded-2xl p-3">
+               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                 Total Debt Balance
+@@ -733,15 +876,37 @@
+             </div>
+             <div className="dashboard-shell-inner rounded-2xl p-3">
+               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+-                Due Within 60 Days
++                Required In 14 Days
+               </p>
+               <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+-                {formatCurrency(summary.totalMinimumDueIn60Days)}
++                {formatCurrency(summary.requiredPaymentsIn14Days)}
++              </p>
++              <p className="mt-1 text-xs text-slate-600">
++                Stay current with {formatCurrency(summary.minimumCashNeededIn14Days)} in this window.
+               </p>
++            </div>
++            <div className="dashboard-shell-inner rounded-2xl p-3">
++              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
++                Required In 30 Days
++              </p>
++              <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
++                {formatCurrency(summary.requiredPaymentsIn30Days)}
++              </p>
+               <p className="mt-1 text-xs text-slate-600">
++                Stay current with {formatCurrency(summary.minimumCashNeededIn30Days)} in this window.
++              </p>
++            </div>
++            <div className="dashboard-shell-inner rounded-2xl p-3">
++              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
++                Required In 60 Days
++              </p>
++              <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
++                {formatCurrency(summary.requiredPaymentsIn60Days)}
++              </p>
++              <p className="mt-1 text-xs text-slate-600">
+                 {summary.nextDebtDueDate
+-                  ? `Next debt due ${formatDate(summary.nextDebtDueDate)}`
+-                  : "No near-term debt obligation is currently projected."}
++                  ? `Next debt due ${formatDate(summary.nextDebtDueDate)} • stay current with ${formatCurrency(summary.minimumCashNeededIn60Days)}.`
++                  : `Stay current with ${formatCurrency(summary.minimumCashNeededIn60Days)} in this window.`}
+               </p>
+             </div>
+             <div className="dashboard-shell-inner rounded-2xl p-3">
+@@ -763,6 +928,17 @@
+                 {summary.noPaymentRequiredCount} account{summary.noPaymentRequiredCount === 1 ? "" : "s"} currently do not require payment.
+               </p>
+             </div>
++            <div className="dashboard-shell-inner rounded-2xl p-3">
++              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
++                Timing Visibility
++              </p>
++              <p className="mt-2 text-lg font-semibold tracking-tight text-slate-950">
++                {summary.timingClusterCount > 0 ? `${summary.timingClusterCount} due close together` : "No cluster in view"}
++              </p>
++              <p className="mt-1 text-xs text-slate-600">
++                {summary.timingClusterNote ?? "No tight debt due-date cluster is currently visible in the next 60 days."}
++              </p>
++            </div>
+           </div>
+         </section>
+ 
+@@ -935,6 +1111,18 @@
+                       step="0.01"
+                       value={formState.pastDueAmount}
+                       onChange={(event) => updateField("pastDueAmount", event.target.value)}
++                      className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
++                      placeholder="Optional"
++                    />
++                  </label>
++                  <label className="space-y-1.5">
++                    <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Days Past Due</span>
++                    <input
++                      type="number"
++                      min="0"
++                      step="1"
++                      value={formState.daysPastDue}
++                      onChange={(event) => updateField("daysPastDue", event.target.value)}
+                       className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                       placeholder="Optional"
+                     />
+@@ -964,6 +1152,29 @@
+                     />
+                   </label>
+                   <label className="space-y-1.5">
++                    <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Promo Type</span>
++                    <select
++                      value={formState.promoType}
++                      onChange={(event) => updateField("promoType", event.target.value as DebtPromoType)}
++                      className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
++                    >
++                      {DEBT_PROMO_TYPES.map((promoType) => (
++                        <option key={promoType} value={promoType}>
++                          {promoType}
++                        </option>
++                      ))}
++                    </select>
++                  </label>
++                  <label className="space-y-1.5">
++                    <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Promo End Date</span>
++                    <input
++                      type="date"
++                      value={formState.promoEndDate}
++                      onChange={(event) => updateField("promoEndDate", event.target.value)}
++                      className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
++                    />
++                  </label>
++                  <label className="space-y-1.5">
+                     <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Regular Purchase Balance</span>
+                     <input
+                       type="number"
+@@ -987,6 +1198,25 @@
+                       placeholder="Optional"
+                     />
+                   </label>
++                  <label className="space-y-1.5">
++                    <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Grace Period</span>
++                    <select
++                      value={formState.gracePeriodStatus}
++                      onChange={(event) =>
++                        updateField(
++                          "gracePeriodStatus",
++                          event.target.value as DebtGracePeriodStatus,
++                        )
++                      }
++                      className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
++                    >
++                      {DEBT_GRACE_PERIOD_STATUSES.map((status) => (
++                        <option key={status} value={status}>
++                          {status}
++                        </option>
++                      ))}
++                    </select>
++                  </label>
+                 </>
+               ) : (
+                 <>
+@@ -1891,6 +2121,23 @@
+                 </div>
+               </div>
+ 
++              <div className="dashboard-shell-inner rounded-2xl p-4">
++                <div className="flex flex-wrap items-center justify-between gap-3">
++                  <div>
++                    <p className="text-sm font-semibold text-slate-900">Short-term debt cash windows</p>
++                    <p className="mt-1 text-xs text-slate-600">
++                      Required debt cash is shown in 14 / 30 / 60 day windows. Stay-current figures include any currently recorded past-due amount.
++                    </p>
++                  </div>
++                  {selectedMetrics.timingCluster ? (
++                    <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
++                      Timing cluster visible
++                    </span>
++                  ) : null}
++                </div>
++                <div className="mt-4">{renderCashWindows(selectedMetrics.cashWindows)}</div>
++              </div>
++
+               {selectedAccount.debtType === "Credit Card" &&
+               selectedMetrics.creditCardMinimumSystem ? (
+                 <div className="dashboard-shell-inner rounded-2xl p-4">
+@@ -2099,7 +2346,31 @@
+                   ) : null}
+                 </div>
+               ) : null}
++
++              <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
++                <div className="dashboard-shell-inner rounded-2xl p-4">
++                  <div className="flex items-center gap-2">
++                    <ShieldAlert className="h-4 w-4 text-blue-700" />
++                    <p className="text-sm font-semibold text-slate-900">Factual flags</p>
++                  </div>
++                  <p className="mt-1 text-xs text-slate-600">
++                    Compact, account-truth flags only. No hidden scoring or advisory ranking is used here.
++                  </p>
++                  <div className="mt-4">{renderFactualFlags(selectedMetrics.factualFlags)}</div>
++                </div>
+ 
++                <div className="dashboard-shell-inner rounded-2xl p-4">
++                  <div className="flex items-center gap-2">
++                    <ShieldAlert className="h-4 w-4 text-blue-700" />
++                    <p className="text-sm font-semibold text-slate-900">Consequence visibility</p>
++                  </div>
++                  <p className="mt-1 text-xs text-slate-600">
++                    Consequence detail stays factual and tied to the current account truth.
++                  </p>
++                  <div className="mt-4">{renderConsequences(selectedMetrics.consequences)}</div>
++                </div>
++              </div>
++
+               <div className="grid gap-4 lg:grid-cols-[1fr_0.95fr]">
+                 <div className="dashboard-shell-inner rounded-2xl p-4">
+                   <div className="flex items-center gap-2">
+@@ -2119,6 +2390,11 @@
+                     <p className="text-sm text-slate-700">
+                       <span className="font-semibold text-slate-900">Cadence:</span> {selectedAccount.paymentCadence}
+                     </p>
++                    {selectedAccount.gracePeriodStatus ? (
++                      <p className="text-sm text-slate-700">
++                        <span className="font-semibold text-slate-900">Grace period:</span> {selectedAccount.gracePeriodStatus}
++                      </p>
++                    ) : null}
+                     {typeof selectedMetrics.utilizationPercent === "number" ? (
+                       <p className="text-sm text-slate-700">
+                         <span className="font-semibold text-slate-900">Utilization:</span> {selectedMetrics.utilizationPercent.toFixed(1)}%
+@@ -2134,6 +2410,20 @@
+                         <span className="font-semibold text-slate-900">Installment progress:</span> {selectedMetrics.installmentProgressLabel}
+                       </p>
+                     ) : null}
++                    {selectedAccount.promoType || selectedAccount.promoEndDate ? (
++                      <p className="text-sm text-slate-700 sm:col-span-2">
++                        <span className="font-semibold text-slate-900">Promo:</span>{" "}
++                        {selectedAccount.promoType ?? "Promo"}
++                        {selectedAccount.promoEndDate
++                          ? ` through ${formatDate(selectedAccount.promoEndDate)}`
++                          : " end date not recorded"}
++                      </p>
++                    ) : null}
++                    {typeof selectedAccount.daysPastDue === "number" ? (
++                      <p className="text-sm text-slate-700">
++                        <span className="font-semibold text-slate-900">Days past due:</span> {selectedAccount.daysPastDue}
++                      </p>
++                    ) : null}
+                   </div>
+                   {selectedAccount.notes ? (
+                     <p className="mt-3 text-sm leading-relaxed text-slate-600">

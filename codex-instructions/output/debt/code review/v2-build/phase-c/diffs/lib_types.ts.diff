@@ -1,0 +1,133 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-b/source/lib/types.ts	2026-04-13 10:22:02
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/types.ts	2026-04-13 10:51:09
+@@ -50,6 +50,10 @@
+ 
+ export type DebtInterestAccrual = "Interest Accruing" | "No Interest Accruing";
+ 
++export type DebtPromoType = "Intro APR" | "Deferred Interest";
++
++export type DebtGracePeriodStatus = "Grace Period Active" | "Grace Period Lost";
++
+ export type CreditCardMinimumPaymentMode =
+   | "Preset Rule"
+   | "Custom Rule"
+@@ -172,10 +176,14 @@
+   interestCharged?: number;
+   feesCharged?: number;
+   pastDueAmount?: number;
++  daysPastDue?: number;
+   lateFeeAmount?: number;
++  promoType?: DebtPromoType;
++  promoEndDate?: string;
+   promoBalance?: number;
+   regularPurchaseBalance?: number;
+   cashAdvanceBalance?: number;
++  gracePeriodStatus?: DebtGracePeriodStatus;
+   termLengthMonths?: number;
+   totalPaymentCount?: number;
+   completedPaymentCount?: number;
+@@ -210,9 +218,17 @@
+   activeAccountCount: number;
+   delinquentAccountCount: number;
+   noPaymentRequiredCount: number;
++  requiredPaymentsIn14Days: number;
++  requiredPaymentsIn30Days: number;
++  requiredPaymentsIn60Days: number;
++  minimumCashNeededIn14Days: number;
++  minimumCashNeededIn30Days: number;
++  minimumCashNeededIn60Days: number;
+   totalMinimumDueIn60Days: number;
+   nextDebtDueDate?: string;
+   nextDebtDueAmount: number;
++  timingClusterCount: number;
++  timingClusterNote?: string;
+ };
+ 
+ export type DebtMathTrustState = "Exact" | "Estimated" | "Limited" | "Custom" | "Manual";
+@@ -248,6 +264,61 @@
+   inputs: DebtMathInspectableItem[];
+   assumptions: DebtMathInspectableItem[];
+   scenarios: DebtPayoffScenario[];
++};
++
++export type DebtCashWindowDays = 14 | 30 | 60;
++
++export type DebtCashWindow = {
++  windowDays: DebtCashWindowDays;
++  requiredPaymentTotal: number;
++  minimumCashNeededToStayCurrent: number;
++  dueCount: number;
++  nextDueDate?: string;
++  timingPressureNote?: string;
++};
++
++export type DebtTimingCluster = {
++  count: number;
++  startDate: string;
++  endDate: string;
++  totalAmount: number;
++  note: string;
++};
++
++export type DebtFactualFlagType =
++  | "Delinquent"
++  | "Past Due / Behind"
++  | "Due Soon"
++  | "Payment Due Soon"
++  | "Promo Expiring Soon"
++  | "High Utilization"
++  | "Interest Accruing"
++  | "No Payment Required"
++  | "Interest Accruing While No Payment Required"
++  | "Closed With Balance"
++  | "Timing Cluster Forming"
++  | "Missing Key Inputs Limiting Reliability";
++
++export type DebtFactualFlag = {
++  id: string;
++  type: DebtFactualFlagType;
++  label: string;
++  detail?: string;
++};
++
++export type DebtConsequenceType =
++  | "Late Fee Exposure"
++  | "Promo Expiration Risk"
++  | "Loss of Grace Period"
++  | "Increased Interest Burden"
++  | "Closed Account Balance Still Owed"
++  | "Delinquency Progression";
++
++export type DebtConsequenceItem = {
++  id: string;
++  type: DebtConsequenceType;
++  label: string;
++  detail: string;
+ };
+ 
+ export type DebtDerivedMetrics = {
+@@ -267,6 +338,10 @@
+   installmentProgressLabel?: string;
+   installmentProgressTrustState?: DebtMathTrustState;
+   creditCardMinimumSystem?: CreditCardMinimumSystem;
++  cashWindows: DebtCashWindow[];
++  timingCluster?: DebtTimingCluster;
++  factualFlags: DebtFactualFlag[];
++  consequences: DebtConsequenceItem[];
+   trustNotes: string[];
+   projection: DebtPayoffProjection;
+ };
+@@ -829,6 +904,13 @@
+   "No Interest Accruing",
+ ];
+ 
++export const DEBT_PROMO_TYPES: DebtPromoType[] = ["Intro APR", "Deferred Interest"];
++
++export const DEBT_GRACE_PERIOD_STATUSES: DebtGracePeriodStatus[] = [
++  "Grace Period Active",
++  "Grace Period Lost",
++];
++
+ export const CREDIT_CARD_MINIMUM_PAYMENT_MODES: CreditCardMinimumPaymentMode[] = [
+   "Preset Rule",
+   "Custom Rule",

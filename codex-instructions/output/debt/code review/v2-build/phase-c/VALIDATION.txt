@@ -1,0 +1,17 @@
+Debt V2C validation
+Date: 2026-04-13
+
+Commands run
+- npm run lint
+- npm run test
+- npm run build
+
+Results
+- lint: passed
+- tests: passed
+- total tests: 81 passed
+- build: passed
+
+Notes
+- Added dedicated V2C tests for cash windows, factual flags, consequence visibility, no-payment states, closed-with-balance states, and reliability-limiting input gaps.
+- Production deployment was not performed in this phase.

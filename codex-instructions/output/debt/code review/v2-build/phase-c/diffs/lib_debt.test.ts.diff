@@ -1,0 +1,244 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-b/source/lib/debt.test.ts	2026-04-13 10:22:02
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/debt.test.ts	2026-04-13 11:15:48
+@@ -1,6 +1,7 @@
+ import { describe, expect, it } from "vitest";
+ import { calculateDebtDerivedMetrics } from "@/lib/debt";
+-import type { DebtAccount } from "@/lib/types";
++import { calculateDebtSummary } from "@/lib/debt";
++import type { Bill, DebtAccount } from "@/lib/types";
+ 
+ function createDebtAccount(overrides: Partial<DebtAccount> = {}): DebtAccount {
+   return {
+@@ -19,6 +20,20 @@
+   };
+ }
+ 
++function createDebtBill(overrides: Partial<Bill> = {}): Bill {
++  return {
++    id: "bill-1",
++    name: "Debt Payment",
++    category: "Debt",
++    status: "Upcoming",
++    dueDate: "2026-04-15",
++    amount: 200,
++    sourceType: "debt-derived",
++    sourceDebtAccountId: "debt-1",
++    ...overrides,
++  };
++}
++
+ describe("calculateDebtDerivedMetrics", () => {
+   it("builds exact payoff outputs for fixed no-interest debt", () => {
+     const metrics = calculateDebtDerivedMetrics(
+@@ -232,7 +247,211 @@
+           label: "Behavior stays static",
+           note: "This is a static projection. It does not simulate future behavior changes.",
+         }),
++      ]),
++    );
++  });
++
++  it("builds 14 / 30 / 60 day debt cash windows and timing-cluster visibility", () => {
++    const bills = [
++      createDebtBill({
++        id: "bill-past-due",
++        dueDate: "2026-04-08",
++        amount: 120,
++        status: "Past Due",
++      }),
++      createDebtBill({
++        id: "bill-1",
++        dueDate: "2026-04-15",
++        amount: 125,
++      }),
++      createDebtBill({
++        id: "bill-2",
++        dueDate: "2026-04-20",
++        amount: 140,
++      }),
++      createDebtBill({
++        id: "bill-3",
++        dueDate: "2026-05-10",
++        amount: 160,
++      }),
++    ];
++
++    const metrics = calculateDebtDerivedMetrics(
++      createDebtAccount({
++        pastDueAmount: 180,
++      }),
++      bills,
++    );
++
++    expect(metrics.cashWindows).toHaveLength(3);
++    expect(metrics.cashWindows[0]).toMatchObject({
++      windowDays: 14,
++      requiredPaymentTotal: 265,
++      minimumCashNeededToStayCurrent: 445,
++      dueCount: 2,
++      nextDueDate: "2026-04-15",
++    });
++    expect(metrics.cashWindows[1]).toMatchObject({
++      windowDays: 30,
++      requiredPaymentTotal: 425,
++      minimumCashNeededToStayCurrent: 605,
++      dueCount: 3,
++    });
++    expect(metrics.cashWindows[2].requiredPaymentTotal).toBe(425);
++    expect(metrics.timingCluster?.count).toBe(2);
++    expect(metrics.factualFlags).toEqual(
++      expect.arrayContaining([
++        expect.objectContaining({ type: "Timing Cluster Forming" }),
++        expect.objectContaining({ type: "Payment Due Soon" }),
+       ]),
+     );
+   });
++
++  it("surfaces factual flags and consequence visibility for credit-card risk states", () => {
++    const metrics = calculateDebtDerivedMetrics(
++      createDebtAccount({
++        debtType: "Credit Card",
++        currentBalance: 950,
++        creditLimit: 1000,
++        minimumPayment: 80,
++        scheduledPaymentAmount: 80,
++        apr: 24,
++        interestAccrual: "Interest Accruing",
++        statementBalance: 950,
++        statementMinimumDue: 80,
++        paymentAssumptionMode: "Minimum Due",
++        minimumPaymentMode: "Manual Minimum Amount",
++        isDelinquent: true,
++        pastDueAmount: 120,
++        daysPastDue: 45,
++        lateFeeAmount: 35,
++        promoBalance: 300,
++        promoType: "Intro APR",
++        promoEndDate: "2026-04-25",
++        gracePeriodStatus: "Grace Period Lost",
++      }),
++      [createDebtBill({ amount: 80 })],
++    );
++
++    expect(metrics.factualFlags).toEqual(
++      expect.arrayContaining([
++        expect.objectContaining({ type: "Delinquent" }),
++        expect.objectContaining({ type: "Payment Due Soon" }),
++        expect.objectContaining({ type: "Promo Expiring Soon" }),
++        expect.objectContaining({ type: "High Utilization" }),
++        expect.objectContaining({ type: "Interest Accruing" }),
++      ]),
++    );
++    expect(metrics.consequences).toEqual(
++      expect.arrayContaining([
++        expect.objectContaining({ type: "Late Fee Exposure" }),
++        expect.objectContaining({ type: "Promo Expiration Risk" }),
++        expect.objectContaining({ type: "Loss of Grace Period" }),
++        expect.objectContaining({ type: "Increased Interest Burden" }),
++        expect.objectContaining({ type: "Delinquency Progression" }),
++      ]),
++    );
++  });
++
++  it("supports no-payment-required and closed-with-balance factual states", () => {
++    const metrics = calculateDebtDerivedMetrics(
++      createDebtAccount({
++        lifecycleState: "Closed With Balance",
++        paymentRequirement: "No Payment Required",
++        interestAccrual: "Interest Accruing",
++        apr: 9,
++      }),
++      [],
++    );
++
++    expect(metrics.factualFlags).toEqual(
++      expect.arrayContaining([
++        expect.objectContaining({ type: "No Payment Required" }),
++        expect.objectContaining({ type: "Interest Accruing While No Payment Required" }),
++        expect.objectContaining({ type: "Closed With Balance" }),
++      ]),
++    );
++    expect(metrics.consequences).toEqual(
++      expect.arrayContaining([
++        expect.objectContaining({ type: "Closed Account Balance Still Owed" }),
++        expect.objectContaining({ type: "Increased Interest Burden" }),
++      ]),
++    );
++  });
++
++  it("flags missing key inputs when reliability-limiting debt truth is absent", () => {
++    const metrics = calculateDebtDerivedMetrics(
++      createDebtAccount({
++        debtType: "Credit Card",
++        nextDueDate: undefined,
++        minimumPayment: undefined,
++        scheduledPaymentAmount: undefined,
++        apr: undefined,
++        interestAccrual: "Interest Accruing",
++        promoBalance: 200,
++        promoEndDate: undefined,
++      }),
++      [],
++    );
++
++    expect(metrics.factualFlags).toEqual(
++      expect.arrayContaining([
++        expect.objectContaining({
++          type: "Missing Key Inputs Limiting Reliability",
++        }),
++      ]),
++    );
++  });
+ });
++
++describe("calculateDebtSummary", () => {
++  it("aggregates debt cash windows and timing-cluster visibility", () => {
++    const accountA = createDebtAccount({
++      id: "debt-1",
++      providerName: "Card One",
++      currentBalance: 600,
++      minimumPayment: 100,
++      scheduledPaymentAmount: 100,
++      pastDueAmount: 50,
++    });
++    const accountB = createDebtAccount({
++      id: "debt-2",
++      providerName: "Loan Two",
++      currentBalance: 800,
++      minimumPayment: 150,
++      scheduledPaymentAmount: 150,
++      nextDueDate: "2026-04-18",
++    });
++
++    const bills = [
++      createDebtBill({
++        id: "a1",
++        sourceDebtAccountId: "debt-1",
++        dueDate: "2026-04-15",
++        amount: 100,
++      }),
++      createDebtBill({
++        id: "a2",
++        sourceDebtAccountId: "debt-1",
++        dueDate: "2026-05-10",
++        amount: 100,
++      }),
++      createDebtBill({
++        id: "b1",
++        sourceDebtAccountId: "debt-2",
++        dueDate: "2026-04-18",
++        amount: 150,
++      }),
++    ];
++
++    const summary = calculateDebtSummary([accountA, accountB], bills);
++
++    expect(summary.requiredPaymentsIn14Days).toBe(250);
++    expect(summary.requiredPaymentsIn30Days).toBe(350);
++    expect(summary.requiredPaymentsIn60Days).toBe(350);
++    expect(summary.minimumCashNeededIn14Days).toBe(300);
++    expect(summary.minimumCashNeededIn30Days).toBe(400);
++    expect(summary.timingClusterCount).toBe(2);
++    expect(summary.timingClusterNote).toContain("2 required payments land between");
++  });
++});
