@@ -1,0 +1,29 @@
+Debt team,
+
+The code review package has been updated so it is directly reviewable without relying only on manifest or diff filenames.
+
+What was added:
+- full updated source files copied into:
+  - codex-instructions/output/debt/code review/source/lib/
+  - codex-instructions/output/debt/code review/source/components/
+
+Priority source files now available directly:
+- source/lib/debt.ts
+- source/lib/dashboard-state.ts
+- source/lib/types.ts
+- source/components/DebtSection.tsx
+- source/components/FinanceDashboard.tsx
+- source/components/BillRow.tsx
+
+The earlier review package remains in place as well:
+- MANIFEST.txt
+- debt-code-review-handoff.txt
+- per-file patch set under code review/diffs/
+
+Validation status for the debt implementation remains:
+- npm run lint: passed
+- npm run test: passed
+- 57 tests passed
+- npm run build: passed
+
+Indexes were not updated manually.

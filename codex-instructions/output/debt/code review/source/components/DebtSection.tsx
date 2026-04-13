@@ -1,0 +1,908 @@
+"use client";
+
+import {
+  BadgeDollarSign,
+  CalendarClock,
+  Car,
+  CreditCard,
+  GraduationCap,
+  HandCoins,
+  PiggyBank,
+  PlusCircle,
+  ReceiptText,
+  Save,
+  ShieldAlert,
+  WalletCards,
+  X,
+} from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  DEBT_INTEREST_ACCRUAL_OPTIONS,
+  DEBT_LIFECYCLE_STATES,
+  DEBT_PAYMENT_CADENCES,
+  DEBT_PAYMENT_REQUIREMENTS,
+  DEBT_TYPES,
+  type Bill,
+  type DebtAccount,
+  type DebtDerivedMetrics,
+  type DebtInterestAccrual,
+  type DebtLifecycleState,
+  type DebtPaymentCadence,
+  type DebtPaymentRequirement,
+  type DebtScheduleItem,
+  type DebtSummary,
+  type DebtType,
+} from "@/lib/types";
+import {
+  calculateDebtDerivedMetrics,
+  getDebtSchedule,
+} from "@/lib/debt";
+import { formatCurrency, formatDate, normalizeAmount } from "@/lib/utils";
+
+type DebtSectionProps = {
+  accounts: DebtAccount[];
+  bills: Bill[];
+  summary: DebtSummary;
+  focusedAccountId?: string;
+  onSaveAccount: (account: DebtAccount) => void;
+  onDeleteAccount: (accountId: string) => void;
+};
+
+type DebtFormState = {
+  providerName: string;
+  debtType: DebtType;
+  currentBalance: string;
+  originalAmount: string;
+  apr: string;
+  creditLimit: string;
+  termLengthMonths: string;
+  totalPaymentCount: string;
+  completedPaymentCount: string;
+  paymentCadence: DebtPaymentCadence;
+  nextDueDate: string;
+  minimumPayment: string;
+  scheduledPaymentAmount: string;
+  lifecycleState: DebtLifecycleState;
+  paymentRequirement: DebtPaymentRequirement;
+  interestAccrual: DebtInterestAccrual;
+  isDelinquent: boolean;
+  notes: string;
+};
+
+const debtTypeIcons: Record<DebtType, typeof CreditCard> = {
+  "Credit Card": CreditCard,
+  "Auto Loan": Car,
+  "Student Loan": GraduationCap,
+  "Installment Loan": WalletCards,
+  BNPL: ReceiptText,
+  "Financed Purchase": PiggyBank,
+};
+
+const defaultFormState: DebtFormState = {
+  providerName: "",
+  debtType: "Credit Card",
+  currentBalance: "",
+  originalAmount: "",
+  apr: "",
+  creditLimit: "",
+  termLengthMonths: "",
+  totalPaymentCount: "",
+  completedPaymentCount: "",
+  paymentCadence: "Monthly",
+  nextDueDate: "",
+  minimumPayment: "",
+  scheduledPaymentAmount: "",
+  lifecycleState: "Active",
+  paymentRequirement: "Payment Required",
+  interestAccrual: "Interest Accruing",
+  isDelinquent: false,
+  notes: "",
+};
+
+function createDebtId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function parseOptionalAmount(value: string): number | undefined {
+  if (value.trim().length === 0) {
+    return undefined;
+  }
+
+  const parsed = Number.parseFloat(value);
+  const normalized = normalizeAmount(parsed);
+  if (!Number.isFinite(normalized)) {
+    return undefined;
+  }
+
+  return normalized;
+}
+
+function parseOptionalInteger(value: string): number | undefined {
+  if (value.trim().length === 0) {
+    return undefined;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isInteger(parsed)) {
+    return undefined;
+  }
+
+  return parsed;
+}
+
+function buildFormState(account?: DebtAccount | null): DebtFormState {
+  if (!account) {
+    return defaultFormState;
+  }
+
+  return {
+    providerName: account.providerName,
+    debtType: account.debtType,
+    currentBalance: account.currentBalance.toString(),
+    originalAmount: typeof account.originalAmount === "number" ? account.originalAmount.toString() : "",
+    apr: typeof account.apr === "number" ? account.apr.toString() : "",
+    creditLimit: typeof account.creditLimit === "number" ? account.creditLimit.toString() : "",
+    termLengthMonths:
+      typeof account.termLengthMonths === "number" ? account.termLengthMonths.toString() : "",
+    totalPaymentCount:
+      typeof account.totalPaymentCount === "number" ? account.totalPaymentCount.toString() : "",
+    completedPaymentCount:
+      typeof account.completedPaymentCount === "number"
+        ? account.completedPaymentCount.toString()
+        : "",
+    paymentCadence: account.paymentCadence,
+    nextDueDate: account.nextDueDate ?? "",
+    minimumPayment:
+      typeof account.minimumPayment === "number" ? account.minimumPayment.toString() : "",
+    scheduledPaymentAmount:
+      typeof account.scheduledPaymentAmount === "number"
+        ? account.scheduledPaymentAmount.toString()
+        : "",
+    lifecycleState: account.lifecycleState,
+    paymentRequirement: account.paymentRequirement,
+    interestAccrual: account.interestAccrual,
+    isDelinquent: account.isDelinquent === true,
+    notes: account.notes ?? "",
+  };
+}
+
+function renderTrustNotes(metrics: DebtDerivedMetrics) {
+  if (metrics.trustNotes.length === 0) {
+    return (
+      <p className="text-xs text-slate-600">
+        Debt math is grounded in your entered balance, due date, and payment structure.
+      </p>
+    );
+  }
+
+  return (
+    <ul className="space-y-1 text-xs leading-relaxed text-slate-600">
+      {metrics.trustNotes.map((note) => (
+        <li key={note}>{note}</li>
+      ))}
+    </ul>
+  );
+}
+
+export function DebtSection({
+  accounts,
+  bills,
+  summary,
+  focusedAccountId,
+  onSaveAccount,
+  onDeleteAccount,
+}: DebtSectionProps) {
+  const [selectedDebtType, setSelectedDebtType] = useState<DebtType | "All">("All");
+  const [selectedAccountId, setSelectedAccountId] = useState<string>("");
+  const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
+  const [formState, setFormState] = useState<DebtFormState>(defaultFormState);
+  const [error, setError] = useState("");
+
+  const visibleAccounts = useMemo(
+    () =>
+      accounts.filter((account) =>
+        selectedDebtType === "All" ? true : account.debtType === selectedDebtType,
+      ),
+    [accounts, selectedDebtType],
+  );
+
+  const effectiveSelectedAccountId = useMemo(() => {
+    if (
+      focusedAccountId &&
+      visibleAccounts.some((account) => account.id === focusedAccountId)
+    ) {
+      return focusedAccountId;
+    }
+
+    if (
+      selectedAccountId &&
+      visibleAccounts.some((account) => account.id === selectedAccountId)
+    ) {
+      return selectedAccountId;
+    }
+
+    return visibleAccounts[0]?.id ?? "";
+  }, [focusedAccountId, selectedAccountId, visibleAccounts]);
+
+  const selectedAccount = useMemo(() => {
+    if (editingAccountId) {
+      return accounts.find((account) => account.id === editingAccountId) ?? null;
+    }
+
+    const preferred =
+      accounts.find((account) => account.id === effectiveSelectedAccountId) ??
+      visibleAccounts[0] ??
+      null;
+    return preferred;
+  }, [accounts, editingAccountId, effectiveSelectedAccountId, visibleAccounts]);
+
+  const selectedMetrics = useMemo(
+    () => (selectedAccount ? calculateDebtDerivedMetrics(selectedAccount, bills) : null),
+    [bills, selectedAccount],
+  );
+  const selectedSchedule = useMemo<DebtScheduleItem[]>(
+    () => (selectedAccount ? getDebtSchedule(selectedAccount, bills) : []),
+    [bills, selectedAccount],
+  );
+
+  function updateField<Key extends keyof DebtFormState>(key: Key, value: DebtFormState[Key]) {
+    setFormState((previous) => ({
+      ...previous,
+      [key]: value,
+    }));
+  }
+
+  function resetForm() {
+    setEditingAccountId(null);
+    setFormState(defaultFormState);
+    setError("");
+  }
+
+  function startEditingAccount(account: DebtAccount) {
+    setEditingAccountId(account.id);
+    setFormState(buildFormState(account));
+    setError("");
+  }
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!formState.providerName.trim()) {
+      setError("Provider name is required.");
+      return;
+    }
+
+    const currentBalance = parseOptionalAmount(formState.currentBalance);
+    if (typeof currentBalance !== "number" || currentBalance < 0) {
+      setError("Current balance is required.");
+      return;
+    }
+
+    const accountId = editingAccountId ?? createDebtId();
+
+    onSaveAccount({
+      id: accountId,
+      providerName: formState.providerName.trim(),
+      debtType: formState.debtType,
+      currentBalance,
+      originalAmount: parseOptionalAmount(formState.originalAmount),
+      apr: parseOptionalAmount(formState.apr),
+      creditLimit: parseOptionalAmount(formState.creditLimit),
+      termLengthMonths: parseOptionalInteger(formState.termLengthMonths),
+      totalPaymentCount: parseOptionalInteger(formState.totalPaymentCount),
+      completedPaymentCount: parseOptionalInteger(formState.completedPaymentCount),
+      paymentCadence: formState.paymentCadence,
+      nextDueDate: formState.nextDueDate.trim() || undefined,
+      minimumPayment: parseOptionalAmount(formState.minimumPayment),
+      scheduledPaymentAmount: parseOptionalAmount(formState.scheduledPaymentAmount),
+      lifecycleState: formState.lifecycleState,
+      paymentRequirement: formState.paymentRequirement,
+      interestAccrual: formState.interestAccrual,
+      isDelinquent: formState.isDelinquent,
+      notes: formState.notes.trim() || undefined,
+    });
+
+    setSelectedAccountId(accountId);
+    resetForm();
+  }
+
+  function handleDeleteSelectedAccount() {
+    if (!selectedAccount) {
+      return;
+    }
+
+    const shouldDelete = window.confirm(
+      `Delete debt account "${selectedAccount.providerName}"?`,
+    );
+    if (!shouldDelete) {
+      return;
+    }
+
+    onDeleteAccount(selectedAccount.id);
+    if (editingAccountId === selectedAccount.id) {
+      resetForm();
+    }
+  }
+
+  return (
+    <section
+      id="debt-section"
+      className="space-y-4 dashboard-animate-in"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3 px-1">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">Debt</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Manage debt accounts, debt-specific status logic, and the near-term obligations that feed Bills.
+          </p>
+        </div>
+        <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+          <span>Filter type</span>
+          <select
+            value={selectedDebtType}
+            onChange={(event) => setSelectedDebtType(event.target.value as DebtType | "All")}
+            className="dashboard-control h-10 rounded-xl px-3 text-sm"
+          >
+            <option value="All">All debt types</option>
+            {DEBT_TYPES.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[1.1fr_1.35fr]">
+        <section className="dashboard-shell dashboard-shell-strip rounded-3xl p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
+                <HandCoins className="h-4 w-4 text-blue-700" />
+                Debt Summary
+              </h3>
+              <p className="mt-1 text-sm text-slate-600">
+                Debt stays account-centric here. Bills only receives the next operational obligations.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="dashboard-shell-inner rounded-2xl p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Total Debt Balance
+              </p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                {formatCurrency(summary.totalDebtBalance)}
+              </p>
+            </div>
+            <div className="dashboard-shell-inner rounded-2xl p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Due Within 60 Days
+              </p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                {formatCurrency(summary.totalMinimumDueIn60Days)}
+              </p>
+              <p className="mt-1 text-xs text-slate-600">
+                {summary.nextDebtDueDate
+                  ? `Next debt due ${formatDate(summary.nextDebtDueDate)}`
+                  : "No near-term debt obligation is currently projected."}
+              </p>
+            </div>
+            <div className="dashboard-shell-inner rounded-2xl p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Active Accounts
+              </p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                {summary.activeAccountCount}
+              </p>
+            </div>
+            <div className="dashboard-shell-inner rounded-2xl p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Accounts Behind
+              </p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight text-rose-700">
+                {summary.delinquentAccountCount}
+              </p>
+              <p className="mt-1 text-xs text-slate-600">
+                {summary.noPaymentRequiredCount} account{summary.noPaymentRequiredCount === 1 ? "" : "s"} currently do not require payment.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="dashboard-shell dashboard-shell-strip rounded-3xl p-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
+                <PlusCircle className="h-4 w-4 text-blue-700" />
+                Debt Account Entry
+              </h3>
+              <p className="mt-1 text-sm text-slate-600">
+                Enter debt truth here. Bills will only receive the next due operational rows.
+              </p>
+            </div>
+            {editingAccountId ? (
+              <button
+                type="button"
+                onClick={resetForm}
+                className="dashboard-control inline-flex items-center gap-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+              >
+                <X className="h-4 w-4" />
+                Cancel Edit
+              </button>
+            ) : null}
+          </div>
+
+          <form className="mt-4 grid gap-3" onSubmit={handleSubmit}>
+            <div className="dashboard-shell-inner grid gap-3 rounded-2xl p-4 md:grid-cols-2 xl:grid-cols-3">
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Provider / Account</span>
+                <input
+                  type="text"
+                  value={formState.providerName}
+                  onChange={(event) => updateField("providerName", event.target.value)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                  placeholder="Capital One Venture"
+                />
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Debt Type</span>
+                <select
+                  value={formState.debtType}
+                  onChange={(event) => updateField("debtType", event.target.value as DebtType)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                >
+                  {DEBT_TYPES.map((type) => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Current Balance</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formState.currentBalance}
+                  onChange={(event) => updateField("currentBalance", event.target.value)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                  placeholder="5000.00"
+                />
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Original Amount</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formState.originalAmount}
+                  onChange={(event) => updateField("originalAmount", event.target.value)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                  placeholder="Optional"
+                />
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">APR</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formState.apr}
+                  onChange={(event) => updateField("apr", event.target.value)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                  placeholder="19.99"
+                />
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Credit Limit</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formState.creditLimit}
+                  onChange={(event) => updateField("creditLimit", event.target.value)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                  placeholder="Card only"
+                />
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Term Months</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={formState.termLengthMonths}
+                  onChange={(event) => updateField("termLengthMonths", event.target.value)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                  placeholder="Optional"
+                />
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Total Payments</span>
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={formState.totalPaymentCount}
+                  onChange={(event) => updateField("totalPaymentCount", event.target.value)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                />
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Completed Payments</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={formState.completedPaymentCount}
+                  onChange={(event) => updateField("completedPaymentCount", event.target.value)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                />
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Payment Cadence</span>
+                <select
+                  value={formState.paymentCadence}
+                  onChange={(event) => updateField("paymentCadence", event.target.value as DebtPaymentCadence)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                >
+                  {DEBT_PAYMENT_CADENCES.map((cadence) => (
+                    <option key={cadence} value={cadence}>{cadence}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Next Due Date</span>
+                <input
+                  type="date"
+                  value={formState.nextDueDate}
+                  onChange={(event) => updateField("nextDueDate", event.target.value)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                />
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Minimum Payment</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formState.minimumPayment}
+                  onChange={(event) => updateField("minimumPayment", event.target.value)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                />
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Scheduled Installment</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formState.scheduledPaymentAmount}
+                  onChange={(event) => updateField("scheduledPaymentAmount", event.target.value)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                />
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Lifecycle State</span>
+                <select
+                  value={formState.lifecycleState}
+                  onChange={(event) => updateField("lifecycleState", event.target.value as DebtLifecycleState)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                >
+                  {DEBT_LIFECYCLE_STATES.map((state) => (
+                    <option key={state} value={state}>{state}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Payment Requirement</span>
+                <select
+                  value={formState.paymentRequirement}
+                  onChange={(event) => updateField("paymentRequirement", event.target.value as DebtPaymentRequirement)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                >
+                  {DEBT_PAYMENT_REQUIREMENTS.map((value) => (
+                    <option key={value} value={value}>{value}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Interest Accrual</span>
+                <select
+                  value={formState.interestAccrual}
+                  onChange={(event) => updateField("interestAccrual", event.target.value as DebtInterestAccrual)}
+                  className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
+                >
+                  {DEBT_INTEREST_ACCRUAL_OPTIONS.map((value) => (
+                    <option key={value} value={value}>{value}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="space-y-1.5 xl:col-span-3">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">Notes</span>
+                <textarea
+                  value={formState.notes}
+                  onChange={(event) => updateField("notes", event.target.value)}
+                  className="dashboard-control min-h-[88px] w-full rounded-xl px-3 py-3 text-sm"
+                  placeholder="Promo terms, deferment notes, or assumptions worth preserving."
+                />
+              </label>
+            </div>
+
+            <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+              <input
+                type="checkbox"
+                checked={formState.isDelinquent}
+                onChange={(event) => updateField("isDelinquent", event.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-blue-700"
+              />
+              Behind / delinquent
+            </label>
+
+            {error ? (
+              <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
+                {error}
+              </p>
+            ) : null}
+
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                className="inline-flex h-11 items-center justify-center gap-1 rounded-xl bg-gradient-to-r from-blue-700 to-indigo-700 px-4 text-sm font-semibold text-white transition hover:from-blue-800 hover:to-indigo-800"
+              >
+                {editingAccountId ? <Save className="h-4 w-4" /> : <PlusCircle className="h-4 w-4" />}
+                {editingAccountId ? "Save Debt Account" : "Add Debt Account"}
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+        <section className="dashboard-shell rounded-3xl p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h3 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
+                <BadgeDollarSign className="h-4 w-4 text-blue-700" />
+                Debt Accounts
+              </h3>
+              <p className="mt-1 text-sm text-slate-600">
+                Filter by debt type and inspect the next payment, state, and burden quickly.
+              </p>
+            </div>
+            <span className="rounded-full border border-slate-300 bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+              {visibleAccounts.length} account{visibleAccounts.length === 1 ? "" : "s"}
+            </span>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {visibleAccounts.length === 0 ? (
+              <div className="dashboard-shell-inner rounded-2xl border border-dashed border-slate-300 p-4 text-sm text-slate-600">
+                No debt accounts match the current filter yet.
+              </div>
+            ) : (
+              visibleAccounts.map((account) => {
+                const Icon = debtTypeIcons[account.debtType];
+                const metrics = calculateDebtDerivedMetrics(account, bills);
+                const isSelected = selectedAccount?.id === account.id;
+
+                return (
+                  <button
+                    key={account.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedAccountId(account.id);
+                      setEditingAccountId(null);
+                    }}
+                    className={`w-full rounded-2xl border p-4 text-left transition ${
+                      isSelected
+                        ? "border-blue-400 bg-blue-50/80 shadow-[0_14px_30px_-24px_rgba(37,99,235,0.7)]"
+                        : "border-slate-200 bg-white hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900">
+                          <Icon className="h-4 w-4 text-blue-700" />
+                          {account.providerName}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-600">{account.debtType}</p>
+                      </div>
+                      {account.isDelinquent ? (
+                        <span className="rounded-full border border-rose-300 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
+                          Behind
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                          Balance
+                        </p>
+                        <p className="mt-1 text-base font-semibold text-slate-900">
+                          {formatCurrency(account.currentBalance)}
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                          Next Payment
+                        </p>
+                        <p className="mt-1 text-base font-semibold text-slate-900">
+                          {metrics.nextScheduledPaymentAmount > 0
+                            ? formatCurrency(metrics.nextScheduledPaymentAmount)
+                            : "Limited"}
+                        </p>
+                        <p className="mt-1 text-[11px] text-slate-600">
+                          {metrics.nextScheduledPaymentDate
+                            ? formatDate(metrics.nextScheduledPaymentDate)
+                            : "No due date set"}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+        </section>
+
+        <section className="dashboard-shell rounded-3xl p-4 sm:p-5">
+          {selectedAccount && selectedMetrics ? (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h3 className="inline-flex items-center gap-2 text-base font-semibold text-slate-900">
+                    <CalendarClock className="h-4 w-4 text-blue-700" />
+                    {selectedAccount.providerName}
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Debt detail stays focused on account truth, payment schedule visibility, and payoff progress.
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => startEditingAccount(selectedAccount)}
+                    className="dashboard-control inline-flex items-center gap-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeleteSelectedAccount}
+                    className="dashboard-control inline-flex items-center gap-1 rounded-xl border border-rose-300 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className="dashboard-shell-inner rounded-2xl p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">Remaining Balance</p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-950">
+                    {formatCurrency(selectedMetrics.remainingBalance)}
+                  </p>
+                </div>
+                <div className="dashboard-shell-inner rounded-2xl p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">Next Scheduled Payment</p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-950">
+                    {selectedMetrics.nextScheduledPaymentAmount > 0
+                      ? formatCurrency(selectedMetrics.nextScheduledPaymentAmount)
+                      : "Limited"}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-600">
+                    {selectedMetrics.nextScheduledPaymentDate
+                      ? formatDate(selectedMetrics.nextScheduledPaymentDate)
+                      : "No next due date"}
+                  </p>
+                </div>
+                <div className="dashboard-shell-inner rounded-2xl p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">Payoff Projection</p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-950">
+                    {selectedMetrics.payoffDateProjection
+                      ? formatDate(selectedMetrics.payoffDateProjection)
+                      : "Limited"}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-600">
+                    {typeof selectedMetrics.remainingPaymentCount === "number"
+                      ? `${selectedMetrics.remainingPaymentCount} payment${selectedMetrics.remainingPaymentCount === 1 ? "" : "s"} remaining`
+                      : "Remaining count depends on stronger input detail."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-[1fr_0.95fr]">
+                <div className="dashboard-shell-inner rounded-2xl p-4">
+                  <div className="flex items-center gap-2">
+                    <ShieldAlert className="h-4 w-4 text-blue-700" />
+                    <p className="text-sm font-semibold text-slate-900">Debt Truth</p>
+                  </div>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    <p className="text-sm text-slate-700">
+                      <span className="font-semibold text-slate-900">Lifecycle:</span> {selectedAccount.lifecycleState}
+                    </p>
+                    <p className="text-sm text-slate-700">
+                      <span className="font-semibold text-slate-900">Payment:</span> {selectedAccount.paymentRequirement}
+                    </p>
+                    <p className="text-sm text-slate-700">
+                      <span className="font-semibold text-slate-900">Interest:</span> {selectedAccount.interestAccrual}
+                    </p>
+                    <p className="text-sm text-slate-700">
+                      <span className="font-semibold text-slate-900">Cadence:</span> {selectedAccount.paymentCadence}
+                    </p>
+                    {typeof selectedMetrics.utilizationPercent === "number" ? (
+                      <p className="text-sm text-slate-700">
+                        <span className="font-semibold text-slate-900">Utilization:</span> {selectedMetrics.utilizationPercent.toFixed(1)}%
+                      </p>
+                    ) : null}
+                    {typeof selectedMetrics.estimatedMonthlyInterest === "number" ? (
+                      <p className="text-sm text-slate-700">
+                        <span className="font-semibold text-slate-900">Estimated monthly interest:</span> {formatCurrency(selectedMetrics.estimatedMonthlyInterest)}
+                      </p>
+                    ) : null}
+                    {selectedMetrics.installmentProgressLabel ? (
+                      <p className="text-sm text-slate-700 sm:col-span-2">
+                        <span className="font-semibold text-slate-900">Installment progress:</span> {selectedMetrics.installmentProgressLabel}
+                      </p>
+                    ) : null}
+                  </div>
+                  {selectedAccount.notes ? (
+                    <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                      {selectedAccount.notes}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="dashboard-shell-inner rounded-2xl p-4">
+                  <p className="text-sm font-semibold text-slate-900">Trust and failure handling</p>
+                  <div className="mt-3">{renderTrustNotes(selectedMetrics)}</div>
+                </div>
+              </div>
+
+              <div className="dashboard-shell-inner rounded-2xl p-4">
+                <p className="text-sm font-semibold text-slate-900">Debt-linked schedule in Bills</p>
+                <p className="mt-1 text-xs text-slate-600">
+                  Only near-term obligations are projected into Bills. Debt stays the owner of account structure and debt math.
+                </p>
+                <div className="mt-3 space-y-2">
+                  {selectedSchedule.length === 0 ? (
+                    <div className="rounded-xl border border-dashed border-slate-300 p-3 text-sm text-slate-600">
+                      No debt-linked operational rows are currently projected for this account.
+                    </div>
+                  ) : (
+                    selectedSchedule.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2"
+                      >
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">
+                            {formatDate(item.dueDate)}
+                          </p>
+                          <p className="text-xs text-slate-600">{item.status}</p>
+                        </div>
+                        <p className="text-sm font-semibold text-slate-900">
+                          {formatCurrency(item.amount)}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-slate-300 p-6 text-sm text-slate-600">
+              Add a debt account to start building the debt workspace.
+            </div>
+          )}
+        </section>
+      </div>
+    </section>
+  );
+}

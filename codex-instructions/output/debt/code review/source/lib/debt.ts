@@ -1,0 +1,363 @@
+import type {
+  Bill,
+  BillStatus,
+  DebtAccount,
+  DebtDerivedMetrics,
+  DebtPaymentCadence,
+  DebtScheduleItem,
+  DebtSummary,
+} from "@/lib/types";
+import { getBillLateFeeAmount, getBillTotalAmount, isValidDateOnly, normalizeAmount } from "@/lib/utils";
+
+const DEBT_FORWARD_WINDOW_DAYS = 60;
+
+type DateOnlyParts = {
+  year: number;
+  month: number;
+  day: number;
+};
+
+function parseDateOnly(dateString: string): DateOnlyParts | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
+  if (!match) {
+    return null;
+  }
+
+  const year = Number.parseInt(match[1], 10);
+  const month = Number.parseInt(match[2], 10);
+  const day = Number.parseInt(match[3], 10);
+  const nextDate = new Date(year, month - 1, day);
+
+  if (
+    nextDate.getFullYear() !== year ||
+    nextDate.getMonth() !== month - 1 ||
+    nextDate.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return { year, month, day };
+}
+
+function getDateOnly(dateString: string): Date | null {
+  const parsed = parseDateOnly(dateString);
+  if (!parsed) {
+    return null;
+  }
+
+  return new Date(parsed.year, parsed.month - 1, parsed.day);
+}
+
+function toDateOnlyString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function getToday(): Date {
+  const today = new Date();
+  return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+}
+
+function addDays(date: Date, days: number): Date {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return new Date(next.getFullYear(), next.getMonth(), next.getDate());
+}
+
+function addCadence(date: Date, cadence: DebtPaymentCadence): Date {
+  if (cadence === "Weekly") {
+    return addDays(date, 7);
+  }
+
+  if (cadence === "Biweekly") {
+    return addDays(date, 14);
+  }
+
+  const next = new Date(date);
+  next.setMonth(next.getMonth() + 1);
+  return new Date(next.getFullYear(), next.getMonth(), next.getDate());
+}
+
+function getDebtScheduledAmount(account: DebtAccount): number {
+  if (typeof account.scheduledPaymentAmount === "number" && account.scheduledPaymentAmount > 0) {
+    return normalizeAmount(account.scheduledPaymentAmount);
+  }
+
+  if (typeof account.minimumPayment === "number" && account.minimumPayment > 0) {
+    return normalizeAmount(account.minimumPayment);
+  }
+
+  return 0;
+}
+
+function getDebtRemainingPaymentCount(account: DebtAccount, scheduledAmount: number): number | undefined {
+  if (
+    typeof account.totalPaymentCount === "number" &&
+    typeof account.completedPaymentCount === "number"
+  ) {
+    return Math.max(0, account.totalPaymentCount - account.completedPaymentCount);
+  }
+
+  if (scheduledAmount > 0 && account.debtType !== "Credit Card" && account.currentBalance > 0) {
+    return Math.ceil(account.currentBalance / scheduledAmount);
+  }
+
+  return undefined;
+}
+
+function shouldProjectDebtAccount(account: DebtAccount): boolean {
+  if (account.currentBalance <= 0) {
+    return false;
+  }
+
+  if (account.lifecycleState === "Deferment") {
+    return false;
+  }
+
+  if (account.paymentRequirement === "No Payment Required") {
+    return false;
+  }
+
+  if (!account.nextDueDate || !isValidDateOnly(account.nextDueDate)) {
+    return false;
+  }
+
+  return getDebtScheduledAmount(account) > 0;
+}
+
+function getDebtBillName(account: DebtAccount): string {
+  return account.providerName.trim();
+}
+
+function getDebtProjectionLimit(account: DebtAccount, remainingCount: number | undefined): number {
+  if (typeof remainingCount === "number") {
+    return Math.max(1, Math.min(remainingCount, 8));
+  }
+
+  return account.debtType === "Credit Card" ? 3 : 4;
+}
+
+function getBillStatusFromDate(dueDate: string, paid: boolean): BillStatus {
+  if (paid) {
+    return "Paid";
+  }
+
+  const due = getDateOnly(dueDate);
+  if (!due) {
+    return "Upcoming";
+  }
+
+  return due < getToday() ? "Past Due" : "Upcoming";
+}
+
+function hasOperationalDebtHistory(bill: Bill): boolean {
+  return (
+    bill.status === "Paid" ||
+    Boolean(bill.paidDate) ||
+    typeof bill.paidAmount === "number" ||
+    Boolean(bill.paymentMethod) ||
+    Boolean(bill.paymentNote) ||
+    getBillLateFeeAmount(bill) > 0
+  );
+}
+
+function buildProjectedDebtBills(account: DebtAccount): Bill[] {
+  if (!shouldProjectDebtAccount(account)) {
+    return [];
+  }
+
+  const startingDate = getDateOnly(account.nextDueDate ?? "");
+  if (!startingDate) {
+    return [];
+  }
+
+  const scheduledAmount = getDebtScheduledAmount(account);
+  const remainingCount = getDebtRemainingPaymentCount(account, scheduledAmount);
+  const limit = getDebtProjectionLimit(account, remainingCount);
+  const horizon = addDays(getToday(), DEBT_FORWARD_WINDOW_DAYS);
+  const projected: Bill[] = [];
+  let cursor = startingDate;
+  let iterations = 0;
+
+  while (iterations < limit && cursor <= horizon) {
+    const dueDate = toDateOnlyString(cursor);
+    projected.push({
+      id: `debt-${account.id}-${dueDate}`,
+      name: getDebtBillName(account),
+      category: "Debt",
+      status: getBillStatusFromDate(dueDate, false),
+      dueDate,
+      amount: scheduledAmount,
+      notes: `${account.debtType} obligation derived from Debt.`,
+      sourceType: "debt-derived",
+      sourceDebtAccountId: account.id,
+      sourceDebtType: account.debtType,
+      sourceDebtOccurrenceDate: dueDate,
+    });
+
+    cursor = addCadence(cursor, account.paymentCadence);
+    iterations += 1;
+  }
+
+  return projected;
+}
+
+export function mergeDebtBills(existingBills: Bill[], debtAccounts: DebtAccount[]): Bill[] {
+  const manualBills = existingBills.filter((bill) => bill.sourceType !== "debt-derived");
+  const existingDerivedBills = existingBills.filter((bill) => bill.sourceType === "debt-derived");
+  const existingDerivedById = new Map(existingDerivedBills.map((bill) => [bill.id, bill]));
+  const projectedBills = debtAccounts.flatMap((account) => buildProjectedDebtBills(account));
+  const projectedBillIds = new Set(projectedBills.map((bill) => bill.id));
+
+  const mergedProjected = projectedBills.map((bill) => {
+    const existing = existingDerivedById.get(bill.id);
+    if (!existing) {
+      return bill;
+    }
+
+    const isPaid = existing.status === "Paid";
+    return {
+      ...bill,
+      status: getBillStatusFromDate(bill.dueDate, isPaid),
+      lateFeeAmount: existing.lateFeeAmount,
+      paidDate: existing.paidDate,
+      paidAmount: existing.paidAmount,
+      paymentMethod: existing.paymentMethod,
+      paymentNote: existing.paymentNote,
+      notes: existing.notes ?? bill.notes,
+    };
+  });
+
+  const preservedHistory = existingDerivedBills.filter((bill) => {
+    if (projectedBillIds.has(bill.id)) {
+      return false;
+    }
+
+    if (hasOperationalDebtHistory(bill)) {
+      return true;
+    }
+
+    const dueDate = getDateOnly(bill.dueDate);
+    return Boolean(dueDate && dueDate < getToday());
+  });
+
+  return [...manualBills, ...mergedProjected, ...preservedHistory];
+}
+
+export function getDebtSchedule(account: DebtAccount, bills: Bill[]): DebtScheduleItem[] {
+  return bills
+    .filter((bill) => bill.sourceDebtAccountId === account.id)
+    .map((bill) => ({
+      id: `${account.id}-${bill.dueDate}`,
+      debtAccountId: account.id,
+      dueDate: bill.dueDate,
+      amount: getBillTotalAmount(bill),
+      status: bill.status,
+      sourceBillId: bill.id,
+    }))
+    .sort((left, right) => left.dueDate.localeCompare(right.dueDate));
+}
+
+export function calculateDebtDerivedMetrics(
+  account: DebtAccount,
+  bills: Bill[],
+): DebtDerivedMetrics {
+  const scheduledAmount = getDebtScheduledAmount(account);
+  const remainingPaymentCount = getDebtRemainingPaymentCount(account, scheduledAmount);
+  const utilizationPercent =
+    account.debtType === "Credit Card" &&
+    typeof account.creditLimit === "number" &&
+    account.creditLimit > 0
+      ? normalizeAmount((account.currentBalance / account.creditLimit) * 100)
+      : undefined;
+  const estimatedMonthlyInterest =
+    typeof account.apr === "number" && account.apr > 0
+      ? normalizeAmount((account.currentBalance * account.apr) / 1200)
+      : undefined;
+  const nextScheduledPaymentDate = account.nextDueDate;
+  const trustNotes: string[] = [];
+
+  if (!account.nextDueDate) {
+    trustNotes.push("Next due date is missing, so schedule visibility is limited.");
+  }
+
+  if (scheduledAmount <= 0) {
+    trustNotes.push("Payment amount is missing, so payoff projection is limited.");
+  }
+
+  if (typeof account.apr !== "number" && account.interestAccrual === "Interest Accruing") {
+    trustNotes.push("Interest is accruing, but APR is missing.");
+  }
+
+  const payoffDateProjection =
+    nextScheduledPaymentDate &&
+    typeof remainingPaymentCount === "number" &&
+    remainingPaymentCount > 0
+      ? (() => {
+          let cursor = getDateOnly(nextScheduledPaymentDate) ?? getToday();
+          for (let index = 1; index < remainingPaymentCount; index += 1) {
+            cursor = addCadence(cursor, account.paymentCadence);
+          }
+          return toDateOnlyString(cursor);
+        })()
+      : undefined;
+
+  const installmentProgressLabel =
+    typeof account.totalPaymentCount === "number" && typeof account.completedPaymentCount === "number"
+      ? `${account.completedPaymentCount} of ${account.totalPaymentCount} installments completed`
+      : undefined;
+
+  const debtBills = bills.filter((bill) => bill.sourceDebtAccountId === account.id && bill.status === "Paid");
+  if (debtBills.length > 0) {
+    trustNotes.push(`${debtBills.length} debt-linked payment${debtBills.length === 1 ? "" : "s"} have been recorded in Bills.`);
+  }
+
+  return {
+    nextScheduledPaymentAmount: scheduledAmount,
+    nextScheduledPaymentDate,
+    remainingBalance: normalizeAmount(account.currentBalance),
+    remainingPaymentCount,
+    payoffDateProjection,
+    utilizationPercent,
+    estimatedMonthlyInterest,
+    installmentProgressLabel,
+    trustNotes,
+  };
+}
+
+export function calculateDebtSummary(accounts: DebtAccount[], bills: Bill[]): DebtSummary {
+  const relevantBills = bills.filter((bill) => bill.sourceType === "debt-derived");
+  const upcomingWindow = addDays(getToday(), DEBT_FORWARD_WINDOW_DAYS);
+  const upcomingBills = relevantBills.filter((bill) => {
+    if (bill.status === "Paid") {
+      return false;
+    }
+
+    const dueDate = getDateOnly(bill.dueDate);
+    return Boolean(dueDate && dueDate <= upcomingWindow);
+  });
+
+  const nextBill = upcomingBills
+    .slice()
+    .sort((left, right) => left.dueDate.localeCompare(right.dueDate))[0];
+
+  return {
+    totalDebtBalance: normalizeAmount(
+      accounts.reduce((sum, account) => sum + account.currentBalance, 0),
+    ),
+    activeAccountCount: accounts.filter((account) => account.lifecycleState === "Active").length,
+    delinquentAccountCount: accounts.filter((account) => account.isDelinquent).length,
+    noPaymentRequiredCount: accounts.filter(
+      (account) =>
+        account.paymentRequirement === "No Payment Required" ||
+        account.lifecycleState === "Deferment",
+    ).length,
+    totalMinimumDueIn60Days: normalizeAmount(
+      upcomingBills.reduce((sum, bill) => sum + getBillTotalAmount(bill), 0),
+    ),
+    nextDebtDueDate: nextBill?.dueDate,
+    nextDebtDueAmount: nextBill ? getBillTotalAmount(nextBill) : 0,
+  };
+}
