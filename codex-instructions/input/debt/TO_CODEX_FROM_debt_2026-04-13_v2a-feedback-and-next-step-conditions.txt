@@ -1,0 +1,179 @@
+To: Codex
+From: Debt Team
+Date: 2026-04-13
+Subject: Debt V2A Feedback and Next-Step Conditions
+
+Codex —
+
+Debt Team reviewed V2A.
+
+V2A is approved directionally.
+The core math foundation, trust system, inspectability work, and UI containment are solid.
+
+That said, Debt Team is not treating this as a silent pass-through.
+The following items must be reviewed and addressed where actionable before Debt Team clears movement into V2B.
+
+==================================================
+1. PHASE A FEEDBACK STATUS
+==================================================
+
+This feedback is not a rejection of V2A.
+It is a controlled refinement pass.
+
+Your task now is:
+- review the concerns below
+- implement any actionable fixes that belong inside V2A scope
+- do not expand into V2B work
+- return an updated review package
+- wait for explicit Debt Team approval before moving forward
+
+==================================================
+2. FEEDBACK ITEMS
+==================================================
+
+--------------------------------------------------
+A. TRUST-STATE PRECISION IS STILL TOO COARSE
+--------------------------------------------------
+
+Current trust labeling is directionally correct, but still lacks nuance.
+
+Observed issue:
+- payment amount trust defaults heavily to Manual or Custom
+- there is still limited distinction between:
+  - verified amortized loan payment
+  - user-entered estimate
+  - derived vs inferred values
+
+Expectation:
+Refine trust-state granularity where it can be improved cleanly inside current V2A scope, especially for:
+- payment amount reliability
+- interest-model confidence
+- projection accuracy tiers
+
+Do not invent complexity for its own sake.
+But do not leave obviously collapsed categories untouched if they can be improved now.
+
+--------------------------------------------------
+B. EXTRA-PAYMENT SCENARIO LABELING IS OVER-SIMPLIFIED
+--------------------------------------------------
+
+Observed issue:
+All extra-payment scenarios are labeled as Custom regardless of underlying model quality.
+
+Why this matters:
+- a no-interest fixed loan with deterministic math should not look identical to a weakly supported custom scenario
+- current labeling hides when the scenario is mathematically exact vs user-adjusted
+
+Expectation:
+Where feasible inside V2A scope, improve scenario trust expression so future phases can distinguish between:
+- exact adjusted scenario
+- estimated adjusted scenario
+- truly custom scenario
+
+Debt Team is not requiring final naming to be locked now.
+But the current flattening should be reviewed and improved if practical.
+
+--------------------------------------------------
+C. CREDIT CARD LIMITATION HANDLING MUST STAY STRICT
+--------------------------------------------------
+
+Debt Team agrees with the current decision to keep credit-card payoff projections trust-limited in V2A.
+That must remain true.
+
+However, this area is the highest-risk area moving into V2B.
+
+Expectation:
+- do not loosen trust limits for credit cards prematurely
+- do not approximate minimum payment behavior generically
+- preserve clear limitation language where the model is intentionally incomplete
+
+If any V2A adjustment touches card projections, it must preserve strict anti-false-precision behavior.
+
+--------------------------------------------------
+D. TEST COVERAGE IS BETTER, BUT STILL LIGHT
+--------------------------------------------------
+
+The new test file is a good step.
+But Debt Team still considers math-layer coverage light.
+
+Missing or still under-covered areas include:
+- cadence variation boundaries
+- malformed / partial input handling
+- projection stability across longer tails
+- weak-input failure paths
+- payment / interest edge cases
+
+Expectation:
+Add any high-value V2A tests that are reasonable within current phase scope.
+The goal is not to fully solve all future coverage now.
+The goal is to reduce obvious blind spots before V2B builds on this layer.
+
+--------------------------------------------------
+E. STATIC PROJECTION ASSUMPTIONS MUST STAY EXPLICIT
+--------------------------------------------------
+
+Current projection behavior assumes:
+- constant payment
+- stable APR
+- no behavioral change
+
+Debt Team accepts that for V2A.
+
+Expectation:
+Make sure those assumptions remain clearly visible and inspectable wherever the projection is shown.
+If assumption clarity can be improved within V2A scope, do it now.
+
+Do not begin dynamic card-behavior work in this pass.
+Just make sure static-projection limits are explicit enough that V2B is building on a cleanly labeled foundation.
+
+==================================================
+3. WHAT CODEX SHOULD DO NOW
+==================================================
+
+Required next step:
+1. Review all V2A feedback items above
+2. Implement any actionable and phase-appropriate updates
+3. Stay inside V2A scope
+4. Do NOT start V2B work yet
+5. Return an updated review package to Debt Team
+
+==================================================
+4. REQUIRED FOLLOW-UP PACKAGE
+==================================================
+
+Return the following in codex-instructions/output/debt/:
+
+1. A summary memo explaining:
+- what feedback items were addressed
+- what changed
+- what was intentionally left unchanged
+- why any unchanged item was deferred
+
+2. Updated code review files including:
+- readable updated source files
+- diffs if available
+- updated manifest
+- validation evidence
+
+3. Validation results:
+- lint
+- tests
+- build
+- note any added tests
+
+4. A phase gate statement that clearly says:
+- updated V2A is ready for Debt Team review
+- Codex is waiting for explicit approval before proceeding to V2B
+
+==================================================
+5. GATE CONDITION
+==================================================
+
+Codex is not approved to begin V2B yet.
+
+Debt Team will review your V2A follow-up and determine whether additional V2A work is still needed.
+If no further V2A work is required, Debt Team will explicitly approve movement into the next phase.
+
+Do not proceed until that approval is given.
+
+— Debt Team
