@@ -1,0 +1,82 @@
+To: Debt Team
+From: Debt Team
+Date: 2026-04-13
+Subject: V2C Review Concerns to Carry Forward
+
+Debt Team —
+
+V2C is approved for progression, but the following concerns should be preserved as internal review notes and carried into later refinement work.
+
+==================================================
+1. THRESHOLD-BASED FLAGS ARE CURRENTLY HARD-CODED
+==================================================
+
+The V2C factual flag layer is useful and appropriately bounded.
+
+However, several flags are currently driven by fixed product constants.
+
+Examples:
+- promo expiring soon = 30 days
+- high utilization = 80%
+- due soon = 14 days
+- payment due soon = 7 days
+- timing cluster gap = 7 days
+
+Why this matters:
+- these thresholds are reasonable for V2C
+- but they are still product-policy choices
+- future product needs may require user-level, account-level, or app-level configurability
+- downstream teams may interpret these flags as fixed truth when they are actually policy thresholds
+
+Carry-forward note:
+Future refinement should consider centralizing these thresholds as explicit product policy and eventually making some of them configurable if that fits the app direction.
+
+==================================================
+2. CONSEQUENCE VISIBILITY DEPENDS HEAVILY ON MANUAL ACCOUNT TRUTH
+==================================================
+
+The consequence layer is factual and boundary-correct.
+
+However, several consequence outputs depend on the user entering and maintaining specific fields correctly.
+
+Examples:
+- promo expiration risk requires promo balance and promo end date
+- grace-period loss requires the grace-period status field
+- delinquency progression requires days past due
+- late fee exposure requires late fee amount
+
+Why this matters:
+- the system is only as accurate as the debt truth entered by the user
+- weak or stale inputs can hide relevant consequences
+- the app may need stronger reminders or missing-data prompts later
+
+Carry-forward note:
+Future refinement should keep making manual-data dependency visible and may need additional input-quality prompts, stale-data indicators, or verification flows.
+
+==================================================
+3. MINIMUM CASH NEEDED TO STAY CURRENT MAY DOUBLE-COUNT IN EDGE CASES
+==================================================
+
+The cash-window system correctly adds near-term required payments and recorded past-due catch-up pressure.
+
+Potential issue:
+In some account states, a past-due amount may already be represented as a past-due debt-derived bill row. If so, adding both the past-due row total and the account-level past-due amount could inflate the minimum cash needed to stay current.
+
+Why this matters:
+- the current approach is directionally useful
+- but edge cases may overstate short-term cash need
+- this is especially relevant when Bills preserves historical / past-due debt rows and Debt also stores account-level past-due amount
+
+Carry-forward note:
+Future refinement should verify whether account-level past-due amount and past-due schedule rows are mutually exclusive, overlapping, or intentionally additive. If overlap is possible, add guardrails to avoid double-counting.
+
+==================================================
+4. BOTTOM LINE
+==================================================
+
+V2C remains approved.
+
+These concerns do not block progression to V2D.
+They are internal Debt review notes that should be preserved for later refinement and post-phase cleanup.
+
+— Debt Team
