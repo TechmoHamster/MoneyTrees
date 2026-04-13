@@ -1,13 +1,16 @@
 # Debt Codex Output Index
 
 ## Latest Result
-- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-13_debt-v2a-core-math-foundation.txt
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-13_v2a-feedback-followup.txt
 - Date: 2026-04-13
-- Topic: Debt V2A Core Math Foundation
+- Topic: V2A Feedback Followup
 
 ---
 
 ## Previous Results
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-13_debt-v2a-core-math-foundation.txt
+  - Date: 2026-04-13
+  - Topic: Debt V2A Core Math Foundation
 - File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-12_review-package-updated.txt
   - Date: 2026-04-12
   - Topic: Review Package Updated
