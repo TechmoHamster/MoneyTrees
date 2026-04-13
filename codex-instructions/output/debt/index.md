@@ -1,7 +1,9 @@
 # Debt Codex Output Index
 
 ## Latest Result
-- No Codex results found.
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-12_debt-section-implementation-status.txt
+- Date: 2026-04-12
+- Topic: Debt Section Implementation Status
 
 ---
 
