@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -21,16 +22,10 @@ CODEX_OUTPUT_RE = re.compile(
     r"^FROM_CODEX_TO_(?P<team>[a-z0-9_-]+)_(?P<date>\d{4}-\d{2}-\d{2})_(?P<topic>.+)\.txt$"
 )
 
-# Optional: folders to ignore if they ever appear under team-memos/
 IGNORED_TEAM_MEMO_FOLDERS = {".gitkeep", ".ds_store"}
-
-# Optional: folders to ignore if they ever appear under codex folders
 IGNORED_CODEX_FOLDERS = {".gitkeep", ".ds_store"}
 
-# Optional: teams that should NOT receive TO_all broadcasts unless they have a real inbox role
 EXCLUDED_ALL_RECIPIENTS = {"director"}
-
-# Optional: teams that should not get Codex folders auto-created unless they already exist
 EXCLUDED_CODEX_TEAMS = {"director"}
 
 
@@ -38,13 +33,57 @@ def title_case_topic(slug: str) -> str:
     return slug.replace("-", " ").replace("_", " ").title()
 
 
+def display_name(name: str) -> str:
+    return name.replace("-", " ").replace("_", " ").title()
+
+
+def get_git_commit_timestamp(path: Path) -> int:
+    """
+    Returns the Unix timestamp of the latest Git commit that touched this file.
+
+    Falls back to local file modified time if the file has not been committed yet
+    or if Git cannot resolve the path.
+    """
+    try:
+        relative_path = path.relative_to(ROOT).as_posix()
+
+        result = subprocess.run(
+            ["git", "log", "-1", "--format=%ct", "--", relative_path],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        output = result.stdout.strip()
+
+        if output:
+            return int(output)
+
+    except Exception:
+        pass
+
+    try:
+        return int(path.stat().st_mtime)
+    except FileNotFoundError:
+        return 0
+
+
 def sort_records(records: list[dict]) -> list[dict]:
-    return sorted(records, key=lambda x: (x["date"], x["path"].name), reverse=True)
+    for record in records:
+        record["published_ts"] = get_git_commit_timestamp(record["path"])
+
+    return sorted(
+        records,
+        key=lambda x: (x["published_ts"], x["date"], x["path"].name),
+        reverse=True,
+    )
 
 
 def list_subfolders(parent: Path, ignored: set[str]) -> list[str]:
     if not parent.exists():
         return []
+
     return sorted(
         [
             child.name
@@ -81,7 +120,10 @@ def parse_team_memo(path: Path, all_recipients: set[str]) -> dict | None:
     recipient = data["recipient"]
 
     if recipient == "all":
-        recipients = {team for team in all_recipients if team not in EXCLUDED_ALL_RECIPIENTS}
+        recipients = {
+            team for team in all_recipients
+            if team not in EXCLUDED_ALL_RECIPIENTS
+        }
     else:
         recipients = {recipient}
 
@@ -102,6 +144,7 @@ def parse_codex_input(path: Path) -> dict | None:
         return None
 
     data = match.groupdict()
+
     return {
         "path": path,
         "team": data["team"],
@@ -117,6 +160,7 @@ def parse_codex_output(path: Path) -> dict | None:
         return None
 
     data = match.groupdict()
+
     return {
         "path": path,
         "team": data["team"],
@@ -178,8 +222,9 @@ def collect_codex_outputs(codex_teams: list[str]) -> list[dict]:
 def build_team_index(team: str, memos: list[dict]) -> str:
     inbound = [m for m in memos if team in m["recipients"]]
     latest = inbound[0] if inbound else None
+    team_display = display_name(team)
 
-    lines = [f"# {team.replace('-', ' ').replace('_', ' ').title()} Memos Index", ""]
+    lines = [f"# {team_display} Memos Index", ""]
 
     if latest:
         lines += [
@@ -202,19 +247,20 @@ def build_team_index(team: str, memos: list[dict]) -> str:
 
     if len(inbound) > 1:
         lines += ["## Previous Inbound Memos"]
+
         for memo in inbound[1:11]:
             lines += [
                 f"- File: {memo['path'].relative_to(ROOT).as_posix()}",
                 f"  - Date: {memo['date']}",
                 f"  - Topic: {memo['topic_title']}",
             ]
+
         lines += ["", "---", ""]
 
-    display_team = team.replace("-", " ").replace("_", " ").title()
     lines += [
         "## Notes",
-        f"- This file is {display_team}'s local memo lookup file.",
-        f"- Update it whenever a new memo is sent to {display_team}.",
+        f"- This file is {team_display}'s local memo lookup file.",
+        f"- Update it whenever a new memo is sent to {team_display}.",
         "- Keep the newest memo at the top.",
         "",
     ]
@@ -232,7 +278,7 @@ def build_codex_input_index(records: list[dict]) -> str:
             "## Latest Instruction",
             f"- File: {latest['path'].relative_to(ROOT).as_posix()}",
             f"- Date: {latest['date']}",
-            f"- Team: {latest['team'].replace('-', ' ').replace('_', ' ').title()}",
+            f"- Team: {display_name(latest['team'])}",
             f"- Topic: {latest['topic_title']}",
             "",
             "---",
@@ -249,13 +295,15 @@ def build_codex_input_index(records: list[dict]) -> str:
 
     if len(records) > 1:
         lines += ["## Previous Instructions"]
+
         for record in records[1:16]:
             lines += [
                 f"- File: {record['path'].relative_to(ROOT).as_posix()}",
                 f"  - Date: {record['date']}",
-                f"  - Team: {record['team'].replace('-', ' ').replace('_', ' ').title()}",
+                f"  - Team: {display_name(record['team'])}",
                 f"  - Topic: {record['topic_title']}",
             ]
+
         lines += ["", "---", ""]
 
     lines += [
@@ -271,9 +319,9 @@ def build_codex_input_index(records: list[dict]) -> str:
 
 def build_codex_output_index(team: str, records: list[dict]) -> str:
     latest = records[0] if records else None
-    display_team = team.replace("-", " ").replace("_", " ").title()
+    team_display = display_name(team)
 
-    lines = [f"# {display_team} Codex Output Index", ""]
+    lines = [f"# {team_display} Codex Output Index", ""]
 
     if latest:
         lines += [
@@ -296,17 +344,19 @@ def build_codex_output_index(team: str, records: list[dict]) -> str:
 
     if len(records) > 1:
         lines += ["## Previous Results"]
+
         for record in records[1:16]:
             lines += [
                 f"- File: {record['path'].relative_to(ROOT).as_posix()}",
                 f"  - Date: {record['date']}",
                 f"  - Topic: {record['topic_title']}",
             ]
+
         lines += ["", "---", ""]
 
     lines += [
         "## Notes",
-        f"- This file is {display_team}'s Codex results lookup file.",
+        f"- This file is {team_display}'s Codex results lookup file.",
         f"- Update it whenever a new Codex result is added under codex-instructions/output/{team}/.",
         "- Keep the newest result at the top.",
         "",
@@ -320,11 +370,9 @@ def ensure_directories() -> None:
     CODEX_INPUT.mkdir(parents=True, exist_ok=True)
     CODEX_OUTPUT.mkdir(parents=True, exist_ok=True)
 
-    # Ensure existing discovered team-memo folders have index files generated
     for team in discover_team_memo_folders():
         (TEAM_MEMOS / team).mkdir(parents=True, exist_ok=True)
 
-    # Ensure existing discovered Codex team folders have index files generated
     for team in discover_codex_teams():
         (CODEX_INPUT / team).mkdir(parents=True, exist_ok=True)
         (CODEX_OUTPUT / team).mkdir(parents=True, exist_ok=True)
@@ -336,25 +384,32 @@ def main() -> None:
     team_folders = discover_team_memo_folders()
     codex_teams = discover_codex_teams()
 
-    # Team memo indexes
     memos = collect_team_memos(team_folders)
+
     for team in team_folders:
         index_path = TEAM_MEMOS / team / "index.md"
         index_path.write_text(build_team_index(team, memos), encoding="utf-8")
 
-    # Codex input index
     codex_inputs = collect_codex_inputs(codex_teams)
+
     (CODEX_INPUT / "index.md").write_text(
         build_codex_input_index(codex_inputs),
         encoding="utf-8",
     )
 
-    # Codex output indexes
     codex_outputs = collect_codex_outputs(codex_teams)
+
     for team in codex_teams:
-        team_records = [record for record in codex_outputs if record["team"] == team]
+        team_records = [
+            record for record in codex_outputs
+            if record["team"] == team
+        ]
+
         index_path = CODEX_OUTPUT / team / "index.md"
-        index_path.write_text(build_codex_output_index(team, team_records), encoding="utf-8")
+        index_path.write_text(
+            build_codex_output_index(team, team_records),
+            encoding="utf-8",
+        )
 
 
 if __name__ == "__main__":
