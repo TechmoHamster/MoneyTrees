@@ -1,0 +1,239 @@
+To: Codex
+From: Debt Team
+Date: 2026-04-12
+Subject: Debt V2B — Credit Card Model and Minimum Payment System
+
+==================================================
+1. PHASE PURPOSE
+==================================================
+
+This file covers V2B only.
+
+V2B is the credit-card-specific expansion phase.
+Its job is to stop treating credit cards like generic repeating bills and move them toward a stronger revolving-debt model.
+
+This phase should focus on:
+- stronger credit card accounting fields
+- statement balance vs current balance separation
+- payment assumption model
+- minimum payment modes
+- preset rule support
+- custom minimum payment rule support
+- verification and confidence behavior
+
+Do not take on V2C or V2D scope in this phase unless a small dependency is unavoidable.
+If that happens, keep it narrow and document it clearly.
+
+==================================================
+2. REQUIRED V2B BUILD SCOPE
+==================================================
+
+Implement the following:
+
+A. Credit-card-specific data model improvements
+Support separate fields for:
+- current balance
+- statement balance
+- minimum due
+- due date
+- APR
+- interest charged
+- fees charged
+- past due amount
+- promo balance where relevant
+- account open / closed state
+- payment currently required or not
+- interest accruing or not
+
+B. Payment assumption model
+Support the following payment assumption modes:
+- minimum due
+- statement balance
+- total balance
+- custom amount
+
+Each card should clearly show:
+- active payment assumption
+- projected outcome tied to that assumption
+- confidence state for that output
+
+C. Minimum payment modes
+Support:
+- Preset Rule
+- Custom Rule
+- Manual Minimum Amount
+
+D. Preset rule library
+Implement a curated preset library for common minimum payment patterns, such as:
+- greater of flat minimum or percent of statement balance
+- interest + fees + percent of principal
+- percent of statement balance
+- percent of current balance
+- full balance if balance is below threshold
+- flat minimum unless full balance is smaller
+- flat minimum + past due amount
+- percent of balance + interest + fees + past due amount
+
+Each preset should show:
+- rule name
+- plain-English explanation
+- formula summary
+- calculated result using current inputs
+
+E. Preset testing experience
+The UI should support comparing:
+- selected preset
+- calculated minimum
+- statement minimum entered by the user
+- match status
+
+Supported match statuses:
+- Exact Match
+- Close Match
+- Does Not Match
+
+Allowed actions:
+- Use This Rule
+- Try Another Preset
+- Switch to Custom Rule
+- Use Manual Minimum For Now
+
+F. Custom rule builder
+Implement a guided builder, not a raw scripting box.
+
+Support built-in variables such as:
+- statement_balance
+- current_balance
+- interest_charged
+- fees_charged
+- past_due_amount
+- late_fee_amount
+- promo_balance
+- regular_purchase_balance
+- cash_advance_balance
+- balance_subject_to_minimum
+- fixed_amount
+- threshold_amount
+- percentage_value
+
+Support operations such as:
+- add
+- subtract
+- multiply
+- divide
+- percentage of
+- greater of
+- lesser of
+- if / then
+- if balance is below threshold, use full balance
+- include or exclude specific components
+
+G. Preview / validation / save behavior
+Always show:
+- plain-English formula summary
+- formula expression
+- calculated minimum payment
+- statement comparison
+- validation state
+
+Supported validation states:
+- Valid
+- Incomplete
+- Broken
+- Missing Required Inputs
+
+Broken rules must not be saveable as active rules.
+
+H. Post-save account detail requirements
+Show:
+- account identity
+- issuer / display name
+- due date
+- current minimum payment
+- minimum payment mode
+- rule name
+- formula summary
+- confidence state
+- last verified against statement
+- statement minimum last entered
+
+Expandable detail should show:
+- full rule expression
+- current formula inputs
+- statement balance
+- current balance
+- interest / fees / past due values
+- missing-data warnings where relevant
+
+==================================================
+3. OUT OF SCOPE FOR V2B
+==================================================
+
+Do NOT fully implement in this phase:
+- broader delinquency consequence system beyond what is needed for card minimum/payment logic
+- cash requirement windows across all debt types
+- downstream cross-section integration redesign
+- Atlas strategy behavior
+- broad risk flag framework for all debt types
+
+Those belong to later phases.
+
+==================================================
+4. NON-NEGOTIABLE RULES
+==================================================
+
+- statement balance and current balance must remain separate
+- the system must not imply one universal issuer formula for all cards
+- manual minimum mode must be clearly labeled less durable
+- the minimum-payment result must always show its confidence state
+- the user must be able to inspect the active rule
+- Debt must remain factual, not advisory
+
+==================================================
+5. REQUIRED CODEX FOLLOW-UP AFTER V2B
+==================================================
+
+When V2B is complete, do NOT proceed to V2C automatically.
+
+Codex must stop and return a review package to Debt Team.
+
+Required follow-up deliverables:
+1. A memo in codex-instructions/output/debt/ summarizing:
+- what V2B implemented
+- what card-specific behaviors are now supported
+- what minimum-payment modes are live
+- what remains for later phases
+- any rule-system limitations
+
+2. Readable review files in codex-instructions/output/debt/code review/ including:
+- full updated source files
+- diffs if available
+- manifest of changed files
+
+3. Validation evidence:
+- lint result
+- test result
+- build result
+- any new tests added for minimum payment logic or credit-card behavior
+
+4. A phase-completion statement that clearly says:
+- V2B is ready for Debt Team review
+- Codex is waiting for explicit Debt Team approval before starting V2C
+
+Codex must not begin V2C until Debt Team sends a new Codex instruction file authorizing it.
+
+==================================================
+6. REVIEW STANDARD
+==================================================
+
+Debt Team will review V2B for:
+- credit card realism
+- minimum payment rule transparency
+- trust labeling
+- builder usability
+- validation quality
+- boundary discipline
+
+Correctness matters more than maximum preset coverage in this phase.
+
+— Debt Team
