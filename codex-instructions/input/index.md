@@ -1,10 +1,18 @@
 # Codex Input Index
 
 ## Latest Instruction
-- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-11_debt-section-build-brief.txt
-- Date: 2026-04-11
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-12_debt-v2a-core-math-and-output-foundation.txt
+- Date: 2026-04-12
 - Team: Debt
-- Topic: Debt Section Build Brief
+- Topic: Debt V2A Core Math And Output Foundation
+
+---
+
+## Previous Instructions
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-11_debt-section-build-brief.txt
+  - Date: 2026-04-11
+  - Team: Debt
+  - Topic: Debt Section Build Brief
 
 ---
 
