@@ -1,0 +1,152 @@
+To: Atlas Team
+From: Debt Team
+Date: 2026-04-12
+Subject: Debt V1 Review Result and V2 Preparation
+
+Atlas Team —
+
+Debt is sending this memo so your team is in the loop on where the Debt section stands after the first Codex implementation pass and what the likely next phase will require from Atlas.
+
+==================================================
+1. CURRENT STATUS
+==================================================
+
+The first Codex implementation pass for Debt has now been reviewed at a structural level.
+
+Current conclusion:
+- the Debt section is real
+- the architecture is sound
+- the Bills / Debt / Atlas boundary is being handled correctly in V1
+- the section is strong enough to count as a legitimate V1 foundation
+- the section is not yet strong enough to be treated as a fully decision-grade debt engine
+
+In plain terms:
+V1 is good enough to count as a serious build.
+It is not yet the final debt intelligence layer we want Atlas to eventually consume.
+
+==================================================
+2. WHAT V1 GOT RIGHT
+==================================================
+
+The current V1 implementation appears to have done the following correctly:
+- Debt owns debt account structure and debt math
+- Bills owns operational rows and payment capture
+- Atlas consumes merged/shared debt truth rather than Debt acting like its own advisor
+- debt-derived obligations are being projected into the merged ledger
+- debt-linked bill rows preserve source-of-truth boundaries
+- trust handling is present when debt math is limited by missing inputs
+
+This is the right V1 shape.
+
+==================================================
+3. WHAT V1 IS STILL MISSING
+==================================================
+
+The current implementation is still stronger at debt tracking than debt outcome improvement.
+
+The main gaps that matter to Atlas are:
+
+1. Credit card math is still too simple
+Missing depth includes:
+- statement balance vs current balance
+- grace period handling
+- residual / trailing interest logic
+- payment allocation behavior
+- minimum-payment rule-system depth
+
+2. Extra-payment consequence modeling is not yet present
+Needed examples:
+- payoff date with current payment
+- payoff date with +$50 / +$100 / +$200
+- months saved
+- projected interest saved
+
+3. Cash-flow survivability facts are not yet exposed strongly enough
+Needed examples:
+- required debt cash in next 14 / 30 / 60 days
+- minimum cash needed to stay current
+- due-date clustering
+- paycheck-to-due-date mismatch signals
+
+4. Risk outputs are still underpowered
+Needed examples:
+- promo expiration risk with balance remaining
+- utilization risk
+- delinquency consequence facts
+- interest accruing while no payment is required
+
+5. Confidence labeling is not yet mature enough
+Atlas will need better signal quality if Debt outputs are to be treated as more than basic schedule visibility.
+
+==================================================
+4. WHY THIS MATTERS TO ATLAS
+==================================================
+
+Atlas is the interpretation and recommendation layer.
+That means Atlas does not need Debt to become a second advisor engine.
+
+But Atlas can only provide high-quality debt-aware guidance if Debt exposes better structured, decision-grade inputs.
+
+So the issue is not boundary drift.
+The issue is data richness.
+
+Atlas should expect V2 planning to focus on improving the quality of debt truth that Atlas receives, not changing the ownership model.
+
+==================================================
+5. EXPECTED NEXT PHASE
+==================================================
+
+Debt’s likely next step is a V2 planning pass focused on stronger debt outputs.
+
+The likely V2 areas are:
+- richer credit-card-specific modeling
+- extra-payment scenario outputs
+- cash requirement windows
+- stronger risk flags
+- better confidence / estimated-vs-confirmed math state
+
+Debt is not planning to become a local recommendation engine.
+Those richer outputs are meant to make Atlas better, not replace Atlas.
+
+==================================================
+6. ATLAS NEXT STEPS
+==================================================
+
+Atlas does not need to start redesigning itself yet, but Atlas should begin preparing for the following:
+
+1. Review current V1 shared-debt inputs
+- identify what Atlas is receiving now
+- note where current debt facts are too weak to support strong recommendations
+
+2. Identify which missing Debt outputs matter most for Atlas quality
+Prioritize things like:
+- extra-payment consequence facts
+- debt timing pressure facts
+- interest cost facts
+- promo expiration facts
+- confidence state
+
+3. Preserve Atlas boundary discipline
+- Atlas should continue to interpret shared truth only
+- Atlas should not start inventing debt-local math to compensate for V1 gaps
+- any temporary workaround that looks like debt-owned logic inside Atlas should be avoided
+
+4. Prepare for a cleaner V2 integration pass
+Atlas should be ready to consume stronger debt facts once Debt defines and ships them.
+
+==================================================
+7. WORKING EXPECTATION
+==================================================
+
+For now, treat Debt V1 as:
+- structurally real
+- useful
+- integrated
+- boundary-correct
+- still maturing
+
+Debt V2 planning will likely be less about changing UI ownership and more about upgrading the truth layer Atlas reads from.
+
+If Atlas sees any current V1 debt signal that is too weak, too vague, or too incomplete to support good recommendation quality, that feedback should be surfaced early.
+
+— Debt Team
