@@ -1,13 +1,16 @@
 # Debt Memos Index
 
 ## Latest Memo
-- File: team-memos/debt/FROM_investment-hq_TO_debt_2026-04-12_debt-ui-memo.txt
-- Date: 2026-04-12
-- Topic: Debt Ui Memo
+- File: team-memos/debt/FROM_debt_TO_debt_2026-04-13_v2b-review-concerns.txt
+- Date: 2026-04-13
+- Topic: V2B Review Concerns
 
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/debt/FROM_investment-hq_TO_debt_2026-04-12_debt-ui-memo.txt
+  - Date: 2026-04-12
+  - Topic: Debt Ui Memo
 - File: team-memos/debt/FROM_investment-hq_TO_debt_2026-04-12_debt-feature-review.txt
   - Date: 2026-04-12
   - Topic: Debt Feature Review
