@@ -1,13 +1,16 @@
 # Debt Codex Output Index
 
 ## Latest Result
-- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-13_debt-v2d-integration-polish-and-hardening.txt
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-13_debt-v2-refinement-hardening.txt
 - Date: 2026-04-13
-- Topic: Debt V2D Integration Polish And Hardening
+- Topic: Debt V2 Refinement Hardening
 
 ---
 
 ## Previous Results
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-13_debt-v2d-integration-polish-and-hardening.txt
+  - Date: 2026-04-13
+  - Topic: Debt V2D Integration Polish And Hardening
 - File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-13_debt-v2c-risk-consequence-and-cash-windows.txt
   - Date: 2026-04-13
   - Topic: Debt V2C Risk Consequence And Cash Windows
