@@ -1,13 +1,16 @@
 # Debt Codex Output Index
 
 ## Latest Result
-- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-12_debt-section-implementation-status.txt
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-12_review-package-updated.txt
 - Date: 2026-04-12
-- Topic: Debt Section Implementation Status
+- Topic: Review Package Updated
 
 ---
 
 ## Previous Results
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-12_debt-section-implementation-status.txt
+  - Date: 2026-04-12
+  - Topic: Debt Section Implementation Status
 - File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-12_debt-code-review-handoff.txt
   - Date: 2026-04-12
   - Topic: Debt Code Review Handoff
