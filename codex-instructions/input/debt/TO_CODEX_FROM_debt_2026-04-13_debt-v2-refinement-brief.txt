@@ -1,0 +1,261 @@
+To: Codex
+From: Debt Team
+Date: 2026-04-13
+Subject: Debt V2 Refinement Brief — Address Carry-Forward Concerns from V2B, V2C, and V2D
+
+Codex —
+
+Debt Team reviewed the V2 phase sequence and logged a set of non-blocking concerns during V2B, V2C, and V2D. Those concerns now need to be addressed in a focused refinement pass.
+
+This is not a new phase and it is not a request to broaden product scope.
+It is a targeted refinement brief meant to tighten reliability, safety, clarity, and boundary discipline in the existing V2 implementation.
+
+==================================================
+1. GOAL OF THIS REFINEMENT PASS
+==================================================
+
+Your task is to refine the completed V2 implementation by addressing the carry-forward concerns that were documented after phase review.
+
+This pass should focus on:
+- reducing false precision
+- reducing ambiguity in shared outputs
+- reducing double-counting risk
+- improving UX containment where permissions are already narrow
+- tightening downstream obligation semantics
+- improving reliability signaling where it is currently too simplified
+
+Do not treat this as permission to redesign Debt.
+Do not introduce a new strategy engine, new recommendation behavior, or cross-section ownership drift.
+
+==================================================
+2. V2B CONCERNS TO ADDRESS
+==================================================
+
+--------------------------------------------------
+A. PRESET RULE LIBRARY LABELING IS TOO GENERIC
+--------------------------------------------------
+
+Current state:
+The preset library works, but it is still generic template coverage rather than issuer-specific or product-specific fidelity.
+
+Required refinement:
+- ensure preset labeling clearly communicates that these are generic patterns unless issuer-verified support actually exists
+- avoid any UI wording that implies a preset is issuer-authentic when it is only a close template
+- strengthen explanatory copy where needed so the user understands the difference between:
+  - generic preset rule
+  - statement-tested match
+  - issuer-verified rule (if not supported, do not imply it)
+
+Expectation:
+This can be solved through labeling, copy, and trust framing.
+Do not build a giant issuer database in this pass.
+
+--------------------------------------------------
+B. CUSTOM RULE BUILDER NEEDS OVERLAP / DOUBLE-COUNTING GUARDRAILS
+--------------------------------------------------
+
+Current state:
+The guided custom builder allows combinations that may accidentally double count balances.
+
+Example risk:
+- using a broad base like statement balance
+- then also adding promo balance, regular purchase balance, or cash advance balance on top
+
+Required refinement:
+- detect obvious overlap-risk combinations
+- add warnings, guardrails, or incompatible-selection handling where appropriate
+- ensure the builder does not silently validate obviously duplicated conceptual logic without warning
+- make overlap risk visible before save, not just after
+
+Expectation:
+Do not destroy flexibility.
+Do reduce the chance that a user creates misleading rules without realizing it.
+
+--------------------------------------------------
+C. CREDIT-CARD ENTRY UX NEEDS BETTER CONTAINMENT
+--------------------------------------------------
+
+Current state:
+The V2B card-entry surface is powerful but becoming dense.
+
+Required refinement:
+- improve grouping, containment, and progressive disclosure where practical
+- reduce the feeling that every card-specific field is competing for attention at once
+- preserve power, but make the form easier to scan and reason about
+
+Expectation:
+This is a UX tightening pass, not a simplification pass that removes real capability.
+
+==================================================
+3. V2C CONCERNS TO ADDRESS
+==================================================
+
+--------------------------------------------------
+A. THRESHOLD-BASED FLAGS SHOULD BE TREATED AS PRODUCT POLICY
+--------------------------------------------------
+
+Current state:
+Flags like promo-expiring-soon, high-utilization, due-soon, payment-due-soon, and timing-cluster-gap are driven by hard-coded thresholds.
+
+Required refinement:
+- centralize these threshold values as explicit product-policy constants or configuration points
+- make it easier to understand and maintain what those thresholds are
+- avoid scattering hard-coded policy values in a way that makes later adjustment harder
+
+Expectation:
+This does not require full user-facing configurability in this pass.
+But the threshold layer should become more intentional and maintainable.
+
+--------------------------------------------------
+B. MANUAL ACCOUNT TRUTH DEPENDENCY SHOULD STAY VISIBLE
+--------------------------------------------------
+
+Current state:
+Consequence visibility depends heavily on manually entered fields such as promo end date, grace-period status, days past due, and late fee amount.
+
+Required refinement:
+- improve visibility of missing or stale data dependencies where practical
+- preserve or strengthen prompts / warnings / inspectable notes that make it clear when consequence visibility depends on missing fields
+- avoid presenting consequence outputs with stronger confidence than the entered truth deserves
+
+Expectation:
+Do not build a giant verification workflow in this pass.
+Do make manual-data dependency harder to miss.
+
+--------------------------------------------------
+C. CASH-WINDOW STAY-CURRENT LOGIC NEEDS DOUBLE-COUNTING REVIEW
+--------------------------------------------------
+
+Current state:
+Minimum cash needed to stay current may overstate pressure in edge cases if past-due amount and past-due debt-derived bill rows overlap.
+
+Required refinement:
+- verify whether account-level past-due amount and past-due schedule rows are overlapping, mutually exclusive, or intentionally additive
+- if overlap is possible, add guardrails so stay-current cash windows do not double count the same underlying past-due pressure
+- document the chosen rule clearly in code and surface-level behavior
+
+Expectation:
+Directionally useful is not enough here.
+This needs to be made semantically cleaner.
+
+==================================================
+4. V2D CONCERNS TO ADDRESS
+==================================================
+
+--------------------------------------------------
+A. NEAR-TERM OBLIGATIONS MUST BE STRICTLY BOUNDED
+--------------------------------------------------
+
+Current state:
+The downstream snapshot is structurally correct, but near-term obligations and linked schedule counts appear too permissive.
+
+Observed risk:
+- already paid rows may still be included
+- older history rows may still be included
+- linked schedule counts may not reflect only the true active operational window
+
+Required refinement:
+- verify and tighten the rules for bounded downstream obligations
+- ensure “near-term obligations” means what it says
+- exclude satisfied/history rows from active operational obligation feeds unless there is a clearly intentional and separately defined historical purpose
+- ensure linked schedule facts reflect the intended active operational window accurately
+
+Expectation:
+This is the highest-priority refinement item in this brief.
+
+--------------------------------------------------
+B. PRIMARY CONFIDENCE STATE SHOULD BE MORE HOLISTIC
+--------------------------------------------------
+
+Current state:
+Primary downstream confidence appears to lean too heavily on payoff-trust state.
+
+Required refinement:
+- review whether primary confidence should reflect a broader account-fact reliability model
+- consider the reliability of:
+  - payoff math
+  - cash windows
+  - flags
+  - consequence visibility
+  - missing-data conditions
+- avoid a single confidence label that overstates account-fact reliability just because payoff timing happens to be supported
+
+Expectation:
+Do not overengineer this.
+But do improve the reliability signal if it is currently too narrow.
+
+--------------------------------------------------
+C. BILLS UX SHOULD NARROW STRUCTURAL ACTIONS EARLIER
+--------------------------------------------------
+
+Current state:
+Bills logic is safe, but some structural action surfaces still appear broadly available before handler-level filtering blocks them.
+
+Required refinement:
+- where practical, hide, narrow, or adapt structural actions earlier when a row or selection is debt-derived only
+- reduce the mismatch between what appears available and what is actually allowed
+- preserve operational actions such as payment recording where those remain intentionally valid
+
+Expectation:
+The boundary is already safe.
+This is a UX-tightening pass so the UI better matches the permission model.
+
+==================================================
+5. NON-NEGOTIABLE RULES FOR THIS PASS
+==================================================
+
+- Do not broaden Debt into Atlas behavior
+- Do not add recommendation language inside Debt
+- Do not redesign the architecture
+- Do not use this pass to add unrelated features
+- Preserve the existing Debt / Bills / Atlas / Reporting / Overview boundaries
+- Prioritize correctness, clarity, and semantic tightness over flashy surface work
+
+==================================================
+6. EXPECTED OUTPUT
+==================================================
+
+When this refinement pass is complete, stop and return a review package to Debt Team.
+
+Required deliverables:
+1. A memo in codex-instructions/output/debt/ summarizing:
+- what concerns were addressed
+- what changed
+- what was intentionally not changed
+- why anything was deferred
+
+2. Save the review package in:
+codex-instructions/output/debt/code review/v2-refinement/
+
+That package must include:
+- full updated source files
+- diffs if available
+- a MANIFEST.txt
+- a VALIDATION.txt
+
+3. Validation evidence:
+- lint result
+- test result
+- build result
+- any new or expanded tests added for this refinement pass
+
+4. A completion statement that clearly says:
+- V2 refinement is ready for Debt Team review
+- Codex is waiting for explicit Debt Team follow-up
+
+==================================================
+7. REVIEW STANDARD
+==================================================
+
+Debt Team will review this pass for:
+- semantic correctness
+- boundary discipline
+- downstream obligation accuracy
+- reduced double-counting risk
+- stronger reliability / confidence signaling
+- tighter Bills UX containment
+- improved clarity in credit-card rule behavior
+
+Optimize for a tighter, more trustworthy V2 — not a broader one.
+
+— Debt Team
