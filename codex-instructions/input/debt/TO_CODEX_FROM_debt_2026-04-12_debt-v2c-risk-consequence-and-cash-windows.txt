@@ -1,0 +1,156 @@
+To: Codex
+From: Debt Team
+Date: 2026-04-12
+Subject: Debt V2C — Risk, Consequence, and Short-Term Cash Windows
+
+==================================================
+1. PHASE PURPOSE
+==================================================
+
+This file covers V2C only.
+
+V2C is the visibility and consequence phase.
+Its job is to make Debt better at showing what risk is forming, what near-term debt cash is required, and what factual consequences are becoming relevant.
+
+This phase should focus on:
+- short-term debt cash requirement windows
+- delinquency / consequence visibility
+- stronger factual debt-specific risk flags
+- due-date clustering and timing pressure visibility
+- support for richer real-world account states in downstream outputs
+
+Do not take on V2D scope in this phase unless a small dependency is unavoidable.
+If so, keep it narrow and document it.
+
+==================================================
+2. REQUIRED V2C BUILD SCOPE
+==================================================
+
+Implement the following:
+
+A. Short-term cash requirement windows
+Calculate and expose:
+- required debt payments in the next 14 days
+- required debt payments in the next 30 days
+- required debt payments in the next 60 days
+- minimum debt cash needed to stay current in those windows
+- due-date clustering visibility where relevant
+- short-term timing pressure visibility where relevant
+
+B. Delinquency / consequence visibility
+Support factual visibility for:
+- late fee exposure
+- promo expiration risk
+- loss of grace period where relevant
+- increased interest burden where relevant
+- balance still owed on a closed account
+- delinquency progression where supported by current data model
+
+C. Stronger factual flags
+Support compact factual flags such as:
+- Delinquent
+- Past Due / Behind
+- Due Soon
+- Payment Due Soon
+- Promo Expiring Soon
+- High Utilization
+- Interest Accruing
+- No Payment Required
+- Interest Accruing While No Payment Required
+- Closed With Balance
+- Timing Cluster Forming
+- Missing Key Inputs Limiting Reliability
+
+D. Real-world account states in outputs
+Strengthen support for:
+- active repayment
+- deferment
+- no payment currently required
+- no interest currently accruing
+- interest accruing while payment is not currently required
+- delinquent / behind
+- closed with remaining balance
+- promo period active
+- intro APR or deferred-interest state where applicable
+
+==================================================
+3. UX RULES FOR THIS PHASE
+==================================================
+
+These outputs must stay:
+- factual
+- compact
+- non-dramatic
+- account-centered
+- progressively disclosed
+
+Debt must not introduce:
+- recommendation language
+- urgency rankings
+- priority labels
+- hidden scores
+- Atlas-style next-step copy
+
+If a flag or label cannot be explained from visible account truth, do not create it.
+
+==================================================
+4. OUT OF SCOPE FOR V2C
+==================================================
+
+Do NOT fully implement in this phase:
+- broad Atlas recommendation redesign
+- Overview / Reporting / Bills UI redesigns beyond what V2C outputs require internally
+- large chart systems
+- new strategy or scoring engines
+- global cross-section presentation overhaul
+
+That belongs to V2D.
+
+==================================================
+5. REQUIRED CODEX FOLLOW-UP AFTER V2C
+==================================================
+
+When V2C is complete, do NOT proceed to V2D automatically.
+
+Codex must stop and return a review package to Debt Team.
+
+Required follow-up deliverables:
+1. A memo in codex-instructions/output/debt/ summarizing:
+- what V2C implemented
+- what new risk / consequence flags now exist
+- what cash windows are now exposed
+- what remains for V2D
+- any limitations or assumptions in the flag logic
+
+2. Readable review files in codex-instructions/output/debt/code review/ including:
+- full updated source files
+- diffs if available
+- manifest of changed files
+
+3. Validation evidence:
+- lint result
+- test result
+- build result
+- any new tests added for risk flags, windows, or consequence visibility
+
+4. A phase-completion statement that clearly says:
+- V2C is ready for Debt Team review
+- Codex is waiting for explicit Debt Team approval before starting V2D
+
+Codex must not begin V2D until Debt Team sends a new Codex instruction file authorizing it.
+
+==================================================
+6. REVIEW STANDARD
+==================================================
+
+Debt Team will review V2C for:
+- factual correctness
+- non-advisory signaling
+- trust clarity
+- usefulness of the 14 / 30 / 60 day windows
+- signal compactness
+- boundary discipline
+
+Optimize for factual usefulness over dramatic signal volume.
+
+— Debt Team
