@@ -1,0 +1,41 @@
+Debt code review handoff manifest
+Generated: 2026-04-12
+Source repo: /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard
+
+Changed files
+1. /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/components/FinanceDashboard.tsx
+   - 2217 lines
+   - Patch: diffs/components__FinanceDashboard.tsx.diff
+2. /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/components/DebtSection.tsx
+   - 908 lines
+   - Patch: diffs/components__DebtSection.tsx.diff
+3. /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/components/BillRow.tsx
+   - 470 lines
+   - Patch: diffs/components__BillRow.tsx.diff
+4. /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/debt.ts
+   - 363 lines
+   - Patch: diffs/lib__debt.ts.diff
+5. /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/dashboard-state.ts
+   - 709 lines
+   - Patch: diffs/lib__dashboard-state.ts.diff
+6. /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/types.ts
+   - 662 lines
+   - Patch: diffs/lib__types.ts.diff
+7. /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/advisor-service.ts
+   - 539 lines
+   - Patch: diffs/lib__advisor-service.ts.diff
+8. /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/advisor-contracts.ts
+   - 199 lines
+   - Patch: diffs/lib__advisor-contracts.ts.diff
+
+Review package files
+- MANIFEST.txt
+- FROM_CODEX_TO_debt_2026-04-12_debt-code-review-handoff.txt
+- diffs/components__FinanceDashboard.tsx.diff
+- diffs/components__DebtSection.tsx.diff
+- diffs/components__BillRow.tsx.diff
+- diffs/lib__debt.ts.diff
+- diffs/lib__dashboard-state.ts.diff
+- diffs/lib__types.ts.diff
+- diffs/lib__advisor-service.ts.diff
+- diffs/lib__advisor-contracts.ts.diff

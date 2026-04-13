@@ -1,0 +1,198 @@
+Debt section code review handoff
+Date: 2026-04-12
+Source repo: /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard
+Output package: /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review
+
+1. Actual changed files / patch set
+This handoff includes per-file patch files under the local diffs/ folder.
+
+Patch files:
+- diffs/components__FinanceDashboard.tsx.diff
+- diffs/components__DebtSection.tsx.diff
+- diffs/components__BillRow.tsx.diff
+- diffs/lib__debt.ts.diff
+- diffs/lib__dashboard-state.ts.diff
+- diffs/lib__types.ts.diff
+- diffs/lib__advisor-service.ts.diff
+- diffs/lib__advisor-contracts.ts.diff
+
+Note on patch generation:
+- The working tree files listed for this debt implementation are currently untracked in the local app repo.
+- The patch files were therefore generated as explicit no-index diffs against /dev/null so the debt team can still review the exact file additions and content.
+- See MANIFEST.txt for the exact file list and line counts.
+
+2. Exact file manifest
+Exact manifest is provided in:
+- MANIFEST.txt
+
+Changed files:
+- components/FinanceDashboard.tsx
+- components/DebtSection.tsx
+- components/BillRow.tsx
+- lib/debt.ts
+- lib/dashboard-state.ts
+- lib/types.ts
+- lib/advisor-service.ts
+- lib/advisor-contracts.ts
+
+3. Implementation notes by area
+
+A. Debt UI
+Primary file:
+- components/DebtSection.tsx
+
+What was implemented:
+- Added a first-class Debt workspace that is meant to be the source-of-truth editing surface for debt accounts.
+- The section now supports:
+  - debt summary panel
+  - debt account entry / update flow
+  - debt account list
+  - account detail / schedule view
+  - focus-from-Bills behavior via focusedAccountId
+- Selection logic was adjusted to respect a focused debt account coming from the Bills workspace without relying on a setState-in-effect pattern.
+- The Debt tab is now part of the main dashboard navigation and is rendered through FinanceDashboard.
+
+Behavioral intent:
+- Debt structure is managed in Debt.
+- Bills remains the operational ledger view.
+- If a user reaches a debt-derived item in Bills and needs to change the source debt structure, the UI redirects them back to Debt rather than pretending derived debt items are normal standalone bills.
+
+B. Debt math / state model
+Primary files:
+- lib/types.ts
+- lib/dashboard-state.ts
+- lib/debt.ts
+
+What was implemented:
+- Added a debt domain model in lib/types.ts, including:
+  - debt account type
+  - cadence
+  - lifecycle state
+  - payment requirement
+  - interest accrual mode
+  - derived metrics / schedule item types
+  - summary types
+- Extended Bill to support debt provenance metadata:
+  - sourceType
+  - sourceDebtAccountId
+  - sourceDebtType
+  - sourceDebtOccurrenceDate
+- Added debtAccounts to persisted DashboardState.
+- Added normalization and validation for debt account data in lib/dashboard-state.ts.
+- Added debt derivation/math helpers in lib/debt.ts, including:
+  - projected debt bill generation
+  - mergeDebtBills(existingBills, debtAccounts)
+  - debt schedule generation
+  - debt-derived metrics
+  - debt summary calculation
+
+Current model shape:
+- debtAccounts = structural source of truth for debt obligations
+- bills = manual bills plus operational overrides/history
+- mergeDebtBills(...) = shared feed builder that produces the actual working ledger surface consumed by the rest of the app
+
+Important math behavior:
+- debt-derived obligations are projected into the shared ledger on a 60-day forward window
+- operational history such as payment state, late fee, and notes is preserved/overlaid when a debt-derived bill already has a matching persisted bill row
+- operational edits to a derived obligation can create a persisted overlay row so the ledger can retain late fee / payment state without mutating the structural debt source
+
+C. Bills integration
+Primary files:
+- components/FinanceDashboard.tsx
+- components/BillRow.tsx
+- lib/debt.ts
+
+What was implemented:
+- FinanceDashboard now computes:
+  - ledgerBills = mergeDebtBills(bills, debtAccounts)
+- Shared read paths now use ledgerBills instead of raw stored bills for:
+  - summary
+  - sorting
+  - running balance calculations
+  - upcoming bills
+  - smart insights
+  - reporting snapshot
+  - bill lookup for editing/payment details
+- Added upsertBillRecords(...) in FinanceDashboard so operational actions on debt-derived rows can be persisted correctly.
+
+Bills-row behavior for debt-derived items:
+- shows a Linked to Debt badge
+- edit action becomes Open in Debt
+- delete is not offered for debt-derived rows
+- payment details remain allowed because payment/late-fee state is operational ledger behavior
+
+Bulk-operation behavior:
+- bulk status/category changes apply only to manual rows
+- if the selection is debt-derived only, the action is blocked and the user is told to use Debt
+- bulk late fee apply/remove is allowed and uses persisted operational overlay rows
+- bulk delete only removes manual bills
+- clear-all distinguishes between manual bills being removed and debt accounts still remaining in Debt
+
+UI consequence:
+- Bills remains the operational action center
+- Debt remains the structural account-management system
+- This keeps the source-of-truth boundary explicit instead of letting derived debt rows drift into independent bill entities
+
+D. Atlas / shared feed integration
+Primary files:
+- lib/advisor-service.ts
+- lib/advisor-contracts.ts
+- components/FinanceDashboard.tsx
+
+What was implemented:
+- The shared operational feed now includes debt-derived obligations through ledgerBills.
+- Advisor facts generation in lib/advisor-service.ts now merges debt-derived bills before summary/reporting/advisor facts are computed.
+- AdvisorFacts.source now includes debtAccounts in lib/advisor-contracts.ts.
+- Advisor freshness hashing now includes debtAccounts so structural debt changes can invalidate analysis when they materially affect the ledger.
+
+Practical effect:
+- Atlas / advisor is no longer reasoning only from raw manual bills.
+- It now sees the merged shared ledger plus the underlying debtAccounts in source facts.
+- That means Overview, Bills, Reporting, and Atlas are aligned to the same merged obligation feed instead of reasoning from divergent bill sets.
+
+4. Validation evidence
+Validation was run in:
+- /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard
+
+Lint:
+- Command: npm run lint
+- Result: passed
+
+Tests:
+- Command: npm run test
+- Result: passed
+- Suite summary: 5 test files passed, 57 tests passed
+- Duration: 7.38s
+
+Build:
+- Command: npm run build
+- Result: passed
+- Build output confirmed Next.js production build success and route generation completed.
+
+5. Known limitations / deferred items
+- No debt-specific unit test suite was added yet for lib/debt.ts.
+  Current validation is through the application regression suite, advisor-service integration tests already present in the repo, lint, and production build success.
+- The current debt projection model is intentionally bounded to a 60-day forward window.
+  If the debt team expects longer forecast visibility, that should be a deliberate follow-up change rather than a silent widening.
+- Atlas currently consumes debt via the merged ledger feed and debtAccounts in advisor source facts.
+  It does not yet surface a dedicated debt-native strategy layer around payoff sequencing, utilization-specific risk, APR-first ranking, or amortization-specific recommendations beyond what the merged obligations expose.
+- Bulk status/category/delete flows intentionally guard against structural edits on debt-derived rows.
+  That is by design, but it means there is no dedicated bulk redirect flow into Debt yet.
+- This handoff package is local review output only.
+  It does not update indexes and it is not itself a deployment artifact.
+
+Recommended review path for Debt team
+1. Read MANIFEST.txt for the exact touched files.
+2. Review diffs in this order:
+   - lib/types.ts
+   - lib/dashboard-state.ts
+   - lib/debt.ts
+   - components/FinanceDashboard.tsx
+   - components/DebtSection.tsx
+   - components/BillRow.tsx
+   - lib/advisor-contracts.ts
+   - lib/advisor-service.ts
+3. Validate the intended boundary:
+   - Debt owns structure
+   - Bills owns operations
+   - Atlas reads the merged shared ledger
