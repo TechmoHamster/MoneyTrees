@@ -1,0 +1,197 @@
+To: Debt Team
+From: Codex
+Date: 2026-04-12
+Subject: Debt Section Implementation Status
+
+Debt Team —
+
+Your approved Debt section brief has now been implemented locally in the finance-dashboard app and is structurally aligned to the section boundaries documented in the build brief and director approval memos.
+
+==================================================
+1. STATUS
+==================================================
+
+Current status:
+- implemented locally
+- validated with lint, tests, and production build
+- not yet deployed in this handoff
+
+Validation completed:
+- npm run lint -> passed
+- npm run test -> passed
+- 57 tests passed
+- npm run build -> passed
+
+==================================================
+2. WHAT IS NOW IMPLEMENTED
+==================================================
+
+A. Debt as a real product section
+- Added Debt as a dedicated dashboard section/tab.
+- Debt now exists as a user-facing workspace rather than only a hidden/shared model.
+
+B. Debt account truth model
+Implemented support for these debt types:
+- Credit Card
+- Auto Loan
+- Student Loan
+- Installment Loan
+- BNPL
+- Financed Purchase
+
+Implemented account/state fields for:
+- provider / account name
+- debt type
+- original amount where relevant
+- current balance
+- APR where relevant
+- credit limit where relevant
+- term length / payment counts where relevant
+- payment cadence
+- next due date
+- minimum payment
+- scheduled payment amount
+- lifecycle state
+- payment requirement state
+- interest accrual state
+- delinquent flag
+- notes
+
+C. Debt calculations / outputs
+Implemented debt-side derived math for:
+- next scheduled payment amount
+- remaining balance
+- remaining payment count where relevant
+- payoff date projection where inputs allow it
+- interest visibility notes where relevant
+- utilization for credit cards
+- installment progress visibility
+- debt summary aggregation
+- debt-linked upcoming schedule view
+
+D. Required user-facing Debt surfaces
+Implemented:
+- Debt Summary View
+- Debt Account List
+- Debt Account Detail View
+- debt-type filtering
+- upcoming-payment visibility
+- payoff / progress visibility
+
+==================================================
+3. BILLS INTEGRATION CONTRACT — IMPLEMENTED
+==================================================
+
+The Bills integration follows the approved contract.
+
+Implemented behavior:
+- users create and manage debt accounts in Debt
+- Bills receives only debt-linked operational obligation rows derived from Debt
+- only near-term debt obligations inside a 60-day forward window are materialized operationally
+- debt-linked bill rows remain tied to their source debt account
+- Bills rows linked to Debt are treated as derived operational rows, not independent debt accounts
+
+Guardrails implemented:
+- Debt-linked rows are visibly labeled as linked to Debt
+- editing a debt-linked row in Bills redirects the user to the source debt account in Debt instead of allowing structural bill editing
+- deleting a debt-linked row from Bills is blocked
+- payment capture and late-fee operational handling still remain possible in Bills
+
+This preserves the ownership split:
+- Debt owns account structure and debt math
+- Bills owns operational payment capture
+
+==================================================
+4. SHARED CROSS-SECTION FEED — IMPLEMENTED
+==================================================
+
+Debt now feeds the rest of the app through a merged operational bill set.
+
+That merged bill layer is now used by:
+- Overview
+- Bills
+- Reporting
+- Atlas / AI Advisor server-side facts building
+
+This means debt-linked obligations now participate in:
+- balances
+- upcoming obligations
+- bill table operations
+- reporting snapshots
+- advisor / Atlas context
+
+without making Debt duplicate Bills, Reporting, or Atlas responsibilities.
+
+==================================================
+5. TRUST / FAILURE HANDLING
+==================================================
+
+The implementation follows the required trust stance.
+
+Implemented trust behavior includes:
+- limited-output states when required debt inputs are missing
+- trust / limitation notes in debt-derived metrics when schedule math is partial
+- no fake payoff precision when key schedule inputs are missing
+- no debt-local recommendation or scoring engine added
+- no silent transfer of account ownership from Debt into Bills
+
+Current trust stance:
+- confirmed values are shown directly
+- projected / schedule behavior degrades when critical fields are absent
+- Bills and Debt ownership remain explicit rather than silently merged
+
+==================================================
+6. KEY FILES ADDED / UPDATED
+==================================================
+
+Primary implementation files:
+- finance-dashboard/components/DebtSection.tsx
+- finance-dashboard/lib/debt.ts
+- finance-dashboard/lib/types.ts
+- finance-dashboard/lib/dashboard-state.ts
+- finance-dashboard/components/FinanceDashboard.tsx
+- finance-dashboard/components/BillRow.tsx
+- finance-dashboard/lib/advisor-service.ts
+- finance-dashboard/lib/advisor-contracts.ts
+
+==================================================
+7. IMPORTANT BOUNDARY CHECK
+==================================================
+
+The implementation was kept within the approved product boundaries.
+
+Not added:
+- debt-local recommendation engine
+- debt-local urgency scoring
+- debt-local advisor behavior
+- Reporting clone behavior inside Debt
+- Overview clone behavior inside Debt
+- generic bill-management takeover inside Debt
+
+Debt remains:
+- account-centric
+- debt-truth focused
+- debt-math focused
+- schedule / progress focused
+
+==================================================
+8. CURRENT DEPLOYMENT STATE
+==================================================
+
+This Debt work is currently implemented locally and validated, but not yet deployed in this handoff.
+
+If deployment is requested next, the section is in a state that can be pushed live.
+
+==================================================
+9. BOTTOM LINE
+==================================================
+
+The Debt brief has been carried through as an actual integrated product section.
+
+The important contract is now in place:
+- Debt owns debt truth and debt math
+- Bills receives bounded operational obligations only
+- Atlas consumes shared debt truth without becoming debt-local
+- the rest of the app reads the merged operational picture cleanly
+
+— Codex
