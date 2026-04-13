@@ -1,0 +1,177 @@
+To: Codex
+From: Debt Team
+Date: 2026-04-12
+Subject: Debt V2A — Core Math and Output Foundation
+
+==================================================
+1. V2 PROGRAM STRUCTURE
+==================================================
+
+Debt V2 is being split into multiple phases on purpose.
+
+This is not a signal that the product direction is changing.
+This is a delivery-control decision so the Debt Team can review each layer carefully before the next layer is built.
+
+Debt V2 phase plan:
+- V2A = core math and output foundation
+- V2B = credit card model + minimum payment rule system
+- V2C = risk, consequence, and short-term cash visibility
+- V2D = cross-section integration polish, Atlas-ready output refinement, and final hardening
+
+This file covers V2A only.
+
+Do not build V2B, V2C, or V2D work in this phase unless a dependency is absolutely required to keep V2A coherent.
+If a dependency is required, keep it minimal and document it clearly.
+
+==================================================
+2. PURPOSE OF V2A
+==================================================
+
+V2A is the foundation pass.
+
+Its job is to deepen Debt math and structured outputs without changing the section boundary or turning Debt into an advisor surface.
+
+V2A should improve Debt from tracking-grade toward decision-grade by strengthening the debt engine itself.
+
+This phase should focus on:
+- stronger payoff math outputs
+- extra-payment impact outputs
+- projected interest outputs
+- trust / confidence labeling for key math
+- cleaner inspectability of debt assumptions and calculated outputs
+
+==================================================
+3. REQUIRED V2A BUILD SCOPE
+==================================================
+
+Implement the following in this phase:
+
+A. Extra-payment impact outputs
+For supported debt accounts, calculate:
+- current payoff date
+- payoff date with +$50
+- payoff date with +$100
+- payoff date with +$200
+- months saved for each supported scenario
+- projected interest saved for each supported scenario
+
+B. Stronger payoff outputs
+Expose:
+- projected remaining interest where supported
+- alternative payoff dates
+- payoff acceleration comparisons
+- payment assumption data used in the projection
+
+C. Confidence / trust states
+For key debt outputs, support visible states such as:
+- Exact
+- Estimated
+- Limited
+- Custom
+- Manual
+
+These states must be surfaced where precision matters.
+
+D. Inspectability improvements
+For important debt math, the user should be able to inspect:
+- what inputs are being used
+- what assumptions are active
+- what outputs are exact vs estimated
+- why a calculation is limited when it is limited
+
+==================================================
+4. OUT OF SCOPE FOR V2A
+==================================================
+
+Do NOT fully implement the following in this phase:
+- full credit-card-specific modeling overhaul
+- minimum payment preset library
+- custom minimum payment builder
+- promo-expiration risk system
+- delinquency consequence system
+- near-term 14 / 30 / 60 day debt cash windows
+- downstream Atlas / Overview / Reporting surface changes beyond what V2A strictly requires internally
+
+Those belong to later phases.
+
+==================================================
+5. BOUNDARY RULES
+==================================================
+
+Debt still must not become:
+- a recommendation engine
+- a scoring engine
+- a second Atlas surface
+- a second Reporting section
+- a generic dashboard
+
+Debt owns:
+- debt truth
+- debt math
+- debt schedules
+- debt account states
+- structured factual outputs
+
+Atlas remains downstream of shared truth.
+
+==================================================
+6. UX REQUIREMENTS FOR THIS PHASE
+==================================================
+
+Any UI added in this phase must remain:
+- account-centric
+- calm
+- factual
+- inspectable
+- progressively disclosed
+
+Do not overload the top-level Debt screen.
+
+If deeper payoff or scenario detail is needed, place it in account detail rather than the summary layer.
+
+==================================================
+7. REQUIRED CODEX FOLLOW-UP AFTER V2A
+==================================================
+
+When V2A is complete, do NOT proceed to V2B automatically.
+
+Codex must stop and return a review package to Debt Team.
+
+Required follow-up deliverables:
+1. A memo in codex-instructions/output/debt/ summarizing:
+- what V2A implemented
+- what changed
+- what remains for later phases
+- any blocked items or assumptions
+
+2. Readable review files in codex-instructions/output/debt/code review/ including:
+- full updated source files for touched files
+- diffs if available
+- a manifest of changed files
+
+3. Validation evidence:
+- lint result
+- test result
+- build result
+- any new tests added for V2A
+
+4. A phase-completion statement that clearly says:
+- V2A is ready for Debt Team review
+- Codex is waiting for explicit Debt Team approval before starting V2B
+
+Codex must not begin V2B until Debt Team sends a new Codex instruction file authorizing that next phase.
+
+==================================================
+8. REVIEW STANDARD
+==================================================
+
+Debt Team will review V2A for:
+- math correctness
+- trust labeling quality
+- inspectability
+- boundary discipline
+- UI containment
+
+Optimize for correctness and traceability over surface flash.
+
+— Debt Team
