@@ -1,0 +1,403 @@
+FROM: Investment HQ
+TO: Debt Team
+DATE: 2026-04-13
+SUBJECT: Debt V3 Review — Current Assessment and 10/10 Requirements
+
+==================================================
+1. EXECUTIVE SUMMARY
+==================================================
+
+Debt V3 is directionally strong and materially aligned with the Investment HQ mission.
+
+Current Investment HQ score: 8.7 / 10
+
+The V3 scope correctly treats the next product push as a maturity push rather than a reinvention. That is the right strategic direction. V1 made Debt real. V2 is making Debt decision-grade. V3 should make Debt mature, dependable, and robust enough that future work becomes incremental rather than another broad product leap.
+
+The strongest parts of the current V3 scope are:
+- accuracy improvement
+- verification workflows
+- trust and confidence signaling
+- credit-card maturity
+- real-world debt edge-case handling
+- restrained automation
+- downstream leverage without expanding Debt's product ownership
+
+The main reason V3 does not yet score 10/10 is that the scope currently reads more like a strong maturity thesis than a hard final-product standard.
+
+To reach 10/10, V3 needs measurable acceptance criteria, stronger failure-state handling, clearer debt-health integrity checks, and sharper factual outputs that support downstream financial decision-making without turning Debt into an advisor or strategy engine.
+
+==================================================
+2. INVESTMENT HQ MISSION FIT
+==================================================
+
+Debt V3 strongly supports the Investment HQ mission.
+
+Investment HQ prioritizes:
+- data over opinion
+- evidence over narrative
+- probability over certainty
+- risk before reward
+- long-term durability over short-term convenience
+
+Debt V3 aligns with this because it focuses on debt truth, debt math, statement verification, stale-data visibility, mismatch detection, inspectable calculations, and accurate treatment of messy debt realities.
+
+This is exactly the kind of foundation required for rational financial decision-making. A financial system cannot make good recommendations, projections, or risk assessments if the upstream debt data is weak.
+
+Debt V3 should therefore be treated as a financial-truth infrastructure layer.
+
+It does not need to become a strategy engine. In fact, it should not. But it must produce debt facts with enough accuracy, transparency, and context that Atlas, Overview, Reporting, Bills, and future decision-support surfaces can safely consume them.
+
+Assessment:
+- Mission fit: Strong
+- Mission exceedance: Partial
+- Reason: V3 exceeds normal expectations for debt-data trust and verification, but it is still infrastructure, not the full decision system.
+
+==================================================
+3. MARKET / CONSUMER TOOL COMPARISON
+==================================================
+
+Compared against common personal-finance and budgeting tools, Debt V3 appears stronger than normal consumer expectations in debt-specific depth.
+
+Most consumer finance apps focus on:
+- account syncing
+- spending categories
+- budgets
+- bills and subscriptions
+- goals
+- net worth
+- basic loan or debt payoff visibility
+
+Debt V3 is aiming at a deeper standard:
+- issuer-like minimum payment logic where possible
+- balance bucket handling
+- promo and deferred-interest modeling
+- residual / trailing interest awareness
+- rule verification against statements
+- mismatch detection
+- stale-data signaling
+- inspectable confidence states
+- clearer distinction between payment assumptions and actual minimum logic
+
+That is materially more serious than simply showing a debt balance and a payoff estimate.
+
+The market-level takeaway:
+- As a debt feature, V3 likely exceeds current consumer-app expectations.
+- As a full personal finance product, V3 does not automatically exceed market leaders because it is intentionally narrower.
+
+That boundary is acceptable. Debt should not become a second Overview, second Bills section, or second Reporting surface.
+
+The key is to make Debt excellent at its actual job: truthful debt modeling, verification, account-state clarity, and safe downstream data production.
+
+==================================================
+4. FINANCIAL HEALTH / PROVEN METHOD ALIGNMENT
+==================================================
+
+Debt V3 aligns well with proven financial-health practices.
+
+Strong financial debt management depends on:
+- knowing exactly what is owed
+- knowing what is due and when
+- avoiding missed payments
+- understanding interest behavior
+- understanding credit-card minimum-payment mechanics
+- understanding promotional and deferred-interest risk
+- maintaining accurate records
+- using structured payoff decisions rather than monthly improvisation
+
+Debt V3 supports these practices by improving:
+- minimum payment realism
+- payoff accuracy
+- credit-card modeling
+- statement verification
+- stale-data warnings
+- mismatch detection
+- confidence labeling
+- real-world account-state handling
+
+The missing piece is not philosophy. The missing piece is operational completeness.
+
+Good debt health is not just accurate tracking. It is accurate tracking plus enough factual pressure signals to help the user or downstream product understand what needs attention.
+
+Debt does not need to recommend a strategy directly, but it should expose clean facts such as:
+- minimum cash required to stay current
+- past-due exposure
+- near-term debt cash pressure
+- promo expiration risk
+- account freshness risk
+- confidence level of each projection
+
+==================================================
+5. CURRENT SCORE RATIONALE
+==================================================
+
+Current score: 8.7 / 10
+
+Why the score is high:
+- The scope is focused and disciplined.
+- It avoids feature sprawl.
+- It correctly protects Debt's product boundary.
+- It prioritizes accuracy and trust over flashy automation.
+- It identifies credit cards as the highest-risk and most complex debt type.
+- It improves the usefulness of Debt as an upstream source for the wider financial system.
+
+Why it is not yet 10/10:
+- The end state is not yet defined in measurable pass/fail terms.
+- Trust states are described directionally, but need acceptance rules.
+- Verification workflows need explicit success and failure states.
+- Credit-card maturity needs concrete modeling requirements.
+- Edge cases need defined graceful-degradation behavior.
+- Downstream outputs need stronger contracts.
+- Debt-health pressure signals need to be exposed without turning Debt into a strategy engine.
+
+==================================================
+6. WHAT V3 NEEDS TO REACH 10/10
+==================================================
+
+To score 10/10 under the Investment HQ lens, Debt V3 needs the following additions.
+
+--------------------------------------------------
+A. HARD V3 ACCEPTANCE CRITERIA
+--------------------------------------------------
+
+V3 needs a pass/fail checklist that defines when the product is actually mature.
+
+Recommended acceptance criteria:
+- Every supported debt type has documented modeling rules.
+- Every projection shows its assumptions.
+- Every account has a confidence / trust state.
+- Every trust state has a defined reason.
+- Every stale account is visibly flagged.
+- Every manual or estimated field is identifiable.
+- Every statement-derived field stores last verified date.
+- Every credit-card rule can be verified, marked stale, marked limited, or marked manual.
+- Every downstream output has an owner, definition, and freshness status.
+- Every low-data state degrades gracefully instead of pretending to be precise.
+
+Without this, V3 risks being impressive but still subjective.
+
+--------------------------------------------------
+B. DEBT HEALTH INTEGRITY CHECKS
+--------------------------------------------------
+
+V3 should include internal checks that ask whether the debt math still makes sense.
+
+Examples:
+- Balance changed unexpectedly.
+- Minimum due changed outside expected tolerance.
+- Payment posted but projection did not update.
+- Statement balance and current balance diverge in a way that affects projections.
+- Promo balance is close to expiration.
+- Account is marked current but has stale verification.
+- Closed account still has remaining balance.
+- Manual override conflicts with statement-derived logic.
+
+These checks are not recommendations. They are data-integrity and financial-risk flags.
+
+--------------------------------------------------
+C. STRONGER FAILURE-STATE HANDLING
+--------------------------------------------------
+
+V3 needs to define what happens when real life breaks the clean model.
+
+Required failure states:
+- statement missing
+- lender rule changed
+- user skipped updates
+- balance unavailable
+- minimum payment unavailable
+- promo terms incomplete
+- account is paused / hardship / deferred
+- payment posted late
+- account closed but still owed
+- calculation confidence is too weak for reliable projection
+
+Each failure state should answer:
+- What is known?
+- What is unknown?
+- What calculations are still safe?
+- What outputs should be downgraded?
+- What warning should the user see?
+- What downstream systems should be told?
+
+This is one of the clearest ways to make V3 feel genuinely mature.
+
+--------------------------------------------------
+D. CASH-FLOW PRESSURE SIGNALS
+--------------------------------------------------
+
+Debt should not become Atlas, but it should expose factual cash-pressure outputs.
+
+Recommended outputs:
+- debt cash required in next 7 days
+- debt cash required in next 14 days
+- debt cash required in next 30 days
+- debt cash required in next 60 days
+- minimum needed to stay current
+- past-due amount
+- delinquency-risk exposure
+- promo-expiration amount and date
+- deferred-interest exposure
+- accounts requiring verification
+
+These are not strategic recommendations. They are facts. But they are extremely useful facts for financial health.
+
+--------------------------------------------------
+E. SOURCE AUDIT TRAIL
+--------------------------------------------------
+
+Every major debt output should be traceable.
+
+Recommended source labels:
+- manual entry
+- statement-derived
+- lender rule
+- calculated
+- estimated
+- custom override
+- stale
+- limited-data
+- imported
+- user-confirmed
+
+For each important output, the user should be able to answer:
+- Where did this number come from?
+- When was it last verified?
+- How confident is the system?
+- What assumption is being used?
+- What would make this number wrong?
+
+This directly supports the Investment HQ standard of evidence over narrative.
+
+--------------------------------------------------
+F. CREDIT-CARD MODELING STANDARD
+--------------------------------------------------
+
+Credit cards should receive a dedicated maturity checklist because they are the highest-risk debt type.
+
+Recommended requirements:
+- separate statement balance, current balance, and payoff balance where applicable
+- support for minimum payment formulas by rule type
+- minimum-payment verification against statements
+- purchase APR / cash advance APR / promo APR awareness where supported
+- balance bucket handling where practical
+- promo expiration date tracking
+- deferred-interest risk tracking
+- residual / trailing interest warning support
+- payment allocation assumptions clearly stated
+- distinction between actual minimum due and user payment strategy
+- stale issuer-rule detection
+
+The goal is not perfect issuer replication in every case. The goal is honest fidelity, visible assumptions, and clear degradation when precision is not possible.
+
+--------------------------------------------------
+G. DOWNSTREAM CONTRACTS
+--------------------------------------------------
+
+Debt V3 should define clean output contracts for the rest of MoneyTrees.
+
+Recommended downstream outputs:
+- account balance truth
+- minimum due truth
+- due date truth
+- debt cash-pressure windows
+- payoff projection confidence
+- stale-data flags
+- promo-risk flags
+- past-due flags
+- closed-but-owed flags
+- debt-type-specific risk flags
+
+Each output should define:
+- source
+- freshness
+- confidence
+- owner
+- intended consumer
+- whether it is safe for recommendations
+
+This keeps Debt from becoming Atlas while still making Atlas, Overview, Reporting, and Bills stronger.
+
+--------------------------------------------------
+H. MAINTENANCE WORKFLOW MATURITY
+--------------------------------------------------
+
+V3 should reduce manual upkeep without hiding logic.
+
+Recommended workflows:
+- statement refresh checklist
+- stale account review queue
+- mismatch review queue
+- promo deadline review queue
+- accounts needing user confirmation
+- accounts with fragile projections
+- rules requiring re-verification
+
+The key principle:
+Automation may assist, but the system must remain inspectable.
+
+--------------------------------------------------
+I. DEFINITION OF “NO V4 NEEDED”
+--------------------------------------------------
+
+If V3 is intended to be the final evolutionary leap, the team should explicitly define what that means.
+
+Recommended standard:
+Debt V3 is complete when future improvements are mostly:
+- issuer coverage improvements
+- automation refinements
+- UX polish
+- bug fixes
+- additional edge-case support
+- performance/stability improvements
+- minor modeling refinements
+
+Debt V3 is not complete if future work still requires:
+- redefining Debt's role
+- rebuilding trust states
+- rebuilding credit-card modeling
+- rebuilding verification workflows
+- changing downstream ownership boundaries
+- adding basic failure-state handling after the fact
+
+==================================================
+7. STRATEGIC WARNING
+==================================================
+
+The biggest risk for V3 is mistaking a comprehensive scope for a complete product standard.
+
+The current direction is strong. But a 10/10 maturity push requires more than broad goals. It needs explicit operational tests.
+
+The Debt team should be able to say:
+- This account is accurate enough because X.
+- This projection is limited because Y.
+- This output is stale because Z.
+- This recommendation surface can safely use this signal.
+- This calculation should not be trusted beyond this boundary.
+
+That is the difference between a good personal-finance feature and a serious financial decision-support system.
+
+==================================================
+8. FINAL RECOMMENDATION
+==================================================
+
+Proceed with Debt V3, but tighten it before implementation.
+
+Recommended next step:
+Convert the current V3 scope into a formal V3 Product Acceptance Standard.
+
+That standard should include:
+- trust-state rules
+- debt-type modeling requirements
+- credit-card maturity requirements
+- failure-state behavior
+- verification workflows
+- stale-data handling
+- source audit trails
+- downstream output contracts
+- cash-pressure factual signals
+- no-V4 completion criteria
+
+If those are added, Debt V3 can reasonably move from 8.7 / 10 to 10 / 10 under the Investment HQ review standard.
+
+Bottom line:
+Debt V3 is already strategically strong. To become a true full-stop maturity release, it needs to become testable, auditable, and operationally complete.
