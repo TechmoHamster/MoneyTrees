@@ -1,0 +1,73 @@
+To: Debt Team
+From: Debt Team
+Date: 2026-04-13
+Subject: V2D Review Concerns to Carry Forward
+
+Debt Team —
+
+V2D is approved for progression, but the following concerns should be preserved as internal review notes and carried into later refinement work.
+
+==================================================
+1. NEAR-TERM OBLIGATIONS LOOK TOO PERMISSIVE
+==================================================
+
+The downstream snapshot architecture is correct.
+The shared obligation structure is useful.
+
+However, the current near-term obligation logic appears too permissive.
+
+Observed risk:
+- bounded operational obligations may still include rows that are already paid
+- bounded operational obligations may still include older history rows instead of only forward-looking operational rows
+- linked schedule facts may count rows that are no longer part of the true active operational window
+
+Why this matters:
+- downstream consumers may interpret these rows as active obligations
+- Bills and Atlas should not receive inflated or historically mixed operational pressure
+- the meaning of “near-term obligation” becomes weaker if paid/history rows remain included
+
+Carry-forward note:
+Future refinement should verify that bounded downstream obligations and linked schedule counts are strictly limited to the intended operational window and exclude rows that are already satisfied unless intentionally preserved for a separate historical purpose.
+
+==================================================
+2. PRIMARY CONFIDENCE STATE IS TOO SIMPLIFIED
+==================================================
+
+The current downstream confidence summary is useful, but it appears to rely primarily on payoff-trust state.
+
+Why this matters:
+- an account may have acceptable payoff math but weak factual completeness
+- cash windows, flags, and consequence visibility may be limited even when payoff timing looks reasonably supported
+- a single confidence label may underrepresent weaker parts of the downstream account fact set
+
+Carry-forward note:
+Future refinement should consider whether primary confidence should reflect a broader account-fact reliability model instead of leaning mostly on payoff trust alone.
+
+==================================================
+3. BILLS UX IS SAFE, BUT STILL A LITTLE LOOSE AT THE SURFACE
+==================================================
+
+The ownership boundary is being enforced correctly.
+Debt-derived rows are protected from structural edits and deletion in Bills.
+
+However:
+- some bulk and row-level action surfaces still appear generally available before handler-level logic filters what is allowed
+- the logic is safe, but the UI may still feel broader than the true permissions model
+
+Why this matters:
+- users may attempt actions that are later blocked
+- this creates mild UX friction even if the underlying ownership boundary is still correct
+
+Carry-forward note:
+Future refinement should consider whether Bills should hide, adapt, or narrow certain structural actions earlier when the selected rows are debt-derived only.
+
+==================================================
+4. BOTTOM LINE
+==================================================
+
+V2D remains approved.
+
+These concerns do not block completion of the phase.
+They are internal Debt review notes that should be preserved for later refinement and post-phase cleanup.
+
+— Debt Team
