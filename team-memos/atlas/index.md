@@ -1,16 +1,16 @@
 # Atlas Memos Index
 
 ## Latest Memo
-- File: team-memos/atlas/FROM_investment-hq_TO_atlas_2026-04-12_ai-implementation-lessons.txt
+- File: team-memos/atlas/FROM_debt_TO_atlas_2026-04-12_v1-review-and-v2-prep.txt
 - Date: 2026-04-12
-- Topic: Ai Implementation Lessons
+- Topic: V1 Review And V2 Prep
 
 ---
 
 ## Previous Inbound Memos
-- File: team-memos/atlas/FROM_debt_TO_atlas_2026-04-12_v1-review-and-v2-prep.txt
+- File: team-memos/atlas/FROM_investment-hq_TO_atlas_2026-04-12_ai-implementation-lessons.txt
   - Date: 2026-04-12
-  - Topic: V1 Review And V2 Prep
+  - Topic: Ai Implementation Lessons
 - File: team-memos/atlas/FROM_debt_TO_atlas_2026-04-11_debt-section-next-steps.txt
   - Date: 2026-04-11
   - Topic: Debt Section Next Steps
