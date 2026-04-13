@@ -1,13 +1,16 @@
 # Debt Codex Output Index
 
 ## Latest Result
-- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-13_debt-v2c-risk-consequence-and-cash-windows.txt
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-13_debt-v2d-integration-polish-and-hardening.txt
 - Date: 2026-04-13
-- Topic: Debt V2C Risk Consequence And Cash Windows
+- Topic: Debt V2D Integration Polish And Hardening
 
 ---
 
 ## Previous Results
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-13_debt-v2c-risk-consequence-and-cash-windows.txt
+  - Date: 2026-04-13
+  - Topic: Debt V2C Risk Consequence And Cash Windows
 - File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-13_debt-v2b-credit-card-model-and-min-payment-system.txt
   - Date: 2026-04-13
   - Topic: Debt V2B Credit Card Model And Min Payment System
