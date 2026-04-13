@@ -1,0 +1,126 @@
+To: Codex
+From: Debt Team
+Date: 2026-04-12
+Subject: Debt V2D — Integration Polish, Atlas-Ready Output Refinement, and Hardening
+
+==================================================
+1. PHASE PURPOSE
+==================================================
+
+This file covers V2D only.
+
+V2D is the integration polish and final hardening phase.
+Its job is to ensure the stronger Debt V2 outputs are feeding the rest of the system cleanly and that the section is stable, bounded, and ready for broader review.
+
+This phase should focus on:
+- refining downstream structured outputs
+- ensuring Bills / Overview / Reporting / Atlas receive better debt facts without ownership drift
+- validating UI containment
+- polishing inspectability and confidence behavior where needed
+- hardening tests, validation, and implementation quality
+
+==================================================
+2. REQUIRED V2D BUILD SCOPE
+==================================================
+
+Implement the following:
+
+A. Cross-section output refinement
+Ensure Debt’s stronger V2 outputs can be consumed cleanly by downstream surfaces without Debt taking over their roles.
+
+Debt should expose cleaner structured facts for downstream consumption such as:
+- extra-payment impact data
+- projected interest remaining
+- projected interest saved
+- projected months saved
+- alternative payoff dates
+- stronger risk flags
+- near-term debt cash requirements
+- minimum needed to stay current
+- confidence states
+- consequence and state signals
+- payment assumption facts
+
+B. Bills refinement
+Ensure Bills receives:
+- bounded near-term debt obligations only
+- clear linkage back to Debt
+- improved inspectability for debt-derived rows
+- clean separation between what is editable in Bills and what must be edited in Debt
+
+C. Overview / Reporting / Atlas readiness
+Ensure the shared output shape is good enough that:
+- Overview can surface factual debt signals
+- Reporting can analyze debt patterns
+- Atlas can interpret stronger debt truth
+
+This does NOT mean building those teams’ sections inside Debt.
+It means making Debt outputs cleaner and easier to consume.
+
+D. Hardening
+Improve:
+- test coverage where weak
+- validation coverage
+- confidence-state clarity
+- edge-case handling
+- inspectability of key formulas and assumptions
+
+==================================================
+3. NON-NEGOTIABLE BOUNDARY RULES
+==================================================
+
+Debt must still not become:
+- a second Bills section
+- a second Overview page
+- a second Reporting page
+- a second Atlas panel
+- a recommendation engine
+- a scoring engine
+- a hidden urgency engine
+
+V2D is the polish phase, not the permission-to-drift phase.
+
+==================================================
+4. REQUIRED CODEX FOLLOW-UP AFTER V2D
+==================================================
+
+When V2D is complete, Codex must stop and return a final V2 review package to Debt Team.
+
+Required follow-up deliverables:
+1. A memo in codex-instructions/output/debt/ summarizing:
+- what V2D implemented
+- what downstream outputs are now stronger
+- what hardening was completed
+- what remains intentionally deferred after V2
+- final known limitations
+
+2. Readable review files in codex-instructions/output/debt/code review/ including:
+- full updated source files
+- diffs if available
+- manifest of changed files
+
+3. Validation evidence:
+- lint result
+- test result
+- build result
+- summary of new or expanded tests added across the V2 work
+
+4. A final completion statement that clearly says:
+- Debt V2 is ready for Debt Team review
+- no further phase work has been started beyond what was authorized
+
+==================================================
+5. REVIEW STANDARD
+==================================================
+
+Debt Team will review V2D for:
+- downstream output quality
+- implementation stability
+- test quality
+- inspectability
+- trust and confidence handling
+- continued boundary discipline
+
+This phase should leave the section stronger, cleaner, and more reviewable — not broader for its own sake.
+
+— Debt Team
