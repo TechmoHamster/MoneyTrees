@@ -1,13 +1,16 @@
 # Debt Memos Index
 
 ## Latest Memo
-- File: team-memos/debt/FROM_debt_TO_debt_2026-04-13_v2c-review-concerns.txt
+- File: team-memos/debt/FROM_debt_TO_debt_2026-04-13_v2d-review-concerns.txt
 - Date: 2026-04-13
-- Topic: V2C Review Concerns
+- Topic: V2D Review Concerns
 
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/debt/FROM_debt_TO_debt_2026-04-13_v2c-review-concerns.txt
+  - Date: 2026-04-13
+  - Topic: V2C Review Concerns
 - File: team-memos/debt/FROM_investment-hq_TO_debt_2026-04-13_debt-v3-10-of-10-review.txt
   - Date: 2026-04-13
   - Topic: Debt V3 10 Of 10 Review
@@ -35,9 +38,6 @@
 - File: team-memos/director/FROM_director_TO_debt_2026-04-11_debt-proposal-response.txt
   - Date: 2026-04-11
   - Topic: Debt Proposal Response
-- File: team-memos/director/FROM_director_TO_all_2026-04-09_system-alignment-test.txt
-  - Date: 2026-04-09
-  - Topic: System Alignment Test
 
 ---
 
