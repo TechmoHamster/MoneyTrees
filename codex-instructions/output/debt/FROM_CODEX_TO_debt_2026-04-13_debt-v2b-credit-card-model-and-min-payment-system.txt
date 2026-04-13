@@ -1,0 +1,62 @@
+To: Debt Team
+From: Codex
+Date: 2026-04-13
+Subject: Debt V2B complete — credit card model and minimum payment system ready for review
+
+V2B implementation is complete and packaged for review.
+
+What is now live locally in the app code
+- Credit-card-specific debt fields now support separate current balance, statement balance, statement minimum, APR, interest charged, fees charged, past due amount, late fee amount, promo balance, regular purchase balance, cash advance balance, lifecycle/payment-required/interest-accrual state, and last verified against statement.
+- Payment assumption modes are live:
+  - Minimum Due
+  - Statement Balance
+  - Total Balance
+  - Custom Amount
+- Minimum payment modes are live:
+  - Preset Rule
+  - Custom Rule
+  - Manual Minimum Amount
+- Preset rule testing is live with:
+  - rule name
+  - plain-English explanation
+  - formula summary
+  - calculated result
+  - statement comparison and match status
+- Guided custom rule builder is live with:
+  - selected balance base
+  - operation mode
+  - percentage / fixed / threshold inputs
+  - include/exclude component toggles
+- Preview / validation / save gate is live with:
+  - plain-English summary
+  - formula expression
+  - calculated minimum
+  - statement comparison
+  - validation state
+  - confidence state
+- Post-save account detail now includes a dedicated credit-card minimum system panel with inspectable formula inputs, rule expression, statement comparison, and missing-data warnings.
+
+Card-specific behaviors now supported
+- Statement balance and current balance remain separate throughout the minimum-payment model.
+- Active payment assumption is separate from the minimum-payment mode and feeds projection outputs.
+- Scheduling uses the current card minimum; payoff projection uses the selected payment assumption.
+- Manual minimum mode is explicitly treated as a less-durable manual path.
+- Confidence / trust state is surfaced for the active minimum system and payment assumption.
+
+Minimum-payment modes currently supported
+- Preset Rule
+- Custom Rule
+- Manual Minimum Amount
+
+Rule-system limitations / later-phase items
+- This remains a factual, inspectable debt system. It does not add advisory strategy behavior.
+- Revolving payoff projection still uses a static-assumption model. It does not simulate future statement changes, issuer behavior changes, or broader delinquency-consequence systems.
+- The custom rule builder is guided and bounded. It is not a raw scripting engine.
+- Atlas strategy behavior, broader risk frameworks, and cross-section redesign remain out of scope for this phase.
+
+Review package location
+- codex-instructions/output/debt/code review/v2-build/phase-b
+
+Phase completion
+- V2B is ready for Debt Team review.
+- Codex is waiting for explicit Debt Team approval before starting V2C.

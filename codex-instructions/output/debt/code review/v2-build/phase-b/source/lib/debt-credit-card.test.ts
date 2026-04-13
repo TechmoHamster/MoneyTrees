@@ -1,0 +1,150 @@
+import { describe, expect, it } from "vitest";
+import { calculateDebtDerivedMetrics } from "@/lib/debt";
+import {
+  buildCreditCardMinimumSystem,
+  evaluateCreditCardCustomRule,
+  evaluateCreditCardPresetRule,
+  getCreditCardPresetLibrary,
+} from "@/lib/debt-credit-card";
+import type { DebtAccount } from "@/lib/types";
+
+function createCreditCardAccount(overrides: Partial<DebtAccount> = {}): DebtAccount {
+  return {
+    id: "card-1",
+    providerName: "Travel Rewards Visa",
+    issuerName: "Capital One",
+    debtType: "Credit Card",
+    currentBalance: 1200,
+    statementBalance: 900,
+    statementMinimumDue: 35,
+    apr: 24.99,
+    interestCharged: 14.25,
+    feesCharged: 5,
+    pastDueAmount: 0,
+    lateFeeAmount: 0,
+    promoBalance: 0,
+    regularPurchaseBalance: 900,
+    cashAdvanceBalance: 0,
+    paymentCadence: "Monthly",
+    nextDueDate: "2026-04-20",
+    minimumPaymentMode: "Preset Rule",
+    minimumPaymentPresetId: "greater-of-flat-or-percent-statement",
+    paymentAssumptionMode: "Minimum Due",
+    lifecycleState: "Active",
+    paymentRequirement: "Payment Required",
+    interestAccrual: "Interest Accruing",
+    ...overrides,
+  };
+}
+
+describe("credit-card minimum system", () => {
+  it("keeps the preset library available for issuer-style testing", () => {
+    expect(getCreditCardPresetLibrary()).toHaveLength(8);
+  });
+
+  it("calculates preset rules and resolves an exact statement match", () => {
+    const preview = evaluateCreditCardPresetRule(
+      "greater-of-flat-or-percent-statement",
+      createCreditCardAccount({ statementBalance: 2000, statementMinimumDue: 35 }),
+    );
+
+    expect(preview.calculatedMinimumPayment).toBe(35);
+    expect(preview.validationState).toBe("Valid");
+    expect(preview.matchStatus).toBe("Exact Match");
+    expect(preview.confidenceState).toBe("Estimated");
+  });
+
+  it("fails closed when a custom rule is missing required inputs", () => {
+    const preview = evaluateCreditCardCustomRule(createCreditCardAccount(), {
+      name: "Broken rule",
+      principalVariable: "statement_balance",
+      operationMode: "Percent Plus Flat",
+      useFullBalanceBelowThreshold: false,
+      includeInterestCharged: false,
+      includeFeesCharged: false,
+      includePastDueAmount: false,
+      includeLateFeeAmount: false,
+      includePromoBalance: false,
+      includeRegularPurchaseBalance: false,
+      includeCashAdvanceBalance: false,
+    });
+
+    expect(preview.validationState).toBe("Missing Required Inputs");
+    expect(preview.missingInputs).toEqual(
+      expect.arrayContaining(["Percentage value", "Fixed amount"]),
+    );
+  });
+
+  it("builds a valid custom rule preview with inspectable math", () => {
+    const preview = evaluateCreditCardCustomRule(createCreditCardAccount(), {
+      name: "Statement plus fees",
+      principalVariable: "statement_balance",
+      operationMode: "Greater Of Flat Or Percent",
+      percentageValue: 2,
+      fixedAmount: 35,
+      thresholdAmount: 35,
+      useFullBalanceBelowThreshold: true,
+      includeInterestCharged: true,
+      includeFeesCharged: true,
+      includePastDueAmount: false,
+      includeLateFeeAmount: false,
+      includePromoBalance: false,
+      includeRegularPurchaseBalance: false,
+      includeCashAdvanceBalance: false,
+    });
+
+    expect(preview.validationState).toBe("Valid");
+    expect(preview.confidenceState).toBe("Custom");
+    expect(preview.calculatedMinimumPayment).toBe(54.25);
+    expect(preview.formulaExpression).toContain("statement_balance");
+  });
+
+  it("uses manual minimum mode as a less-durable manual confidence path", () => {
+    const minimumSystem = buildCreditCardMinimumSystem(
+      createCreditCardAccount({
+        minimumPaymentMode: "Manual Minimum Amount",
+        minimumPayment: 47,
+        paymentAssumptionMode: "Minimum Due",
+      }),
+    );
+
+    expect(minimumSystem.currentMinimumPayment).toBe(47);
+    expect(minimumSystem.currentMinimumPaymentTrustState).toBe("Manual");
+    expect(minimumSystem.paymentAssumptionAmount).toBe(47);
+    expect(minimumSystem.paymentAssumptionTrustState).toBe("Manual");
+    expect(minimumSystem.validationState).toBe("Valid");
+  });
+
+  it("supports statement-balance and custom-amount payment assumptions separately from the minimum", () => {
+    const statementSystem = buildCreditCardMinimumSystem(
+      createCreditCardAccount({ paymentAssumptionMode: "Statement Balance" }),
+    );
+    const customSystem = buildCreditCardMinimumSystem(
+      createCreditCardAccount({
+        paymentAssumptionMode: "Custom Amount",
+        paymentAssumptionCustomAmount: 250,
+      }),
+    );
+
+    expect(statementSystem.paymentAssumptionAmount).toBe(900);
+    expect(statementSystem.paymentAssumptionTrustState).toBe("Manual");
+    expect(customSystem.paymentAssumptionAmount).toBe(250);
+    expect(customSystem.paymentAssumptionTrustState).toBe("Custom");
+  });
+
+  it("feeds the current minimum into scheduling while using the payment assumption for projections", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createCreditCardAccount({
+        paymentAssumptionMode: "Statement Balance",
+        minimumPaymentMode: "Preset Rule",
+        minimumPaymentPresetId: "greater-of-flat-or-percent-statement",
+      }),
+      [],
+    );
+
+    expect(metrics.creditCardMinimumSystem?.currentMinimumPayment).toBe(35);
+    expect(metrics.nextScheduledPaymentAmount).toBe(35);
+    expect(metrics.projection.paymentAmountUsed).toBe(900);
+    expect(metrics.creditCardMinimumSystem?.paymentAssumptionMode).toBe("Statement Balance");
+  });
+});

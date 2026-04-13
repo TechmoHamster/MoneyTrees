@@ -1,0 +1,182 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-a/source/lib/types.ts	2026-04-13 00:39:05
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/types.ts	2026-04-13 09:13:40
+@@ -49,15 +49,133 @@
+ export type DebtPaymentRequirement = "Payment Required" | "No Payment Required";
+ 
+ export type DebtInterestAccrual = "Interest Accruing" | "No Interest Accruing";
++
++export type CreditCardMinimumPaymentMode =
++  | "Preset Rule"
++  | "Custom Rule"
++  | "Manual Minimum Amount";
++
++export type CreditCardPaymentAssumptionMode =
++  | "Minimum Due"
++  | "Statement Balance"
++  | "Total Balance"
++  | "Custom Amount";
++
++export type CreditCardPresetRuleId =
++  | "greater-of-flat-or-percent-statement"
++  | "interest-fees-plus-percent-principal"
++  | "percent-of-statement-balance"
++  | "percent-of-current-balance"
++  | "full-balance-below-threshold"
++  | "flat-minimum-unless-smaller"
++  | "flat-minimum-plus-past-due"
++  | "percent-plus-interest-fees-past-due";
++
++export type CreditCardRuleValidationState =
++  | "Valid"
++  | "Incomplete"
++  | "Broken"
++  | "Missing Required Inputs";
++
++export type CreditCardRuleMatchStatus =
++  | "Exact Match"
++  | "Close Match"
++  | "Does Not Match";
++
++export type CreditCardRuleVariable =
++  | "statement_balance"
++  | "current_balance"
++  | "interest_charged"
++  | "fees_charged"
++  | "past_due_amount"
++  | "late_fee_amount"
++  | "promo_balance"
++  | "regular_purchase_balance"
++  | "cash_advance_balance"
++  | "balance_subject_to_minimum";
++
++export type CreditCardCustomRuleOperationMode =
++  | "Percent Only"
++  | "Flat Only"
++  | "Percent Plus Flat"
++  | "Greater Of Flat Or Percent"
++  | "Lesser Of Flat Or Percent";
++
++export type CreditCardCustomMinimumRule = {
++  name: string;
++  principalVariable: CreditCardRuleVariable;
++  operationMode: CreditCardCustomRuleOperationMode;
++  percentageValue?: number;
++  fixedAmount?: number;
++  thresholdAmount?: number;
++  useFullBalanceBelowThreshold: boolean;
++  includeInterestCharged: boolean;
++  includeFeesCharged: boolean;
++  includePastDueAmount: boolean;
++  includeLateFeeAmount: boolean;
++  includePromoBalance: boolean;
++  includeRegularPurchaseBalance: boolean;
++  includeCashAdvanceBalance: boolean;
++};
++
++export type CreditCardRulePreview = {
++  id: string;
++  ruleName: string;
++  plainEnglishExplanation: string;
++  formulaSummary: string;
++  formulaExpression: string;
++  calculatedMinimumPayment?: number;
++  validationState: CreditCardRuleValidationState;
++  confidenceState: DebtMathTrustState;
++  matchStatus?: CreditCardRuleMatchStatus;
++  statementComparisonDelta?: number;
++  missingInputs: string[];
++};
+ 
++export type CreditCardMinimumSystem = {
++  issuerDisplayName: string;
++  accountIdentity: string;
++  currentMinimumPayment?: number;
++  currentMinimumPaymentTrustState: DebtMathTrustState;
++  minimumPaymentMode: CreditCardMinimumPaymentMode;
++  paymentAssumptionMode: CreditCardPaymentAssumptionMode;
++  paymentAssumptionAmount?: number;
++  paymentAssumptionTrustState: DebtMathTrustState;
++  activeRuleName: string;
++  activeRuleExplanation: string;
++  activeFormulaSummary: string;
++  activeFormulaExpression: string;
++  validationState: CreditCardRuleValidationState;
++  confidenceState: DebtMathTrustState;
++  lastVerifiedAgainstStatement?: string;
++  statementMinimumLastEntered?: number;
++  statementMatchStatus?: CreditCardRuleMatchStatus;
++  statementComparisonDelta?: number;
++  currentFormulaInputs: DebtMathInspectableItem[];
++  missingDataWarnings: string[];
++  presetLibrary: CreditCardRulePreview[];
++  selectedPresetPreview?: CreditCardRulePreview;
++  customRulePreview?: CreditCardRulePreview;
++};
++
+ export type DebtAccount = {
+   id: string;
+   providerName: string;
++  issuerName?: string;
+   debtType: DebtType;
+   currentBalance: number;
+   originalAmount?: number;
++  statementBalance?: number;
++  statementMinimumDue?: number;
+   apr?: number;
+   creditLimit?: number;
++  interestCharged?: number;
++  feesCharged?: number;
++  pastDueAmount?: number;
++  lateFeeAmount?: number;
++  promoBalance?: number;
++  regularPurchaseBalance?: number;
++  cashAdvanceBalance?: number;
+   termLengthMonths?: number;
+   totalPaymentCount?: number;
+   completedPaymentCount?: number;
+@@ -65,6 +183,12 @@
+   nextDueDate?: string;
+   minimumPayment?: number;
+   scheduledPaymentAmount?: number;
++  minimumPaymentMode?: CreditCardMinimumPaymentMode;
++  minimumPaymentPresetId?: CreditCardPresetRuleId;
++  minimumPaymentCustomRule?: CreditCardCustomMinimumRule;
++  paymentAssumptionMode?: CreditCardPaymentAssumptionMode;
++  paymentAssumptionCustomAmount?: number;
++  lastVerifiedAgainstStatement?: string;
+   lifecycleState: DebtLifecycleState;
+   paymentRequirement: DebtPaymentRequirement;
+   interestAccrual: DebtInterestAccrual;
+@@ -142,6 +266,7 @@
+   estimatedMonthlyInterestTrustState?: DebtMathTrustState;
+   installmentProgressLabel?: string;
+   installmentProgressTrustState?: DebtMathTrustState;
++  creditCardMinimumSystem?: CreditCardMinimumSystem;
+   trustNotes: string[];
+   projection: DebtPayoffProjection;
+ };
+@@ -703,3 +828,24 @@
+   "Interest Accruing",
+   "No Interest Accruing",
+ ];
++
++export const CREDIT_CARD_MINIMUM_PAYMENT_MODES: CreditCardMinimumPaymentMode[] = [
++  "Preset Rule",
++  "Custom Rule",
++  "Manual Minimum Amount",
++];
++
++export const CREDIT_CARD_PAYMENT_ASSUMPTION_MODES: CreditCardPaymentAssumptionMode[] = [
++  "Minimum Due",
++  "Statement Balance",
++  "Total Balance",
++  "Custom Amount",
++];
++
++export const CREDIT_CARD_CUSTOM_RULE_OPERATION_MODES: CreditCardCustomRuleOperationMode[] = [
++  "Percent Only",
++  "Flat Only",
++  "Percent Plus Flat",
++  "Greater Of Flat Or Percent",
++  "Lesser Of Flat Or Percent",
++];

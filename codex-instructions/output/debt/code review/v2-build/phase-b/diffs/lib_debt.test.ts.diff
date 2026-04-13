@@ -1,0 +1,26 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-a-refinement/source/lib/debt.test.ts	2026-04-13 01:55:29
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/debt.test.ts	2026-04-13 10:09:09
+@@ -143,10 +143,12 @@
+ 
+     expect(metrics.payoffDateProjection).toBeDefined();
+     expect(metrics.payoffTrustState).toBe("Limited");
+-    expect(metrics.paymentAmountTrustState).toBe("Limited");
++    expect(metrics.paymentAmountTrustState).toBe("Manual");
+     expect(metrics.projectedRemainingInterestTrustState).toBe("Limited");
+     expect(metrics.projection.scenarios[0]?.trustState).toBe("Limited");
+-    expect(metrics.projection.limitationNote).toContain("Credit card minimum payment rules are not modeled in V2A");
++    expect(metrics.projection.limitationNote).toContain(
++      "Credit-card projections use the active payment assumption",
++    );
+   });
+ 
+   it("handles weekly cadence boundaries without collapsing payoff timing", () => {
+@@ -228,7 +230,7 @@
+       expect.arrayContaining([
+         expect.objectContaining({
+           label: "Behavior stays static",
+-          note: "V2A is a static projection. It does not simulate future behavior changes.",
++          note: "This is a static projection. It does not simulate future behavior changes.",
+         }),
+       ]),
+     );

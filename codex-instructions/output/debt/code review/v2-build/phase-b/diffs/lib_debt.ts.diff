@@ -1,0 +1,160 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-a-refinement/source/lib/debt.ts	2026-04-13 01:55:29
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/debt.ts	2026-04-13 10:03:15
+@@ -11,6 +11,7 @@
+   DebtScheduleItem,
+   DebtSummary,
+ } from "@/lib/types";
++import { buildCreditCardMinimumSystem } from "@/lib/debt-credit-card";
+ import {
+   formatCurrency,
+   getBillLateFeeAmount,
+@@ -105,6 +106,18 @@
+ }
+ 
+ function getDebtScheduledAmount(account: DebtAccount): number {
++  if (account.debtType === "Credit Card") {
++    if (typeof account.minimumPayment === "number" && account.minimumPayment > 0) {
++      return normalizeAmount(account.minimumPayment);
++    }
++
++    if (typeof account.statementMinimumDue === "number" && account.statementMinimumDue > 0) {
++      return normalizeAmount(account.statementMinimumDue);
++    }
++
++    return 0;
++  }
++
+   if (typeof account.scheduledPaymentAmount === "number" && account.scheduledPaymentAmount > 0) {
+     return normalizeAmount(account.scheduledPaymentAmount);
+   }
+@@ -340,7 +353,7 @@
+           ? "Projection uses a zero-interest payoff path."
+           : typeof account.apr === "number" && account.apr > 0
+             ? account.debtType === "Credit Card"
+-              ? "APR is available, but credit-card payoff math remains trust-limited in V2A."
++              ? "APR is available, but credit-card payoff math remains trust-limited because revolving balances and future statement changes are not simulated."
+               : "APR is treated as stable for the projection."
+             : "Interest is accruing, but APR is missing, so interest-aware payoff math is limited.",
+     },
+@@ -382,7 +395,7 @@
+             : paymentAmountTrustState === "Manual"
+               ? "Manual"
+               : "Estimated",
+-      note: "V2A assumes the recurring payment amount does not change between due dates.",
++      note: "Projection assumes the recurring payment amount does not change between due dates.",
+     },
+   ];
+ 
+@@ -400,7 +413,7 @@
+       state: account.debtType === "Credit Card" ? "Limited" : "Estimated",
+       note:
+         account.debtType === "Credit Card"
+-          ? "V2A does not model changing credit-card minimum rules. This projection assumes the entered payment stays constant."
++          ? "Credit-card projections use the active payment assumption, but future statement changes and minimum-rule changes are not simulated."
+           : "Interest is projected using a stable APR over the remaining balance.",
+     });
+   } else {
+@@ -419,7 +432,7 @@
+         ? "No new charges, minimum-rule changes, or promo changes are modeled"
+         : "No skipped payments, rate changes, or behavior changes are modeled",
+     state: account.debtType === "Credit Card" ? "Limited" : "Estimated",
+-    note: "V2A is a static projection. It does not simulate future behavior changes.",
++    note: "This is a static projection. It does not simulate future behavior changes.",
+   });
+ 
+   return assumptions;
+@@ -618,9 +631,21 @@
+   account: DebtAccount,
+   bills: Bill[],
+ ): DebtDerivedMetrics {
+-  const scheduledAmount = getDebtScheduledAmount(account);
+-  const remainingPaymentCount = getDebtRemainingPaymentCount(account, scheduledAmount);
+-  const paymentAmountTrustState = getPaymentAmountTrustState(account, scheduledAmount);
++  const creditCardMinimumSystem =
++    account.debtType === "Credit Card" ? buildCreditCardMinimumSystem(account) : undefined;
++  const scheduledAmount =
++    account.debtType === "Credit Card" && typeof creditCardMinimumSystem?.currentMinimumPayment === "number"
++      ? normalizeAmount(creditCardMinimumSystem.currentMinimumPayment)
++      : getDebtScheduledAmount(account);
++  const projectionPaymentAmount =
++    account.debtType === "Credit Card" && typeof creditCardMinimumSystem?.paymentAssumptionAmount === "number"
++      ? normalizeAmount(creditCardMinimumSystem.paymentAssumptionAmount)
++      : scheduledAmount;
++  const remainingPaymentCount = getDebtRemainingPaymentCount(account, projectionPaymentAmount);
++  const paymentAmountTrustState =
++    account.debtType === "Credit Card" && creditCardMinimumSystem
++      ? creditCardMinimumSystem.paymentAssumptionTrustState
++      : getPaymentAmountTrustState(account, projectionPaymentAmount);
+   const utilizationPercent =
+     account.debtType === "Credit Card" &&
+     typeof account.creditLimit === "number" &&
+@@ -633,7 +658,7 @@
+       : undefined;
+   const nextScheduledPaymentDate = account.nextDueDate;
+   const trustNotes: string[] = [];
+-  const projectionInputs = buildProjectionInputs(account, scheduledAmount, paymentAmountTrustState);
++  const projectionInputs = buildProjectionInputs(account, projectionPaymentAmount, paymentAmountTrustState);
+   const projectionAssumptions = buildProjectionAssumptions(account, paymentAmountTrustState);
+   const projectionBaseTrustState = getProjectionTrustState(account, paymentAmountTrustState);
+   const startingDate = account.nextDueDate ? getDateOnly(account.nextDueDate) : null;
+@@ -651,6 +676,16 @@
+ 
+   if (scheduledAmount <= 0) {
+     trustNotes.push("Payment amount is missing, so payoff projection is limited.");
++  } else if (
++    account.debtType === "Credit Card" &&
++    creditCardMinimumSystem?.paymentAssumptionMode === "Minimum Due" &&
++    typeof creditCardMinimumSystem.currentMinimumPayment === "number"
++  ) {
++    trustNotes.push(
++      `Projection is using the current minimum due of ${formatCurrency(
++        creditCardMinimumSystem.currentMinimumPayment,
++      )}.`,
++    );
+   } else if (paymentAmountTrustState === "Custom") {
+     trustNotes.push("Projection uses a custom recurring payment instead of the baseline minimum payment.");
+   } else if (paymentAmountTrustState === "Manual") {
+@@ -683,7 +718,7 @@
+   } else if (!startingDate) {
+     limitationNote = "A valid next due date is required to project payoff timing.";
+   } else {
+-    const baseProjection = simulatePayoffProjection(account, startingDate, scheduledAmount);
++    const baseProjection = simulatePayoffProjection(account, startingDate, projectionPaymentAmount);
+ 
+     if (baseProjection) {
+       payoffDateProjection = baseProjection.payoffDate;
+@@ -705,7 +740,7 @@
+ 
+       if (account.debtType === "Credit Card") {
+         limitationNote =
+-          "Credit card minimum payment rules are not modeled in V2A. Projections assume the entered payment stays constant.";
++          "Credit-card projections use the active payment assumption, but they still hold that amount constant and do not simulate future statement changes.";
+         trustNotes.push(limitationNote);
+       } else if (account.interestAccrual === "Interest Accruing") {
+         trustNotes.push("Payoff projection assumes APR and payment amount remain stable.");
+@@ -715,7 +750,7 @@
+ 
+       const periodsPerMonth = getPeriodsPerYear(account.paymentCadence) / 12;
+       for (const extraPaymentAmount of DEBT_EXTRA_PAYMENT_OPTIONS) {
+-        const scenarioPaymentAmount = normalizeAmount(scheduledAmount + extraPaymentAmount);
++        const scenarioPaymentAmount = normalizeAmount(projectionPaymentAmount + extraPaymentAmount);
+         const scenarioProjection = simulatePayoffProjection(account, startingDate, scenarioPaymentAmount);
+         if (!scenarioProjection) {
+           scenarios.push({
+@@ -795,7 +830,7 @@
+     payoffDateTrustState: payoffTrustState,
+     projectedRemainingInterest,
+     projectedRemainingInterestTrustState,
+-    paymentAmountUsed: scheduledAmount,
++    paymentAmountUsed: projectionPaymentAmount,
+     paymentAmountTrustState,
+     limitationNote,
+     inputs: projectionInputs,
+@@ -830,6 +865,7 @@
+         : undefined,
+     installmentProgressLabel,
+     installmentProgressTrustState,
++    creditCardMinimumSystem,
+     trustNotes,
+     projection,
+   };

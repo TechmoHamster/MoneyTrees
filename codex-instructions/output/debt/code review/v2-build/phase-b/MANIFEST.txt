@@ -1,0 +1,27 @@
+Debt V2B review package
+Date: 2026-04-13
+Phase: V2B — Credit Card Model and Minimum Payment System
+
+Changed source files
+- components/DebtSection.tsx
+- lib/debt.ts
+- lib/debt.test.ts
+- lib/types.ts
+- lib/debt-credit-card.ts
+- lib/debt-credit-card.test.ts
+
+Readable source package
+- source/components/DebtSection.tsx
+- source/lib/debt.ts
+- source/lib/debt.test.ts
+- source/lib/types.ts
+- source/lib/debt-credit-card.ts
+- source/lib/debt-credit-card.test.ts
+
+Diff package
+- diffs/components_DebtSection.tsx.diff
+- diffs/lib_debt.ts.diff
+- diffs/lib_debt.test.ts.diff
+- diffs/lib_types.ts.diff
+- diffs/lib_debt-credit-card.ts.diff
+- diffs/lib_debt-credit-card.test.ts.diff
