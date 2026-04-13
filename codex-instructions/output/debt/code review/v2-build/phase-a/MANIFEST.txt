@@ -1,0 +1,24 @@
+Debt V2A review package manifest
+Generated: 2026-04-13
+Phase: V2A — Core Math and Output Foundation
+Source repo: /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard
+
+Updated source files
+- source/lib/debt.ts
+- source/lib/types.ts
+- source/lib/debt.test.ts
+- source/components/DebtSection.tsx
+
+Diff files
+- diffs/lib_debt.ts.diff
+- diffs/lib_types.ts.diff
+- diffs/lib_debt.test.ts.diff
+- diffs/components_DebtSection.tsx.diff
+
+Validation files
+- VALIDATION.txt
+
+Notes
+- Diffs are relative to the earlier debt initial-build source snapshot stored in:
+  codex-instructions/output/debt/code review/inital-build/source/
+- The new test file lib/debt.test.ts is diffed against /dev/null because it did not exist in the earlier package.

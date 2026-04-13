@@ -122,7 +122,7 @@ Required follow-up deliverables:
 - what remains for V2D
 - any limitations or assumptions in the flag logic
 
-2. Readable review files in codex-instructions/output/debt/code review/ including:
+2. Readable review files saved in 'codex-instructions/output/debt/code review/v2-build/phase-c' including:
 - full updated source files
 - diffs if available
 - manifest of changed files

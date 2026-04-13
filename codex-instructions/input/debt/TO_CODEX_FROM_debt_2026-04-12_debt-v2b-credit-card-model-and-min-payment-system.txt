@@ -205,7 +205,7 @@ Required follow-up deliverables:
 - what remains for later phases
 - any rule-system limitations
 
-2. Readable review files in codex-instructions/output/debt/code review/ including:
+2. Readable review files saved in 'codex-instructions/output/debt/code review/v2-build/phase-b' including:
 - full updated source files
 - diffs if available
 - manifest of changed files

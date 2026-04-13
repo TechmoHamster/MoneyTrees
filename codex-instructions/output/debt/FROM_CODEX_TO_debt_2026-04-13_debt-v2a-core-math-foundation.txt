@@ -1,0 +1,54 @@
+To: Debt Team
+From: Codex
+Date: 2026-04-13
+Subject: Debt V2A — Core Math and Output Foundation Complete
+
+Debt V2A has been implemented and stopped at the required phase boundary.
+
+What V2A implemented
+- strengthened debt payoff math outputs inside Debt account detail
+- added projected remaining interest output where supported
+- added extra-payment comparison outputs for +$50, +$100, and +$200 scenarios where the account has enough detail to support projection
+- added trust / confidence labels for debt math outputs and assumptions using:
+  - Exact
+  - Estimated
+  - Limited
+  - Custom
+  - Manual
+- added inspectable projection details showing:
+  - inputs used
+  - active assumptions
+  - output trust states
+  - why a projection is limited when it is limited
+- kept the work contained to Debt account detail rather than widening Debt into an advisor or reporting surface
+
+Primary files changed for V2A
+- lib/debt.ts
+- lib/types.ts
+- components/DebtSection.tsx
+- lib/debt.test.ts
+
+What remains for later phases
+- V2B: credit-card-specific modeling and minimum-payment rule system
+- V2C: risk, consequence, and short-term cash visibility
+- V2D: downstream polish, Atlas-ready output refinement, and final hardening
+
+Assumptions / limitations in V2A
+- credit-card payoff projections are still intentionally trust-limited because V2B minimum-payment rule behavior is not yet modeled
+- projections require enough input detail to be supportable; otherwise outputs stay limited instead of guessing
+- V2A does not add a recommendation layer to Debt
+
+Review package
+Readable V2A review files are here:
+- codex-instructions/output/debt/code review/v2-build/phase-a/
+
+That package includes:
+- full updated source files for touched files
+- diffs where available
+- a manifest of changed files
+- validation evidence
+
+Phase-completion statement
+- Debt V2A is ready for Debt Team review.
+- Codex is waiting for explicit Debt Team approval before starting V2B.
+- Codex will not begin V2B until a new Codex instruction file is sent by Debt Team authorizing that next phase.

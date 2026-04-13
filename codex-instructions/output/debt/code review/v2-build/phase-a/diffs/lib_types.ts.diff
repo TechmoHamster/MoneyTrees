@@ -1,0 +1,62 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/inital-build/source/lib/types.ts	2026-04-12 20:05:19
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/types.ts	2026-04-13 00:22:35
+@@ -91,16 +91,59 @@
+   nextDebtDueAmount: number;
+ };
+ 
++export type DebtMathTrustState = "Exact" | "Estimated" | "Limited" | "Custom" | "Manual";
++
++export type DebtMathInspectableItem = {
++  label: string;
++  value: string;
++  state: DebtMathTrustState;
++  note?: string;
++};
++
++export type DebtPayoffScenario = {
++  id: string;
++  label: string;
++  extraPaymentAmount: number;
++  totalPaymentAmount: number;
++  payoffDate?: string;
++  monthsSaved?: number;
++  projectedInterestSaved?: number;
++  trustState: DebtMathTrustState;
++  note?: string;
++};
++
++export type DebtPayoffProjection = {
++  methodLabel: string;
++  payoffDate?: string;
++  payoffDateTrustState: DebtMathTrustState;
++  projectedRemainingInterest?: number;
++  projectedRemainingInterestTrustState: DebtMathTrustState;
++  paymentAmountUsed: number;
++  paymentAmountTrustState: DebtMathTrustState;
++  limitationNote?: string;
++  inputs: DebtMathInspectableItem[];
++  assumptions: DebtMathInspectableItem[];
++  scenarios: DebtPayoffScenario[];
++};
++
+ export type DebtDerivedMetrics = {
+   nextScheduledPaymentAmount: number;
+   nextScheduledPaymentDate?: string;
+   remainingBalance: number;
+   remainingPaymentCount?: number;
++  remainingPaymentCountTrustState?: DebtMathTrustState;
+   payoffDateProjection?: string;
++  payoffTrustState: DebtMathTrustState;
++  projectedRemainingInterest?: number;
++  projectedRemainingInterestTrustState: DebtMathTrustState;
++  paymentAmountTrustState: DebtMathTrustState;
+   utilizationPercent?: number;
+   estimatedMonthlyInterest?: number;
++  estimatedMonthlyInterestTrustState?: DebtMathTrustState;
+   installmentProgressLabel?: string;
++  installmentProgressTrustState?: DebtMathTrustState;
+   trustNotes: string[];
++  projection: DebtPayoffProjection;
+ };
+ 
+ export type DebtScheduleItem = {

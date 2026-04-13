@@ -1,0 +1,286 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/inital-build/source/components/DebtSection.tsx	2026-04-12 20:05:19
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/components/DebtSection.tsx	2026-04-13 00:28:24
+@@ -4,6 +4,8 @@
+   BadgeDollarSign,
+   CalendarClock,
+   Car,
++  ChevronDown,
++  ChevronUp,
+   CreditCard,
+   GraduationCap,
+   HandCoins,
+@@ -27,6 +29,8 @@
+   type DebtDerivedMetrics,
+   type DebtInterestAccrual,
+   type DebtLifecycleState,
++  type DebtMathInspectableItem,
++  type DebtMathTrustState,
+   type DebtPaymentCadence,
+   type DebtPaymentRequirement,
+   type DebtScheduleItem,
+@@ -78,6 +82,14 @@
+   "Financed Purchase": PiggyBank,
+ };
+ 
++const trustStateClasses: Record<DebtMathTrustState, string> = {
++  Exact: "border-emerald-200 bg-emerald-50 text-emerald-700",
++  Estimated: "border-blue-200 bg-blue-50 text-blue-700",
++  Limited: "border-amber-200 bg-amber-50 text-amber-700",
++  Custom: "border-violet-200 bg-violet-50 text-violet-700",
++  Manual: "border-slate-200 bg-slate-100 text-slate-700",
++};
++
+ const defaultFormState: DebtFormState = {
+   providerName: "",
+   debtType: "Credit Card",
+@@ -186,6 +198,49 @@
+       ))}
+     </ul>
+   );
++}
++
++function renderTrustStateBadge(state: DebtMathTrustState) {
++  return (
++    <span
++      className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${trustStateClasses[state]}`}
++    >
++      {state}
++    </span>
++  );
++}
++
++function renderInspectableItems(items: DebtMathInspectableItem[]) {
++  return (
++    <div className="grid gap-2 sm:grid-cols-2">
++      {items.map((item) => (
++        <div
++          key={`${item.label}-${item.value}`}
++          className="rounded-xl border border-slate-200 bg-white px-3 py-2"
++        >
++          <div className="flex flex-wrap items-center justify-between gap-2">
++            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
++              {item.label}
++            </p>
++            {renderTrustStateBadge(item.state)}
++          </div>
++          <p className="mt-1 text-sm font-semibold text-slate-900">{item.value}</p>
++          {item.note ? (
++            <p className="mt-1 text-xs leading-relaxed text-slate-500">{item.note}</p>
++          ) : null}
++        </div>
++      ))}
++    </div>
++  );
++}
++
++function formatMonthsSaved(value: number | undefined): string {
++  if (typeof value !== "number" || value <= 0) {
++    return "No time saved";
++  }
++
++  const rounded = Math.round(value * 10) / 10;
++  return rounded === 1 ? "1 month saved" : `${rounded.toFixed(rounded % 1 === 0 ? 0 : 1)} months saved`;
+ }
+ 
+ export function DebtSection({
+@@ -199,6 +254,7 @@
+   const [selectedDebtType, setSelectedDebtType] = useState<DebtType | "All">("All");
+   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
+   const [editingAccountId, setEditingAccountId] = useState<string | null>(null);
++  const [showProjectionDetails, setShowProjectionDetails] = useState(false);
+   const [formState, setFormState] = useState<DebtFormState>(defaultFormState);
+   const [error, setError] = useState("");
+ 
+@@ -782,7 +838,7 @@
+                 </div>
+               </div>
+ 
+-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
++              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                 <div className="dashboard-shell-inner rounded-2xl p-3">
+                   <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">Remaining Balance</p>
+                   <p className="mt-2 text-2xl font-semibold text-slate-950">
+@@ -790,7 +846,10 @@
+                   </p>
+                 </div>
+                 <div className="dashboard-shell-inner rounded-2xl p-3">
+-                  <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">Next Scheduled Payment</p>
++                  <div className="flex flex-wrap items-center justify-between gap-2">
++                    <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">Next Scheduled Payment</p>
++                    {renderTrustStateBadge(selectedMetrics.paymentAmountTrustState)}
++                  </div>
+                   <p className="mt-2 text-2xl font-semibold text-slate-950">
+                     {selectedMetrics.nextScheduledPaymentAmount > 0
+                       ? formatCurrency(selectedMetrics.nextScheduledPaymentAmount)
+@@ -803,7 +862,10 @@
+                   </p>
+                 </div>
+                 <div className="dashboard-shell-inner rounded-2xl p-3">
+-                  <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">Payoff Projection</p>
++                  <div className="flex flex-wrap items-center justify-between gap-2">
++                    <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">Current Payoff Date</p>
++                    {renderTrustStateBadge(selectedMetrics.payoffTrustState)}
++                  </div>
+                   <p className="mt-2 text-2xl font-semibold text-slate-950">
+                     {selectedMetrics.payoffDateProjection
+                       ? formatDate(selectedMetrics.payoffDateProjection)
+@@ -815,6 +877,20 @@
+                       : "Remaining count depends on stronger input detail."}
+                   </p>
+                 </div>
++                <div className="dashboard-shell-inner rounded-2xl p-3">
++                  <div className="flex flex-wrap items-center justify-between gap-2">
++                    <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">Remaining Interest</p>
++                    {renderTrustStateBadge(selectedMetrics.projectedRemainingInterestTrustState)}
++                  </div>
++                  <p className="mt-2 text-2xl font-semibold text-slate-950">
++                    {typeof selectedMetrics.projectedRemainingInterest === "number"
++                      ? formatCurrency(selectedMetrics.projectedRemainingInterest)
++                      : "Limited"}
++                  </p>
++                  <p className="mt-1 text-xs text-slate-600">
++                    {selectedMetrics.projection.methodLabel}
++                  </p>
++                </div>
+               </div>
+ 
+               <div className="grid gap-4 lg:grid-cols-[1fr_0.95fr]">
+@@ -860,9 +936,137 @@
+                 </div>
+ 
+                 <div className="dashboard-shell-inner rounded-2xl p-4">
+-                  <p className="text-sm font-semibold text-slate-900">Trust and failure handling</p>
++                  <div className="flex flex-wrap items-center justify-between gap-2">
++                    <p className="text-sm font-semibold text-slate-900">Projection trust</p>
++                    {renderTrustStateBadge(selectedMetrics.payoffTrustState)}
++                  </div>
++                  <p className="mt-2 text-sm text-slate-700">
++                    {selectedMetrics.projection.methodLabel}
++                  </p>
++                  {selectedMetrics.projection.limitationNote ? (
++                    <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800">
++                      {selectedMetrics.projection.limitationNote}
++                    </p>
++                  ) : null}
+                   <div className="mt-3">{renderTrustNotes(selectedMetrics)}</div>
++                </div>
++              </div>
++
++              <div className="dashboard-shell-inner rounded-2xl p-4">
++                <div className="flex flex-wrap items-center justify-between gap-3">
++                  <div>
++                    <p className="text-sm font-semibold text-slate-900">Payoff math and extra-payment impact</p>
++                    <p className="mt-1 text-xs text-slate-600">
++                      Inspect the active projection inputs, assumptions, and the effect of adding extra payment.
++                    </p>
++                  </div>
++                  <button
++                    type="button"
++                    onClick={() => setShowProjectionDetails((previous) => !previous)}
++                    className="dashboard-control inline-flex items-center gap-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
++                    aria-expanded={showProjectionDetails}
++                  >
++                    {showProjectionDetails ? "Hide details" : "Show details"}
++                    {showProjectionDetails ? (
++                      <ChevronUp className="h-4 w-4" />
++                    ) : (
++                      <ChevronDown className="h-4 w-4" />
++                    )}
++                  </button>
+                 </div>
++
++                {showProjectionDetails ? (
++                  <div className="mt-4 space-y-4">
++                    <div>
++                      <div className="flex flex-wrap items-center justify-between gap-2">
++                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
++                          Inputs used
++                        </p>
++                        <span className="text-xs font-medium text-slate-500">
++                          What the current math is reading
++                        </span>
++                      </div>
++                      <div className="mt-2">{renderInspectableItems(selectedMetrics.projection.inputs)}</div>
++                    </div>
++
++                    <div>
++                      <div className="flex flex-wrap items-center justify-between gap-2">
++                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
++                          Active assumptions
++                        </p>
++                        <span className="text-xs font-medium text-slate-500">
++                          What is treated as stable or limited
++                        </span>
++                      </div>
++                      <div className="mt-2">{renderInspectableItems(selectedMetrics.projection.assumptions)}</div>
++                    </div>
++
++                    <div>
++                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
++                        Extra-payment impact
++                      </p>
++                      <div className="mt-2 space-y-2">
++                        {selectedMetrics.projection.scenarios.length === 0 ? (
++                          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-3 text-sm text-slate-600">
++                            Extra-payment comparison is limited until the account has enough payment and interest detail.
++                          </div>
++                        ) : (
++                          selectedMetrics.projection.scenarios.map((scenario) => (
++                            <div
++                              key={scenario.id}
++                              className="rounded-xl border border-slate-200 bg-white px-3 py-3"
++                            >
++                              <div className="flex flex-wrap items-center justify-between gap-2">
++                                <div>
++                                  <p className="text-sm font-semibold text-slate-900">
++                                    {scenario.label} payment
++                                  </p>
++                                  <p className="text-xs text-slate-600">
++                                    Total recurring payment {formatCurrency(scenario.totalPaymentAmount)}
++                                  </p>
++                                </div>
++                                {renderTrustStateBadge(scenario.trustState)}
++                              </div>
++                              <div className="mt-3 grid gap-2 sm:grid-cols-3">
++                                <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
++                                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
++                                    Payoff date
++                                  </p>
++                                  <p className="mt-1 text-sm font-semibold text-slate-900">
++                                    {scenario.payoffDate ? formatDate(scenario.payoffDate) : "Limited"}
++                                  </p>
++                                </div>
++                                <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
++                                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
++                                    Time saved
++                                  </p>
++                                  <p className="mt-1 text-sm font-semibold text-slate-900">
++                                    {formatMonthsSaved(scenario.monthsSaved)}
++                                  </p>
++                                </div>
++                                <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
++                                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
++                                    Interest saved
++                                  </p>
++                                  <p className="mt-1 text-sm font-semibold text-slate-900">
++                                    {typeof scenario.projectedInterestSaved === "number"
++                                      ? formatCurrency(scenario.projectedInterestSaved)
++                                      : "Limited"}
++                                  </p>
++                                </div>
++                              </div>
++                              {scenario.note ? (
++                                <p className="mt-2 text-xs leading-relaxed text-slate-500">
++                                  {scenario.note}
++                                </p>
++                              ) : null}
++                            </div>
++                          ))
++                        )}
++                      </div>
++                    </div>
++                  </div>
++                ) : null}
+               </div>
+ 
+               <div className="dashboard-shell-inner rounded-2xl p-4">

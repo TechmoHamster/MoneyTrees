@@ -1,0 +1,492 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/inital-build/source/lib/debt.ts	2026-04-12 20:05:19
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/debt.ts	2026-04-13 00:35:12
+@@ -3,13 +3,25 @@
+   BillStatus,
+   DebtAccount,
+   DebtDerivedMetrics,
++  DebtMathInspectableItem,
++  DebtMathTrustState,
+   DebtPaymentCadence,
++  DebtPayoffProjection,
++  DebtPayoffScenario,
+   DebtScheduleItem,
+   DebtSummary,
+ } from "@/lib/types";
+-import { getBillLateFeeAmount, getBillTotalAmount, isValidDateOnly, normalizeAmount } from "@/lib/utils";
++import {
++  formatCurrency,
++  getBillLateFeeAmount,
++  getBillTotalAmount,
++  isValidDateOnly,
++  normalizeAmount,
++} from "@/lib/utils";
+ 
+ const DEBT_FORWARD_WINDOW_DAYS = 60;
++const DEBT_EXTRA_PAYMENT_OPTIONS = [50, 100, 200] as const;
++const MAX_PROJECTION_PERIODS = 1_200;
+ 
+ type DateOnlyParts = {
+   year: number;
+@@ -80,6 +92,18 @@
+   return new Date(next.getFullYear(), next.getMonth(), next.getDate());
+ }
+ 
++function getPeriodsPerYear(cadence: DebtPaymentCadence): number {
++  if (cadence === "Weekly") {
++    return 52;
++  }
++
++  if (cadence === "Biweekly") {
++    return 26;
++  }
++
++  return 12;
++}
++
+ function getDebtScheduledAmount(account: DebtAccount): number {
+   if (typeof account.scheduledPaymentAmount === "number" && account.scheduledPaymentAmount > 0) {
+     return normalizeAmount(account.scheduledPaymentAmount);
+@@ -92,6 +116,24 @@
+   return 0;
+ }
+ 
++function getPaymentAmountTrustState(account: DebtAccount, scheduledAmount: number): DebtMathTrustState {
++  if (scheduledAmount <= 0) {
++    return "Limited";
++  }
++
++  if (
++    typeof account.scheduledPaymentAmount === "number" &&
++    account.scheduledPaymentAmount > 0 &&
++    typeof account.minimumPayment === "number" &&
++    account.minimumPayment > 0 &&
++    normalizeAmount(account.scheduledPaymentAmount) !== normalizeAmount(account.minimumPayment)
++  ) {
++    return "Custom";
++  }
++
++  return "Manual";
++}
++
+ function getDebtRemainingPaymentCount(account: DebtAccount, scheduledAmount: number): number | undefined {
+   if (
+     typeof account.totalPaymentCount === "number" &&
+@@ -139,6 +181,210 @@
+   return account.debtType === "Credit Card" ? 3 : 4;
+ }
+ 
++function getProjectionBaseTrustState(account: DebtAccount): DebtMathTrustState {
++  if (account.debtType === "Credit Card") {
++    return "Limited";
++  }
++
++  if (account.interestAccrual === "No Interest Accruing") {
++    return "Exact";
++  }
++
++  return "Estimated";
++}
++
++type DebtProjectionComputation = {
++  payoffDate: string;
++  totalInterest: number;
++  periodCount: number;
++};
++
++function buildProjectionInputs(
++  account: DebtAccount,
++  scheduledAmount: number,
++  paymentAmountTrustState: DebtMathTrustState,
++): DebtMathInspectableItem[] {
++  const inputs: DebtMathInspectableItem[] = [
++    {
++      label: "Current balance",
++      value: formatCurrency(account.currentBalance),
++      state: "Manual",
++      note: "Entered directly in Debt account truth.",
++    },
++    {
++      label: "Next due date",
++      value: account.nextDueDate ? account.nextDueDate : "Missing",
++      state: account.nextDueDate ? "Manual" : "Limited",
++      note: account.nextDueDate ? undefined : "A valid next due date is required for date-based payoff projections.",
++    },
++    {
++      label: "Payment cadence",
++      value: account.paymentCadence,
++      state: "Manual",
++      note: "Cadence controls how payoff dates are stepped forward.",
++    },
++    {
++      label: "Payment amount used",
++      value: scheduledAmount > 0 ? formatCurrency(scheduledAmount) : "Missing",
++      state: paymentAmountTrustState,
++      note:
++        paymentAmountTrustState === "Custom"
++          ? "Using the custom scheduled payment instead of the minimum payment."
++          : paymentAmountTrustState === "Manual"
++            ? "Using the manually entered recurring payment amount."
++            : "A recurring payment amount is required for payoff projection.",
++    },
++    {
++      label: "Interest setting",
++      value:
++        account.interestAccrual === "No Interest Accruing"
++          ? "No interest accruing"
++          : typeof account.apr === "number" && account.apr > 0
++            ? `${normalizeAmount(account.apr).toFixed(2)}% APR`
++            : "APR missing",
++      state:
++        account.interestAccrual === "No Interest Accruing"
++          ? "Exact"
++          : typeof account.apr === "number" && account.apr > 0
++            ? "Manual"
++            : "Limited",
++      note:
++        account.interestAccrual === "No Interest Accruing"
++          ? "Projection uses a zero-interest payoff path."
++          : typeof account.apr === "number" && account.apr > 0
++            ? "APR is treated as stable for the projection."
++            : "Interest is accruing, but APR is missing, so interest-aware payoff math is limited.",
++    },
++  ];
++
++  if (
++    typeof account.totalPaymentCount === "number" &&
++    typeof account.completedPaymentCount === "number"
++  ) {
++    inputs.push({
++      label: "Installment count source",
++      value: `${account.completedPaymentCount} of ${account.totalPaymentCount} completed`,
++      state: "Manual",
++      note: "Used for installment progress and exact remaining-count reporting.",
++    });
++  }
++
++  return inputs;
++}
++
++function buildProjectionAssumptions(
++  account: DebtAccount,
++  paymentAmountTrustState: DebtMathTrustState,
++): DebtMathInspectableItem[] {
++  const assumptions: DebtMathInspectableItem[] = [
++    {
++      label: "Payment stays constant",
++      value:
++        paymentAmountTrustState === "Custom"
++          ? "Custom payment amount stays fixed"
++          : "Entered payment amount stays fixed",
++      state: paymentAmountTrustState === "Custom" ? "Custom" : "Estimated",
++      note: "V2A assumes the recurring payment amount does not change between due dates.",
++    },
++  ];
++
++  if (account.interestAccrual === "No Interest Accruing") {
++    assumptions.push({
++      label: "Interest model",
++      value: "No additional interest accrues",
++      state: "Exact",
++      note: "Payoff and interest projections are exact under the current no-interest setting.",
++    });
++  } else if (typeof account.apr === "number" && account.apr > 0) {
++    assumptions.push({
++      label: "Interest model",
++      value: `${normalizeAmount(account.apr).toFixed(2)}% APR remains stable`,
++      state: account.debtType === "Credit Card" ? "Limited" : "Estimated",
++      note:
++        account.debtType === "Credit Card"
++          ? "V2A does not model changing credit-card minimum rules. This projection assumes the entered payment stays constant."
++          : "Interest is projected using a stable APR over the remaining balance.",
++    });
++  } else {
++    assumptions.push({
++      label: "Interest model",
++      value: "APR missing while interest accrues",
++      state: "Limited",
++      note: "Projection cannot estimate remaining interest without APR.",
++    });
++  }
++
++  return assumptions;
++}
++
++function simulatePayoffProjection(
++  account: DebtAccount,
++  startingDate: Date,
++  paymentAmount: number,
++): DebtProjectionComputation | null {
++  if (paymentAmount <= 0 || account.currentBalance <= 0) {
++    return null;
++  }
++
++  if (
++    account.interestAccrual === "Interest Accruing" &&
++    (typeof account.apr !== "number" || account.apr <= 0)
++  ) {
++    return null;
++  }
++
++  const periodsPerYear = getPeriodsPerYear(account.paymentCadence);
++  const periodRate =
++    account.interestAccrual === "Interest Accruing" && typeof account.apr === "number" && account.apr > 0
++      ? account.apr / 100 / periodsPerYear
++      : 0;
++
++  if (periodRate > 0 && normalizeAmount(account.currentBalance * periodRate) >= paymentAmount) {
++    return null;
++  }
++
++  let cursor = new Date(startingDate);
++  let remainingBalance = normalizeAmount(account.currentBalance);
++  let totalInterest = 0;
++  let periodCount = 0;
++
++  while (remainingBalance > 0.005 && periodCount < MAX_PROJECTION_PERIODS) {
++    const interest = normalizeAmount(remainingBalance * periodRate);
++    totalInterest = normalizeAmount(totalInterest + interest);
++    remainingBalance = normalizeAmount(remainingBalance + interest - paymentAmount);
++    periodCount += 1;
++
++    if (remainingBalance <= 0.005) {
++      return {
++        payoffDate: toDateOnlyString(cursor),
++        totalInterest,
++        periodCount,
++      };
++    }
++
++    cursor = addCadence(cursor, account.paymentCadence);
++  }
++
++  return null;
++}
++
++function buildCountBasedPayoffDate(account: DebtAccount, remainingCount: number): string | undefined {
++  if (!account.nextDueDate || remainingCount <= 0) {
++    return undefined;
++  }
++
++  let cursor = getDateOnly(account.nextDueDate);
++  if (!cursor) {
++    return undefined;
++  }
++
++  for (let index = 1; index < remainingCount; index += 1) {
++    cursor = addCadence(cursor, account.paymentCadence);
++  }
++
++  return toDateOnlyString(cursor);
++}
++
+ function getBillStatusFromDate(dueDate: string, paid: boolean): BillStatus {
+   if (paid) {
+     return "Paid";
+@@ -266,6 +512,7 @@
+ ): DebtDerivedMetrics {
+   const scheduledAmount = getDebtScheduledAmount(account);
+   const remainingPaymentCount = getDebtRemainingPaymentCount(account, scheduledAmount);
++  const paymentAmountTrustState = getPaymentAmountTrustState(account, scheduledAmount);
+   const utilizationPercent =
+     account.debtType === "Credit Card" &&
+     typeof account.creditLimit === "number" &&
+@@ -278,6 +525,17 @@
+       : undefined;
+   const nextScheduledPaymentDate = account.nextDueDate;
+   const trustNotes: string[] = [];
++  const projectionInputs = buildProjectionInputs(account, scheduledAmount, paymentAmountTrustState);
++  const projectionAssumptions = buildProjectionAssumptions(account, paymentAmountTrustState);
++  const projectionBaseTrustState = getProjectionBaseTrustState(account);
++  const startingDate = account.nextDueDate ? getDateOnly(account.nextDueDate) : null;
++  let payoffTrustState: DebtMathTrustState = "Limited";
++  let payoffDateProjection: string | undefined;
++  let projectedRemainingInterest: number | undefined;
++  let projectedRemainingInterestTrustState: DebtMathTrustState = "Limited";
++  let limitationNote: string | undefined;
++  let methodLabel = "Projection unavailable";
++  const scenarios: DebtPayoffScenario[] = [];
+ 
+   if (!account.nextDueDate) {
+     trustNotes.push("Next due date is missing, so schedule visibility is limited.");
+@@ -291,39 +549,168 @@
+     trustNotes.push("Interest is accruing, but APR is missing.");
+   }
+ 
+-  const payoffDateProjection =
+-    nextScheduledPaymentDate &&
+-    typeof remainingPaymentCount === "number" &&
+-    remainingPaymentCount > 0
+-      ? (() => {
+-          let cursor = getDateOnly(nextScheduledPaymentDate) ?? getToday();
+-          for (let index = 1; index < remainingPaymentCount; index += 1) {
+-            cursor = addCadence(cursor, account.paymentCadence);
+-          }
+-          return toDateOnlyString(cursor);
+-        })()
+-      : undefined;
+-
+   const installmentProgressLabel =
+     typeof account.totalPaymentCount === "number" && typeof account.completedPaymentCount === "number"
+       ? `${account.completedPaymentCount} of ${account.totalPaymentCount} installments completed`
+       : undefined;
++  const installmentProgressTrustState: DebtMathTrustState | undefined = installmentProgressLabel
++    ? "Manual"
++    : undefined;
++  const hasExplicitInstallmentCounts =
++    typeof account.totalPaymentCount === "number" &&
++    typeof account.completedPaymentCount === "number";
+ 
++  if (
++    account.lifecycleState === "Deferment" ||
++    account.paymentRequirement === "No Payment Required"
++  ) {
++    limitationNote = "This account is not currently requiring payment, so active payoff projection is limited.";
++    trustNotes.push("Payment requirement or lifecycle state currently pauses active payoff modeling.");
++  } else if (!startingDate) {
++    limitationNote = "A valid next due date is required to project payoff timing.";
++  } else {
++    const baseProjection = simulatePayoffProjection(account, startingDate, scheduledAmount);
++
++    if (baseProjection) {
++      payoffDateProjection = baseProjection.payoffDate;
++      payoffTrustState = projectionBaseTrustState;
++      projectedRemainingInterest =
++        account.interestAccrual === "No Interest Accruing"
++          ? 0
++          : baseProjection.totalInterest;
++      projectedRemainingInterestTrustState =
++        account.interestAccrual === "No Interest Accruing"
++          ? "Exact"
++          : projectionBaseTrustState;
++      methodLabel =
++        account.debtType === "Credit Card"
++          ? "Constant payment approximation"
++          : account.interestAccrual === "No Interest Accruing"
++            ? "Fixed payment schedule"
++            : "Stable payment + APR projection";
++
++      if (account.debtType === "Credit Card") {
++        limitationNote =
++          "Credit card minimum payment rules are not modeled in V2A. Projections assume the entered payment stays constant.";
++        trustNotes.push(limitationNote);
++      } else if (account.interestAccrual === "Interest Accruing") {
++        trustNotes.push("Payoff projection assumes APR and payment amount remain stable.");
++      } else {
++        trustNotes.push("Payoff projection is exact under the current no-interest payment schedule.");
++      }
++
++      const periodsPerMonth = getPeriodsPerYear(account.paymentCadence) / 12;
++      for (const extraPaymentAmount of DEBT_EXTRA_PAYMENT_OPTIONS) {
++        const scenarioPaymentAmount = normalizeAmount(scheduledAmount + extraPaymentAmount);
++        const scenarioProjection = simulatePayoffProjection(account, startingDate, scenarioPaymentAmount);
++        if (!scenarioProjection) {
++          scenarios.push({
++            id: `${account.id}-extra-${extraPaymentAmount}`,
++            label: `+$${extraPaymentAmount.toFixed(0)}`,
++            extraPaymentAmount,
++            totalPaymentAmount: scenarioPaymentAmount,
++            trustState: "Limited",
++            note: "This extra-payment projection is limited by the current payment or interest inputs.",
++          });
++          continue;
++        }
++
++        const monthsSavedRaw =
++          periodsPerMonth > 0
++            ? normalizeAmount(
++                (baseProjection.periodCount - scenarioProjection.periodCount) / periodsPerMonth,
++              )
++            : undefined;
++
++        scenarios.push({
++          id: `${account.id}-extra-${extraPaymentAmount}`,
++          label: `+$${extraPaymentAmount.toFixed(0)}`,
++          extraPaymentAmount,
++          totalPaymentAmount: scenarioPaymentAmount,
++          payoffDate: scenarioProjection.payoffDate,
++          monthsSaved: monthsSavedRaw && monthsSavedRaw > 0 ? monthsSavedRaw : 0,
++          projectedInterestSaved:
++            account.interestAccrual === "No Interest Accruing"
++              ? 0
++              : normalizeAmount(baseProjection.totalInterest - scenarioProjection.totalInterest),
++          trustState: "Custom",
++          note:
++            account.debtType === "Credit Card"
++              ? "Custom scenario assumes the entered credit-card payment stays fixed."
++              : "Custom scenario uses the current recurring payment plus the added amount.",
++        });
++      }
++    } else if (
++      typeof remainingPaymentCount === "number" &&
++      remainingPaymentCount > 0 &&
++      (hasExplicitInstallmentCounts || account.interestAccrual === "No Interest Accruing")
++    ) {
++      payoffDateProjection = buildCountBasedPayoffDate(account, remainingPaymentCount);
++      payoffTrustState = "Exact";
++      projectedRemainingInterest =
++        account.interestAccrual === "No Interest Accruing" ? 0 : undefined;
++      projectedRemainingInterestTrustState =
++        account.interestAccrual === "No Interest Accruing" ? "Exact" : "Limited";
++      methodLabel = "Installment count schedule";
++      limitationNote =
++        "Payoff date is derived from the remaining installment count. Extra-payment and interest-saving scenarios need stronger payment or APR detail.";
++      trustNotes.push(
++        "Payoff timing uses the remaining installment count because payment-based payoff simulation is limited.",
++      );
++    } else {
++      limitationNote =
++        "Current inputs are not sufficient to project payoff timing. Add a due date, recurring payment, and interest detail where needed.";
++    }
++  }
++
+   const debtBills = bills.filter((bill) => bill.sourceDebtAccountId === account.id && bill.status === "Paid");
+   if (debtBills.length > 0) {
+     trustNotes.push(`${debtBills.length} debt-linked payment${debtBills.length === 1 ? "" : "s"} have been recorded in Bills.`);
+   }
+ 
++  const projection: DebtPayoffProjection = {
++    methodLabel,
++    payoffDate: payoffDateProjection,
++    payoffDateTrustState: payoffTrustState,
++    projectedRemainingInterest,
++    projectedRemainingInterestTrustState,
++    paymentAmountUsed: scheduledAmount,
++    paymentAmountTrustState,
++    limitationNote,
++    inputs: projectionInputs,
++    assumptions: projectionAssumptions,
++    scenarios,
++  };
++
+   return {
+     nextScheduledPaymentAmount: scheduledAmount,
+     nextScheduledPaymentDate,
+     remainingBalance: normalizeAmount(account.currentBalance),
+     remainingPaymentCount,
++    remainingPaymentCountTrustState:
++      typeof remainingPaymentCount === "number"
++        ? typeof account.totalPaymentCount === "number" &&
++          typeof account.completedPaymentCount === "number"
++          ? "Exact"
++          : "Estimated"
++        : undefined,
+     payoffDateProjection,
++    payoffTrustState,
++    projectedRemainingInterest,
++    projectedRemainingInterestTrustState,
++    paymentAmountTrustState,
+     utilizationPercent,
+     estimatedMonthlyInterest,
++    estimatedMonthlyInterestTrustState:
++      typeof estimatedMonthlyInterest === "number"
++        ? account.debtType === "Credit Card"
++          ? "Limited"
++          : "Estimated"
++        : undefined,
+     installmentProgressLabel,
++    installmentProgressTrustState,
+     trustNotes,
++    projection,
+   };
+ }
+ 
