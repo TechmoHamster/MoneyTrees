@@ -1,0 +1,116 @@
+DEBT TEAM — V2A REVIEW FEEDBACK (CONCERNS)
+
+V2A is approved. The core math foundation, trust system, and UI integration are solid.
+
+The following items are NOT blockers, but must be acknowledged and considered moving into V2B:
+
+--------------------------------------------------
+1. TRUST-STATE PRECISION IS TOO COARSE
+--------------------------------------------------
+Current trust labeling (Manual, Custom, Estimated, etc.) is directionally correct, but lacks nuance.
+
+Examples:
+- Payment amount trust defaults heavily to "Manual" or "Custom"
+- No distinction between:
+  - verified amortized loan payment
+  - user-entered estimate
+  - derived vs inferred values
+
+Expectation:
+V2B should begin refining trust-state granularity where possible, especially for:
+- payment amount reliability
+- interest modeling confidence
+- projection accuracy tiers
+
+--------------------------------------------------
+2. EXTRA-PAYMENT SCENARIO LABELING IS OVER-SIMPLIFIED
+--------------------------------------------------
+All extra-payment scenarios are labeled as "Custom" regardless of underlying model quality.
+
+Issue:
+- A no-interest fixed loan with deterministic math is still labeled "Custom"
+- This hides when a scenario is actually mathematically exact vs user-adjusted
+
+Expectation:
+Future phases should differentiate:
+- "Exact (adjusted)"
+- "Estimated (adjusted)"
+- vs purely "Custom"
+
+--------------------------------------------------
+3. CREDIT CARD MODELING IS CORRECTLY LIMITED — BUT THIS IS THE BIG RISK AREA
+--------------------------------------------------
+Credit card projections are intentionally marked as "Limited" in V2A.
+
+This is correct.
+
+However:
+Credit card minimum payment behavior is highly variable and issuer-specific:
+- % of balance (1–4%)
+- % + interest
+- floor amounts
+- past-due carryover rules  [oai_citation:0‡NerdWallet](https://www.nerdwallet.com/credit-cards/learn/credit-card-issuer-minimum-payment?utm_source=chatgpt.com)
+
+Also:
+Minimum payments often barely reduce principal and can extend payoff timelines decades  [oai_citation:1‡OptaRev Debt Calculator](https://www.credittech.finance/learn/debt-payoff-strategies/minimum-payment-trap?utm_source=chatgpt.com)
+
+Implication:
+V2B is the most critical phase of the entire Debt system.
+
+Expectation:
+- Do NOT approximate minimum payment logic generically
+- Build a configurable rule system (issuer-based or user-defined)
+- Avoid false precision at all costs
+
+--------------------------------------------------
+4. TEST COVERAGE IS STILL LIGHT
+--------------------------------------------------
+Tests exist and pass (good improvement), but coverage is narrow.
+
+Missing:
+- edge cases (zero/negative amortization boundaries)
+- cadence variations (weekly/biweekly vs monthly)
+- malformed input scenarios
+- long-tail projection stability
+
+Expectation:
+V2B should expand test coverage alongside new logic, especially for:
+- credit card rules
+- edge-case projections
+- failure states
+
+--------------------------------------------------
+5. PROJECTION MODEL ASSUMPTIONS ARE STATIC
+--------------------------------------------------
+Current projection assumes:
+- constant payment
+- stable APR
+- no behavioral change
+
+This is acceptable for V2A.
+
+But:
+Real-world behavior (especially credit cards) is dynamic and non-linear:
+- minimum payments change as balance changes
+- interest dominates early payments  [oai_citation:2‡OptaRev Debt Calculator](https://www.credittech.finance/learn/debt-payoff-strategies/minimum-payment-trap?utm_source=chatgpt.com)
+
+Expectation:
+V2B should begin introducing:
+- dynamic payment behavior (where applicable)
+- rule-driven recalculation cycles
+- clearer separation between "simulation" vs "static projection"
+
+--------------------------------------------------
+SUMMARY
+--------------------------------------------------
+V2A is approved.
+
+Key takeaway:
+- The math engine is now strong
+- The trust system is correctly introduced
+- The UI surfaces the right level of detail
+
+BUT:
+V2B is where correctness either holds or breaks — especially for credit cards.
+
+Proceed carefully, prioritize accuracy over completeness, and maintain strict trust labeling discipline.
