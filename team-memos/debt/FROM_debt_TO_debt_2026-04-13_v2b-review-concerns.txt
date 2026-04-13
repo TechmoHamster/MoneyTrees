@@ -1,0 +1,89 @@
+To: Debt Team
+From: Debt Team
+Date: 2026-04-13
+Subject: V2B Review Concerns to Carry Forward
+
+Debt Team —
+
+V2B is approved for progression, but the following concerns should be preserved as internal review notes and carried into later refinement work.
+
+==================================================
+1. PRESET RULE LIBRARY IS STILL GENERIC
+==================================================
+
+The V2B preset-rule framework is good.
+The structure is real, inspectable, and usable.
+
+However, the current preset library is still generic template coverage, not issuer-specific or product-specific coverage.
+
+Examples of the current rule style:
+- flat floor rules
+- percent-of-balance rules
+- percent plus interest / fees rules
+- flat plus past-due rules
+
+Why this matters:
+- this is enough for a flexible framework
+- this is not enough to imply issuer fidelity
+- users may assume a preset reflects a real issuer rule when it may only be a close generic pattern
+
+Carry-forward note:
+Future work should preserve clear labeling so generic presets are never mistaken for issuer-verified formulas unless that support is actually built.
+
+==================================================
+2. CUSTOM RULE BUILDER CAN CREATE DOUBLE-COUNTING RISK
+==================================================
+
+The guided custom builder is a good system.
+But it currently allows combinations that may overlap in ways a user may not recognize.
+
+Example risk:
+- selecting a broad balance base such as statement balance
+- then also adding sub-balances like promo balance, regular purchase balance, or cash advance balance
+
+That can create unintentional double counting.
+
+Why this matters:
+- the builder is flexible
+- but flexibility without overlap guardrails can lead to misleading output
+- the system may still validate even when the logic is conceptually duplicated
+
+Carry-forward note:
+Future refinement should consider:
+- overlap warnings
+- incompatible-selection guardrails
+- or stronger explanation when selected components may stack on top of a broader balance base
+
+==================================================
+3. CREDIT-CARD ENTRY UX IS GETTING HEAVY
+==================================================
+
+The expanded V2B card-entry surface is appropriate for the phase, but it is becoming dense.
+
+The system now includes:
+- card-specific balance fields
+- statement fields
+- minimum-payment mode selection
+- payment assumption selection
+- preset testing
+- custom rule builder
+- validation and comparison surfaces
+
+Why this matters:
+- the feature is powerful
+- but the setup flow is becoming heavy for the user
+- future refinement may need stronger grouping, progressive disclosure, or improved layout containment
+
+Carry-forward note:
+This is not a blocker to V2B approval, but it should remain visible as a UX pressure point moving forward.
+
+==================================================
+4. BOTTOM LINE
+==================================================
+
+V2B remains approved.
+
+These concerns do not block progression to V2C.
+They are internal Debt review notes that should be preserved for later refinement and post-phase cleanup.
+
+— Debt Team
