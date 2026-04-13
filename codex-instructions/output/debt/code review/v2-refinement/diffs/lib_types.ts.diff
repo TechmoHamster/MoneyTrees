@@ -1,0 +1,36 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-d/source/lib/types.ts	2026-04-13 14:53:03
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/types.ts	2026-04-13 15:44:14
+@@ -128,11 +128,15 @@
+   plainEnglishExplanation: string;
+   formulaSummary: string;
+   formulaExpression: string;
++  supportLabel: string;
++  supportDetail: string;
+   calculatedMinimumPayment?: number;
+   validationState: CreditCardRuleValidationState;
+   confidenceState: DebtMathTrustState;
+   matchStatus?: CreditCardRuleMatchStatus;
+   statementComparisonDelta?: number;
++  overlapWarnings: string[];
++  saveBlockedByOverlap?: boolean;
+   missingInputs: string[];
+ };
+ 
+@@ -149,6 +153,9 @@
+   activeRuleExplanation: string;
+   activeFormulaSummary: string;
+   activeFormulaExpression: string;
++  activeRuleSupportLabel: string;
++  activeRuleSupportDetail: string;
++  activeRuleOverlapWarnings: string[];
+   validationState: CreditCardRuleValidationState;
+   confidenceState: DebtMathTrustState;
+   lastVerifiedAgainstStatement?: string;
+@@ -405,6 +412,7 @@
+   extraPaymentImpact: DebtPayoffScenario[];
+   linkedSchedule: DebtLinkedScheduleFact;
+   primaryConfidenceState: DebtMathTrustState;
++  primaryConfidenceDetail: string;
+ };
+ 
+ export type DebtDownstreamSnapshot = {

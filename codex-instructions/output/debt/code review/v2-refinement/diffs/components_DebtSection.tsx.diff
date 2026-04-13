@@ -1,0 +1,179 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-d/source/components/DebtSection.tsx	2026-04-13 14:53:03
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/components/DebtSection.tsx	2026-04-13 15:49:20
+@@ -506,6 +506,14 @@
+   return (
+     <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${classes}`}>
+       {matchStatus}
++    </span>
++  );
++}
++
++function renderSupportLabelBadge(label: string) {
++  return (
++    <span className="rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
++      {label}
+     </span>
+   );
+ }
+@@ -1547,12 +1555,19 @@
+                       <div>
+                         <p className="text-sm font-semibold text-slate-900">Preset rule testing</p>
+                         <p className="mt-1 text-xs text-slate-600">
+-                          Compare a known issuer-style rule against the latest statement minimum.
++                          Compare a generic preset pattern against the latest entered statement minimum.
+                         </p>
+                       </div>
+-                      {renderMatchStatusBadge(
+-                        creditCardFormPreview.selectedPresetPreview?.matchStatus,
+-                      )}
++                      <div className="flex flex-wrap gap-2">
++                        {creditCardFormPreview.selectedPresetPreview
++                          ? renderSupportLabelBadge(
++                              creditCardFormPreview.selectedPresetPreview.supportLabel,
++                            )
++                          : null}
++                        {renderMatchStatusBadge(
++                          creditCardFormPreview.selectedPresetPreview?.matchStatus,
++                        )}
++                      </div>
+                     </div>
+ 
+                     <label className="space-y-1.5">
+@@ -1591,6 +1606,9 @@
+                       <p className="mt-2 text-sm text-slate-700">
+                         {creditCardFormPreview.selectedPresetPreview?.plainEnglishExplanation}
+                       </p>
++                      <p className="mt-2 text-xs leading-relaxed text-slate-600">
++                        {creditCardFormPreview.selectedPresetPreview?.supportDetail}
++                      </p>
+                       <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                         <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+@@ -1684,6 +1702,14 @@
+                         <p className="mt-1 text-xs text-slate-600">
+                           {creditCardFormPreview.activeRuleExplanation}
+                         </p>
++                        <div className="mt-2 flex flex-wrap items-center gap-2">
++                          {renderSupportLabelBadge(
++                            creditCardFormPreview.activeRuleSupportLabel,
++                          )}
++                        </div>
++                        <p className="mt-2 text-xs leading-relaxed text-slate-600">
++                          {creditCardFormPreview.activeRuleSupportDetail}
++                        </p>
+                       </div>
+                       <div>
+                         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+@@ -1731,6 +1757,19 @@
+                         </div>
+                       </div>
+                     </div>
++
++                    {creditCardFormPreview.activeRuleOverlapWarnings.length > 0 ? (
++                      <div className="rounded-2xl border border-rose-200 bg-rose-50 px-3 py-3">
++                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-rose-800">
++                          Overlap guardrails
++                        </p>
++                        <ul className="mt-2 space-y-1 text-xs leading-relaxed text-rose-900">
++                          {creditCardFormPreview.activeRuleOverlapWarnings.map((warning) => (
++                            <li key={warning}>{warning}</li>
++                          ))}
++                        </ul>
++                      </div>
++                    ) : null}
+ 
+                     {creditCardFormPreview.missingDataWarnings.length > 0 ? (
+                       <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3 py-3">
+@@ -1754,7 +1793,7 @@
+                         <p className="text-sm font-semibold text-slate-900">Custom rule builder</p>
+                         <p className="mt-1 text-xs text-slate-600">
+                           Guided builder only. No raw scripting. Build a rule from balance inputs,
+-                          operation mode, threshold behavior, and included components.
++                          operation mode, threshold behavior, and included components. Save is blocked when the rule would obviously double count overlapping balance inputs.
+                         </p>
+                       </div>
+                       {creditCardFormPreview.customRulePreview
+@@ -1939,6 +1978,29 @@
+                         </label>
+                       ))}
+                     </div>
++
++                    {creditCardFormPreview.customRulePreview?.overlapWarnings.length ? (
++                      <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-3 py-3">
++                        <div className="flex flex-wrap items-center gap-2">
++                          {renderSupportLabelBadge(
++                            creditCardFormPreview.customRulePreview.supportLabel,
++                          )}
++                          {renderValidationStateBadge(
++                            creditCardFormPreview.customRulePreview.validationState,
++                          )}
++                        </div>
++                        <p className="mt-2 text-xs leading-relaxed text-rose-900">
++                          This custom rule is currently blocked because one or more included components would likely overlap the selected balance base.
++                        </p>
++                        <ul className="mt-2 space-y-1 text-xs leading-relaxed text-rose-900">
++                          {creditCardFormPreview.customRulePreview.overlapWarnings.map(
++                            (warning) => (
++                              <li key={warning}>{warning}</li>
++                            ),
++                          )}
++                        </ul>
++                      </div>
++                    ) : null}
+                   </div>
+                 ) : null}
+               </div>
+@@ -2156,7 +2218,7 @@
+                   <div>
+                     <p className="text-sm font-semibold text-slate-900">Short-term debt cash windows</p>
+                     <p className="mt-1 text-xs text-slate-600">
+-                      Required debt cash is shown in 14 / 30 / 60 day windows. Stay-current figures include any currently recorded past-due amount.
++                      Required debt cash is shown in 14 / 30 / 60 day windows. Stay-current uses the larger of recorded past-due amount or unpaid overdue schedule rows so catch-up pressure is not double counted.
+                     </p>
+                   </div>
+                   {selectedMetrics.timingCluster ? (
+@@ -2285,12 +2347,30 @@
+                       <p className="mt-1 text-sm font-semibold text-slate-900">
+                         {selectedMetrics.creditCardMinimumSystem.activeRuleName}
+                       </p>
++                      <div className="mt-2 flex flex-wrap gap-2">
++                        {renderSupportLabelBadge(
++                          selectedMetrics.creditCardMinimumSystem.activeRuleSupportLabel,
++                        )}
++                      </div>
+                       <p className="mt-2 text-sm text-slate-700">
+                         {selectedMetrics.creditCardMinimumSystem.activeRuleExplanation}
+                       </p>
++                      <p className="mt-2 text-xs leading-relaxed text-slate-600">
++                        {selectedMetrics.creditCardMinimumSystem.activeRuleSupportDetail}
++                      </p>
+                       <p className="mt-3 text-sm font-medium text-slate-900">
+                         {selectedMetrics.creditCardMinimumSystem.activeFormulaSummary}
+                       </p>
++                      {selectedMetrics.creditCardMinimumSystem.activeRuleOverlapWarnings.length >
++                      0 ? (
++                        <ul className="mt-3 space-y-1 text-xs leading-relaxed text-rose-700">
++                          {selectedMetrics.creditCardMinimumSystem.activeRuleOverlapWarnings.map(
++                            (warning) => (
++                              <li key={warning}>{warning}</li>
++                            ),
++                          )}
++                        </ul>
++                      ) : null}
+                     </div>
+                     <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+                       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+@@ -2413,7 +2493,12 @@
+                         without Debt taking over their role.
+                       </p>
+                     </div>
+-                    {renderTrustStateBadge(selectedDownstreamFact.primaryConfidenceState)}
++                    <div className="flex flex-col items-start gap-2 sm:items-end">
++                      {renderTrustStateBadge(selectedDownstreamFact.primaryConfidenceState)}
++                      <p className="max-w-xs text-xs leading-relaxed text-slate-600 sm:text-right">
++                        {selectedDownstreamFact.primaryConfidenceDetail}
++                      </p>
++                    </div>
+                   </div>
+ 
+                   <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">

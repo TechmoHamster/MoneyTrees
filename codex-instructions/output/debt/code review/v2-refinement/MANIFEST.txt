@@ -1,0 +1,23 @@
+Debt V2 refinement review package
+
+Readable source files
+- source/lib/debt.ts
+- source/lib/types.ts
+- source/lib/debt-credit-card.ts
+- source/lib/debt.test.ts
+- source/lib/debt-credit-card.test.ts
+- source/components/DebtSection.tsx
+- source/components/BillsTable.tsx
+
+Diffs
+- diffs/lib_debt.ts.diff
+- diffs/lib_types.ts.diff
+- diffs/lib_debt-credit-card.ts.diff
+- diffs/lib_debt.test.ts.diff
+- diffs/lib_debt-credit-card.test.ts.diff
+- diffs/components_DebtSection.tsx.diff
+- diffs/components_BillsTable.tsx.diff
+
+Package metadata
+- VALIDATION.txt
+- PHASE-COMPLETION.txt

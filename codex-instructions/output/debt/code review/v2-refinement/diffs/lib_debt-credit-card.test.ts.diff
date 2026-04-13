@@ -1,0 +1,82 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-b/source/lib/debt-credit-card.test.ts	2026-04-13 10:22:02
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/debt-credit-card.test.ts	2026-04-13 16:00:41
+@@ -38,11 +38,11 @@
+ }
+ 
+ describe("credit-card minimum system", () => {
+-  it("keeps the preset library available for issuer-style testing", () => {
++  it("keeps the preset library available for generic preset testing", () => {
+     expect(getCreditCardPresetLibrary()).toHaveLength(8);
+   });
+ 
+-  it("calculates preset rules and resolves an exact statement match", () => {
++  it("calculates preset rules, keeps them generic, and resolves an exact statement match", () => {
+     const preview = evaluateCreditCardPresetRule(
+       "greater-of-flat-or-percent-statement",
+       createCreditCardAccount({ statementBalance: 2000, statementMinimumDue: 35 }),
+@@ -52,6 +52,7 @@
+     expect(preview.validationState).toBe("Valid");
+     expect(preview.matchStatus).toBe("Exact Match");
+     expect(preview.confidenceState).toBe("Estimated");
++    expect(preview.supportLabel).toBe("Statement-tested generic pattern");
+   });
+ 
+   it("fails closed when a custom rule is missing required inputs", () => {
+@@ -78,7 +79,7 @@
+   it("builds a valid custom rule preview with inspectable math", () => {
+     const preview = evaluateCreditCardCustomRule(createCreditCardAccount(), {
+       name: "Statement plus fees",
+-      principalVariable: "statement_balance",
++      principalVariable: "regular_purchase_balance",
+       operationMode: "Greater Of Flat Or Percent",
+       percentageValue: 2,
+       fixedAmount: 35,
+@@ -96,9 +97,39 @@
+     expect(preview.validationState).toBe("Valid");
+     expect(preview.confidenceState).toBe("Custom");
+     expect(preview.calculatedMinimumPayment).toBe(54.25);
+-    expect(preview.formulaExpression).toContain("statement_balance");
++    expect(preview.formulaExpression).toContain("regular_purchase_balance");
++    expect(preview.overlapWarnings).toHaveLength(0);
+   });
+ 
++  it("blocks custom rules that would obviously double count overlapping balance inputs", () => {
++    const preview = evaluateCreditCardCustomRule(createCreditCardAccount(), {
++      name: "Overlap rule",
++      principalVariable: "statement_balance",
++      operationMode: "Percent Plus Flat",
++      percentageValue: 1,
++      fixedAmount: 35,
++      thresholdAmount: undefined,
++      useFullBalanceBelowThreshold: false,
++      includeInterestCharged: true,
++      includeFeesCharged: true,
++      includePastDueAmount: false,
++      includeLateFeeAmount: false,
++      includePromoBalance: false,
++      includeRegularPurchaseBalance: false,
++      includeCashAdvanceBalance: false,
++    });
++
++    expect(preview.validationState).toBe("Broken");
++    expect(preview.confidenceState).toBe("Limited");
++    expect(preview.saveBlockedByOverlap).toBe(true);
++    expect(preview.overlapWarnings).toEqual(
++      expect.arrayContaining([
++        expect.stringContaining("Statement balance"),
++        expect.stringContaining("interest"),
++      ]),
++    );
++  });
++
+   it("uses manual minimum mode as a less-durable manual confidence path", () => {
+     const minimumSystem = buildCreditCardMinimumSystem(
+       createCreditCardAccount({
+@@ -113,6 +144,7 @@
+     expect(minimumSystem.paymentAssumptionAmount).toBe(47);
+     expect(minimumSystem.paymentAssumptionTrustState).toBe("Manual");
+     expect(minimumSystem.validationState).toBe("Valid");
++    expect(minimumSystem.activeRuleSupportLabel).toBe("Manual minimum entry");
+   });
+ 
+   it("supports statement-balance and custom-amount payment assumptions separately from the minimum", () => {

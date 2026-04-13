@@ -1,0 +1,7 @@
+Debt V2 refinement is complete.
+
+This package contains the updated source, diffs against the prior Debt review snapshots, and validation evidence.
+
+Status:
+- ready for Debt Team review
+- waiting for explicit Debt Team follow-up before any further Debt implementation work

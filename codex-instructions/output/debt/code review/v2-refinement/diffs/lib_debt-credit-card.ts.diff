@@ -1,0 +1,242 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-b/source/lib/debt-credit-card.ts	2026-04-13 10:22:02
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/debt-credit-card.ts	2026-04-13 15:45:41
+@@ -33,6 +33,11 @@
+   compute: (values: CreditCardRuleVariableValues) => CardRuleCalculation;
+ };
+ 
++type CreditCardRuleSupport = {
++  supportLabel: string;
++  supportDetail: string;
++};
++
+ function getValueLabel(variable: CreditCardRuleVariable): string {
+   switch (variable) {
+     case "statement_balance":
+@@ -145,6 +150,104 @@
+   }
+ 
+   return { matchStatus: "Does Not Match", comparisonDelta };
++}
++
++function getGenericPresetSupport(matchStatus?: CreditCardRuleMatchStatus): CreditCardRuleSupport {
++  if (matchStatus === "Exact Match" || matchStatus === "Close Match") {
++    return {
++      supportLabel: "Statement-tested generic pattern",
++      supportDetail:
++        "This preset is still generic, but the entered statement minimum suggests it currently tracks this account closely.",
++    };
++  }
++
++  return {
++    supportLabel: "Generic preset pattern",
++    supportDetail:
++      "This is a generic minimum-payment pattern for testing and comparison. It is not issuer-verified logic.",
++  };
++}
++
++function getManualSupport(): CreditCardRuleSupport {
++  return {
++    supportLabel: "Manual minimum entry",
++    supportDetail:
++      "The current minimum comes from a manually entered amount or statement minimum instead of a formula.",
++  };
++}
++
++function getCustomSupport(): CreditCardRuleSupport {
++  return {
++    supportLabel: "Guided custom rule",
++    supportDetail:
++      "This rule is composed from your selected base, mode, and included components. It is inspectable but not issuer-verified.",
++  };
++}
++
++function getOverlapWarnings(rule: CreditCardCustomMinimumRule): string[] {
++  const warnings: string[] = [];
++  const principal = rule.principalVariable;
++  const baseIncludesWholeStatement =
++    principal === "statement_balance" || principal === "current_balance";
++  const baseAlreadyRollsSubBalances = principal === "balance_subject_to_minimum";
++
++  if (baseIncludesWholeStatement) {
++    if (rule.includeInterestCharged) {
++      warnings.push(
++        `${getValueLabel(principal)} can already reflect interest charges. Adding interest again risks double counting.`,
++      );
++    }
++    if (rule.includeFeesCharged) {
++      warnings.push(
++        `${getValueLabel(principal)} can already reflect fees. Adding fees again risks double counting.`,
++      );
++    }
++    if (rule.includePastDueAmount) {
++      warnings.push(
++        `${getValueLabel(principal)} can already contain past-due carryover. Adding past due again risks overlap.`,
++      );
++    }
++    if (rule.includeLateFeeAmount) {
++      warnings.push(
++        `${getValueLabel(principal)} can already contain late-fee carryover. Adding late fees again risks overlap.`,
++      );
++    }
++    if (rule.includePromoBalance) {
++      warnings.push(
++        `${getValueLabel(principal)} can already include promo balance. Adding promo balance again risks double counting.`,
++      );
++    }
++    if (rule.includeRegularPurchaseBalance) {
++      warnings.push(
++        `${getValueLabel(principal)} can already include regular purchase balance. Adding it again risks double counting.`,
++      );
++    }
++    if (rule.includeCashAdvanceBalance) {
++      warnings.push(
++        `${getValueLabel(principal)} can already include cash advance balance. Adding it again risks double counting.`,
++      );
++    }
++  }
++
++  if (baseAlreadyRollsSubBalances) {
++    if (rule.includePromoBalance) {
++      warnings.push(
++        "Balance subject to minimum already adjusts around promo balance. Adding promo balance again risks overlap.",
++      );
++    }
++    if (rule.includeRegularPurchaseBalance) {
++      warnings.push(
++        "Balance subject to minimum can already include regular purchase balance. Adding it again risks double counting.",
++      );
++    }
++    if (rule.includeCashAdvanceBalance) {
++      warnings.push(
++        "Balance subject to minimum can already include cash advance balance. Adding it again risks double counting.",
++      );
++    }
++  }
++
++  return warnings.filter((warning, index, allWarnings) => allWarnings.indexOf(warning) === index);
+ }
+ 
+ const creditCardPresetLibrary: CreditCardPresetDefinition[] = [
+@@ -423,11 +526,14 @@
+       ? `Manual minimum due set to ${formatCurrency(manualAmount)}.`
+       : "Manual minimum due is missing.",
+     formulaExpression: "manual_minimum_amount",
++    supportLabel: getManualSupport().supportLabel,
++    supportDetail: getManualSupport().supportDetail,
+     calculatedMinimumPayment: manualAmount,
+     validationState,
+     confidenceState,
+     matchStatus: match.matchStatus,
+     statementComparisonDelta: match.comparisonDelta,
++    overlapWarnings: [],
+     missingInputs: isUsableNumber(manualAmount) ? [] : ["Manual minimum amount or statement minimum due"],
+   };
+ }
+@@ -470,14 +576,18 @@
+       plainEnglishExplanation: "Preset rule is not recognized.",
+       formulaSummary: "Preset rule is missing.",
+       formulaExpression: "missing_preset_rule",
++      supportLabel: "Unavailable rule",
++      supportDetail: "The selected preset rule could not be loaded.",
+       validationState: "Broken",
+       confidenceState: "Limited",
++      overlapWarnings: [],
+       missingInputs: ["Preset rule"],
+     };
+   }
+ 
+   const calculation = preset.compute(getVariableValues(account));
+   const match = resolveMatchStatus(calculation.amount, account.statementMinimumDue);
++  const support = getGenericPresetSupport(match.matchStatus);
+ 
+   return {
+     id: preset.id,
+@@ -485,11 +595,14 @@
+     plainEnglishExplanation: calculation.plainEnglishExplanation,
+     formulaSummary: calculation.formulaSummary,
+     formulaExpression: calculation.formulaExpression,
++    supportLabel: support.supportLabel,
++    supportDetail: support.supportDetail,
+     calculatedMinimumPayment: calculation.amount,
+     validationState: calculation.validationState,
+     confidenceState: calculation.confidenceState,
+     matchStatus: match.matchStatus,
+     statementComparisonDelta: match.comparisonDelta,
++    overlapWarnings: [],
+     missingInputs: calculation.missingInputs,
+   };
+ }
+@@ -505,8 +618,11 @@
+       plainEnglishExplanation: "A guided custom rule has not been configured yet.",
+       formulaSummary: "Custom rule is incomplete.",
+       formulaExpression: "custom_rule_missing",
++      supportLabel: getCustomSupport().supportLabel,
++      supportDetail: getCustomSupport().supportDetail,
+       validationState: "Incomplete",
+       confidenceState: "Limited",
++      overlapWarnings: [],
+       missingInputs: ["Custom rule"],
+     };
+   }
+@@ -547,8 +663,11 @@
+       plainEnglishExplanation: "Custom rule is missing one or more required inputs.",
+       formulaSummary: "Custom rule is missing required inputs.",
+       formulaExpression: "custom_rule_incomplete",
++      supportLabel: getCustomSupport().supportLabel,
++      supportDetail: getCustomSupport().supportDetail,
+       validationState: "Missing Required Inputs",
+       confidenceState: "Limited",
++      overlapWarnings: [],
+       missingInputs,
+     };
+   }
+@@ -638,6 +757,9 @@
+     .join(" · ");
+ 
+   const match = resolveMatchStatus(totalAmount, account.statementMinimumDue);
++  const overlapWarnings = getOverlapWarnings(rule);
++  const support = getCustomSupport();
++  const saveBlockedByOverlap = overlapWarnings.length > 0;
+ 
+   return {
+     id: "custom-rule",
+@@ -646,11 +768,15 @@
+       "Guided custom rule using the selected balance base, operation mode, and included components.",
+     formulaSummary,
+     formulaExpression: formulaExpressionParts.join(" "),
++    supportLabel: support.supportLabel,
++    supportDetail: support.supportDetail,
+     calculatedMinimumPayment: totalAmount,
+-    validationState: "Valid",
+-    confidenceState: "Custom",
++    validationState: saveBlockedByOverlap ? "Broken" : "Valid",
++    confidenceState: saveBlockedByOverlap ? "Limited" : "Custom",
+     matchStatus: match.matchStatus,
+     statementComparisonDelta: match.comparisonDelta,
++    overlapWarnings,
++    saveBlockedByOverlap,
+     missingInputs: [],
+   };
+ }
+@@ -720,8 +846,11 @@
+           plainEnglishExplanation: "Select a preset rule to calculate the current minimum.",
+           formulaSummary: "Preset rule is not selected yet.",
+           formulaExpression: "preset_rule_missing",
++          supportLabel: "Preset rule required",
++          supportDetail: "Choose a generic preset pattern before saving this mode.",
+           validationState: "Incomplete" as CreditCardRuleValidationState,
+           confidenceState: "Limited" as DebtMathTrustState,
++          overlapWarnings: [],
+           missingInputs: ["Preset rule"],
+         }
+       : minimumPaymentMode === "Custom Rule"
+@@ -754,6 +883,9 @@
+     activeRuleExplanation: activePreview.plainEnglishExplanation,
+     activeFormulaSummary: activePreview.formulaSummary,
+     activeFormulaExpression: activePreview.formulaExpression,
++    activeRuleSupportLabel: activePreview.supportLabel,
++    activeRuleSupportDetail: activePreview.supportDetail,
++    activeRuleOverlapWarnings: activePreview.overlapWarnings,
+     validationState: activePreview.validationState,
+     confidenceState: activePreview.confidenceState,
+     lastVerifiedAgainstStatement: account.lastVerifiedAgainstStatement,

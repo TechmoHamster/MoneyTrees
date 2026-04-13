@@ -1,0 +1,81 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-d/source/lib/debt.test.ts	2026-04-13 14:53:03
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/debt.test.ts	2026-04-13 16:01:22
+@@ -471,6 +471,7 @@
+       termLengthMonths: 12,
+       interestAccrual: "No Interest Accruing",
+       pastDueAmount: 60,
++      daysPastDue: 10,
+     });
+ 
+     const bills = [
+@@ -487,8 +488,22 @@
+         dueDate: "2026-05-10",
+         amount: 200,
+         status: "Upcoming",
++      }),
++      createDebtBill({
++        id: "past-due-1",
++        sourceDebtAccountId: "debt-1",
++        dueDate: "2026-04-01",
++        amount: 175,
++        status: "Past Due",
+       }),
+       createDebtBill({
++        id: "paid-1",
++        sourceDebtAccountId: "debt-1",
++        dueDate: "2026-04-22",
++        amount: 200,
++        status: "Paid",
++      }),
++      createDebtBill({
+         id: "far-1",
+         sourceDebtAccountId: "debt-1",
+         dueDate: "2026-07-20",
+@@ -517,6 +532,9 @@
+       payoffTrustState: "Exact",
+       primaryConfidenceState: "Exact",
+     });
++    expect(snapshot.accountFacts[0]?.primaryConfidenceDetail).toContain(
++      "aligned payment, payoff, and remaining-interest support",
++    );
+     expect(snapshot.accountFacts[0]?.paymentAssumption).toMatchObject({
+       label: "Scheduled Payment",
+       amount: 200,
+@@ -574,4 +592,37 @@
+     expect(fact?.extraPaymentImpact[0]?.trustState).toBe("Limited");
+     expect(snapshot.limitedConfidenceAccountCount).toBe(1);
+   });
++
++  it("keeps downstream primary confidence limited when reliability gaps weaken otherwise-usable debt truth", () => {
++    const snapshot = buildDebtDownstreamSnapshot(
++      [
++        createDebtAccount({
++          id: "card-2",
++          providerName: "Card Two",
++          debtType: "Credit Card",
++          currentBalance: 600,
++          minimumPayment: 55,
++          scheduledPaymentAmount: 55,
++          statementBalance: 600,
++          statementMinimumDue: 55,
++          apr: 19.99,
++          interestAccrual: "Interest Accruing",
++          gracePeriodStatus: undefined,
++        }),
++      ],
++      [
++        createDebtBill({
++          id: "card-2-bill",
++          sourceDebtAccountId: "card-2",
++          dueDate: "2026-04-20",
++          amount: 55,
++        }),
++      ],
++    );
++
++    expect(snapshot.accountFacts[0]?.primaryConfidenceState).toBe("Limited");
++    expect(snapshot.accountFacts[0]?.primaryConfidenceDetail).toContain(
++      "downstream debt input is still missing",
++    );
++  });
+ });

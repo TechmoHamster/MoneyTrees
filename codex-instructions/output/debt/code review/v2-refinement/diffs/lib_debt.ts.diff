@@ -1,0 +1,249 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/debt/code review/v2-build/phase-d/source/lib/debt.ts	2026-04-13 14:53:03
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/debt.ts	2026-04-13 15:57:26
+@@ -34,14 +34,18 @@
+ const DEBT_EXTRA_PAYMENT_OPTIONS = [50, 100, 200] as const;
+ const DEBT_CASH_WINDOW_DAYS = [14, 30, 60] as const;
+ const MAX_PROJECTION_PERIODS = 1_200;
+-const PROMO_EXPIRING_SOON_DAYS = 30;
+-const DUE_SOON_DAYS = 14;
+-const PAYMENT_DUE_SOON_DAYS = 7;
+-const HIGH_UTILIZATION_THRESHOLD = 80;
+-const TIMING_CLUSTER_GAP_DAYS = 7;
+ 
+-export const DEBT_OPERATIONAL_WINDOW_DAYS = DEBT_FORWARD_WINDOW_DAYS;
++export const DEBT_POLICY = {
++  operationalWindowDays: DEBT_FORWARD_WINDOW_DAYS,
++  promoExpiringSoonDays: 30,
++  dueSoonDays: 14,
++  paymentDueSoonDays: 7,
++  highUtilizationThreshold: 80,
++  timingClusterGapDays: 7,
++} as const;
+ 
++export const DEBT_OPERATIONAL_WINDOW_DAYS = DEBT_POLICY.operationalWindowDays;
++
+ type DateOnlyParts = {
+   year: number;
+   month: number;
+@@ -363,7 +367,9 @@
+     }
+ 
+     const previous = currentCluster[currentCluster.length - 1];
+-    if (getDifferenceInDays(previous.date, entry.date) <= TIMING_CLUSTER_GAP_DAYS) {
++    if (
++      getDifferenceInDays(previous.date, entry.date) <= DEBT_POLICY.timingClusterGapDays
++    ) {
+       currentCluster.push(entry);
+       continue;
+     }
+@@ -417,6 +423,23 @@
+   return normalizeAmount(Math.max(account.pastDueAmount ?? 0, pastDueScheduledTotal));
+ }
+ 
++function getBoundedOperationalScheduleEntries(
++  scheduleItems: DebtScheduleItem[],
++): Array<DebtScheduleItem & { date: Date }> {
++  const today = getToday();
++  const horizon = addDays(today, DEBT_OPERATIONAL_WINDOW_DAYS);
++
++  return scheduleItems
++    .filter((item) => item.status !== "Paid")
++    .map((item) => {
++      const date = getDateOnly(item.dueDate);
++      return date ? { ...item, date } : null;
++    })
++    .filter((item): item is DebtScheduleItem & { date: Date } => item !== null)
++    .filter((item) => item.date >= today && item.date <= horizon)
++    .sort((left, right) => left.dueDate.localeCompare(right.dueDate));
++}
++
+ function buildDebtCashWindows(
+   account: DebtAccount,
+   scheduleItems: DebtScheduleItem[],
+@@ -496,12 +519,32 @@
+     issues.add("Promo balance is present, but promo end date is missing.");
+   }
+ 
++  if (typeof account.promoBalance === "number" && account.promoBalance > 0 && !account.promoType) {
++    issues.add("Promo balance is present, but promo type is missing.");
++  }
++
+   if ((account.isDelinquent || (account.pastDueAmount ?? 0) > 0) && !account.daysPastDue) {
+     issues.add("Days past due is not recorded.");
+   }
+ 
++  if (
++    account.debtType === "Credit Card" &&
++    account.currentBalance > 0 &&
++    !account.gracePeriodStatus
++  ) {
++    issues.add("Grace-period status is not recorded.");
++  }
++
++  if (
++    account.debtType === "Credit Card" &&
++    (account.isDelinquent || (account.pastDueAmount ?? 0) > 0) &&
++    account.lateFeeAmount === undefined
++  ) {
++    issues.add("Late-fee detail is not recorded while the account is behind.");
++  }
++
+   if (scheduleItems.length === 0 && account.paymentRequirement === "Payment Required") {
+-    issues.add("No debt-linked schedule rows are available in the current 60-day window.");
++    issues.add("No debt-linked schedule rows are available in the current bounded operational window.");
+   }
+ 
+   return [...issues];
+@@ -550,7 +593,11 @@
+     });
+   }
+ 
+-  if (typeof daysUntilDue === "number" && daysUntilDue >= 0 && daysUntilDue <= PAYMENT_DUE_SOON_DAYS) {
++  if (
++    typeof daysUntilDue === "number" &&
++    daysUntilDue >= 0 &&
++    daysUntilDue <= DEBT_POLICY.paymentDueSoonDays
++  ) {
+     flags.push({
+       id: `${account.id}-flag-payment-due-soon`,
+       type: "Payment Due Soon",
+@@ -560,7 +607,11 @@
+           ? `${formatCurrency(scheduledAmount)} is due ${formatDate(account.nextDueDate as string)}.`
+           : `A due date is set for ${formatDate(account.nextDueDate as string)}.`,
+     });
+-  } else if (typeof daysUntilDue === "number" && daysUntilDue > PAYMENT_DUE_SOON_DAYS && daysUntilDue <= DUE_SOON_DAYS) {
++  } else if (
++    typeof daysUntilDue === "number" &&
++    daysUntilDue > DEBT_POLICY.paymentDueSoonDays &&
++    daysUntilDue <= DEBT_POLICY.dueSoonDays
++  ) {
+     flags.push({
+       id: `${account.id}-flag-due-soon`,
+       type: "Due Soon",
+@@ -572,7 +623,7 @@
+   if (
+     typeof daysUntilPromoEnd === "number" &&
+     daysUntilPromoEnd >= 0 &&
+-    daysUntilPromoEnd <= PROMO_EXPIRING_SOON_DAYS &&
++    daysUntilPromoEnd <= DEBT_POLICY.promoExpiringSoonDays &&
+     typeof account.promoBalance === "number" &&
+     account.promoBalance > 0
+   ) {
+@@ -584,7 +635,10 @@
+     });
+   }
+ 
+-  if (typeof utilizationPercent === "number" && utilizationPercent >= HIGH_UTILIZATION_THRESHOLD) {
++  if (
++    typeof utilizationPercent === "number" &&
++    utilizationPercent >= DEBT_POLICY.highUtilizationThreshold
++  ) {
+     flags.push({
+       id: `${account.id}-flag-utilization`,
+       type: "High Utilization",
+@@ -1454,16 +1508,57 @@
+   };
+ }
+ 
++function getPrimaryConfidenceState(metrics: DebtDerivedMetrics): DebtMathTrustState {
++  const trustStates = [
++    metrics.paymentAmountTrustState,
++    metrics.payoffTrustState,
++    metrics.projectedRemainingInterestTrustState,
++  ];
++  const hasReliabilityLimits = metrics.factualFlags.some(
++    (flag) => flag.type === "Missing Key Inputs Limiting Reliability",
++  );
++
++  if (hasReliabilityLimits || trustStates.includes("Limited")) {
++    return "Limited";
++  }
++  if (trustStates.includes("Custom")) {
++    return "Custom";
++  }
++  if (trustStates.includes("Manual")) {
++    return "Manual";
++  }
++  if (trustStates.includes("Estimated")) {
++    return "Estimated";
++  }
++  return "Exact";
++}
++
++function getPrimaryConfidenceDetail(
++  metrics: DebtDerivedMetrics,
++  confidenceState: DebtMathTrustState,
++): string {
++  if (confidenceState === "Limited") {
++    return "Primary confidence is limited because at least one downstream debt input is still missing or only partially supported.";
++  }
++  if (confidenceState === "Custom") {
++    return "Primary confidence reflects a custom payment rule or custom payment assumption, not a baseline scheduled-payment read.";
++  }
++  if (confidenceState === "Manual") {
++    return "Primary confidence is driven by manual payment inputs even though downstream outputs remain usable.";
++  }
++  if (confidenceState === "Estimated") {
++    return "Primary confidence is based on stable-rate or inferred-payment assumptions rather than a fully verified amortization path.";
++  }
++
++  return "Primary confidence reflects aligned payment, payoff, and remaining-interest support from current debt truth.";
++}
++
+ function buildLinkedScheduleFact(
+   account: DebtAccount,
+   bills: Bill[],
+ ): DebtLinkedScheduleFact {
+   const schedule = getDebtSchedule(account, bills);
+-  const horizon = addDays(getToday(), DEBT_OPERATIONAL_WINDOW_DAYS);
+-  const boundedSchedule = schedule.filter((item) => {
+-    const dueDate = getDateOnly(item.dueDate);
+-    return Boolean(dueDate && dueDate <= horizon);
+-  });
++  const boundedSchedule = getBoundedOperationalScheduleEntries(schedule);
+ 
+   return {
+     billCount: boundedSchedule.length,
+@@ -1473,7 +1568,7 @@
+     editableInBills: false,
+     owner: "Debt",
+     boundaryNote:
+-      "Bills receives bounded operational rows only. Edit account structure, payment assumptions, and debt truth in Debt.",
++      "Bills receives bounded unpaid upcoming rows only. Past-due catch-up stays in Debt cash windows so near-term obligations do not double count overdue pressure.",
+   };
+ }
+ 
+@@ -1481,15 +1576,9 @@
+   accounts: DebtAccount[],
+   bills: Bill[],
+ ): DebtDownstreamObligation[] {
+-  const horizon = addDays(getToday(), DEBT_OPERATIONAL_WINDOW_DAYS);
+-
+   return accounts
+     .flatMap((account) =>
+-      getDebtSchedule(account, bills)
+-        .filter((item) => {
+-          const dueDate = getDateOnly(item.dueDate);
+-          return Boolean(dueDate && dueDate <= horizon);
+-        })
++      getBoundedOperationalScheduleEntries(getDebtSchedule(account, bills))
+         .map((item) => ({
+           billId: item.sourceBillId,
+           accountId: account.id,
+@@ -1518,7 +1607,7 @@
+ 
+   const accountFacts: DebtDownstreamAccountFact[] = accounts.map((account) => {
+     const metrics = calculateDebtDerivedMetrics(account, bills);
+-    const primaryConfidenceState = metrics.payoffTrustState;
++    const primaryConfidenceState = getPrimaryConfidenceState(metrics);
+     confidenceSummary[primaryConfidenceState] += 1;
+ 
+     return {
+@@ -1545,6 +1634,7 @@
+       extraPaymentImpact: metrics.projection.scenarios,
+       linkedSchedule: buildLinkedScheduleFact(account, bills),
+       primaryConfidenceState,
++      primaryConfidenceDetail: getPrimaryConfidenceDetail(metrics, primaryConfidenceState),
+     };
+   });
+ 

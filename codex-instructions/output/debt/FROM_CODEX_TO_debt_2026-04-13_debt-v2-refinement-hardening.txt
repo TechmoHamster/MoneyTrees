@@ -1,0 +1,19 @@
+Debt V2 refinement hardening is complete and ready for Debt Team review.
+
+Scope completed from the memo:
+- V2B: generic preset rule labeling, custom-rule overlap guardrails, tighter credit-card containment
+- V2C: centralized debt policy thresholds, clearer manual-truth dependency visibility, bounded stay-current cash-window handling
+- V2D: strictly bounded near-term obligations, holistic downstream primary confidence, narrower Bills structural actions for debt-derived rows
+
+Updated review package:
+- codex-instructions/output/debt/code review/v2-refinement/
+
+Validation:
+- npm run lint passed
+- npm run test passed
+- 86 tests passed
+- npm run build passed
+
+Phase gate:
+- V2 refinement is ready for Debt Team review.
+- Codex is waiting for explicit Debt Team follow-up before any additional Debt phase work.

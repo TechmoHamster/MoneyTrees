@@ -1,0 +1,14 @@
+Validation evidence
+
+Commands run in /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard
+- npm run lint
+- npm run test -- lib/debt.test.ts lib/debt-credit-card.test.ts
+- npm run test
+- npm run build
+
+Results
+- npm run lint passed
+- npm run test -- lib/debt.test.ts lib/debt-credit-card.test.ts passed
+- npm run test passed
+- 86 tests passed
+- npm run build passed
