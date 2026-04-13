@@ -7,6 +7,13 @@
 
 ---
 
+## Previous Results
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-12_debt-code-review-handoff.txt
+  - Date: 2026-04-12
+  - Topic: Debt Code Review Handoff
+
+---
+
 ## Notes
 - This file is Debt's Codex results lookup file.
 - Update it whenever a new Codex result is added under codex-instructions/output/debt/.
