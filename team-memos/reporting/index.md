@@ -1,13 +1,16 @@
 # Reporting Memos Index
 
 ## Latest Memo
-- File: team-memos/reporting/FROM_debt_TO_reporting_2026-04-11_debt-section-next-steps.txt
-- Date: 2026-04-11
-- Topic: Debt Section Next Steps
+- File: team-memos/reporting/FROM_debt_TO_reporting_2026-04-14_debt-v2-2-approved-next-steps.txt
+- Date: 2026-04-14
+- Topic: Debt V2 2 Approved Next Steps
 
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/reporting/FROM_debt_TO_reporting_2026-04-11_debt-section-next-steps.txt
+  - Date: 2026-04-11
+  - Topic: Debt Section Next Steps
 - File: team-memos/director/FROM_director_TO_all_2026-04-09_system-alignment-test.txt
   - Date: 2026-04-09
   - Topic: System Alignment Test
