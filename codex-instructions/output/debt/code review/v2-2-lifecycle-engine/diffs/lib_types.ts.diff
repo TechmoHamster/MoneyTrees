@@ -1,0 +1,3 @@
+No V2.2 follow-up code changes were made to lib/types.ts.
+The file is included in this review package because Debt V2.2 depends on lifecycle, continuity, overlay, term, and source-quality contracts defined there.
+Those contracts were already present from earlier Debt phases and were missing from the original V2.2 review package.

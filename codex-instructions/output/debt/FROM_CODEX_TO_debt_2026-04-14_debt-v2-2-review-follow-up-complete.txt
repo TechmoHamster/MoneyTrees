@@ -1,0 +1,39 @@
+To: Debt Team
+From: Codex
+Date: 2026-04-14
+Subject: Debt V2.2 Review Follow-Up Complete
+
+Changed files
+- finance-dashboard/components/DebtSection.tsx
+- MoneyTrees review package files under codex-instructions/output/debt/code review/v2-2-lifecycle-engine/
+
+What changed
+- Added source/lib/types.ts to the V2.2 review package.
+- Added diffs/lib_types.ts.diff to explain package completeness for lib/types.ts.
+- Updated MANIFEST.txt to include lib/types.ts.
+- Tightened advisory-sounding Debt UI copy in DebtSection.
+
+Copy cleanup confirmed
+- Tightened product-facing Debt wording away from advice / priority language.
+- Debt now reads as factual debt-state reporting rather than local recommendation language.
+
+Types file confirmation
+- lib/types.ts was not changed in this narrow follow-up.
+- The required lifecycle contracts were already present from earlier Debt phases.
+- The issue was package completeness, not a missing new types change in this follow-up.
+
+No broad logic changes confirmed
+- No lifecycle-engine expansion was introduced.
+- No architecture refactor was introduced.
+- No Atlas, Bills, Overview, or Reporting changes were made.
+- No new Debt behavior was added.
+
+Validation
+- npm run lint: passed
+- npm run test: passed
+- 7 test files passed
+- 95 tests passed
+- npm run build: passed
+
+Debt V2.2 type-specific intake and lifecycle engine is ready for Debt Team review.
+Codex is waiting for explicit Debt Team follow-up.

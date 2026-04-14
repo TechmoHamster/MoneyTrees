@@ -1,4 +1,4 @@
-Debt V2.2 validation
+Debt V2.2 follow-up validation
 
 Commands run:
 - npm run lint
@@ -13,5 +13,5 @@ Results:
 - npm run build: passed
 
 Notes:
-- Full production build completed successfully with Next.js 16.2.2.
-- Debt-specific lifecycle scenario coverage was added in lib/debt.test.ts.
+- This follow-up was narrow: package completeness and Debt copy-boundary cleanup only.
+- No broad lifecycle, architecture, or cross-section logic changes were introduced in this follow-up.

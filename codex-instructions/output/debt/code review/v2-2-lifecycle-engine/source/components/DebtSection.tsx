@@ -1294,7 +1294,7 @@ const DEBT_INTERNAL_VIEWS: Array<{
   {
     id: "briefing",
     label: "Briefing Hub",
-    hint: "Quick-glance debt status and attention items",
+    hint: "Quick-glance debt status and review signals",
     icon: HandCoins,
   },
   {
@@ -2448,7 +2448,7 @@ export function DebtSection({
     if (accountsBehind.length > 0) {
       insights.push({
         id: "behind",
-        title: "Behind debt needs first attention",
+        title: "Behind debt is currently active",
         detail:
           behindAmount > 0
             ? `${accountsBehind.length} account${accountsBehind.length === 1 ? "" : "s"} are behind with ${formatCurrency(behindAmount)} currently past due.`
@@ -3539,7 +3539,7 @@ export function DebtSection({
           {renderSectionIntro(
             "briefing",
             "Briefing Hub",
-            "Debt stays account-owned here. This view is only the quick-glance debt read: balance, required cash, factual alerts, and the accounts asking for attention now.",
+            "Debt stays account-owned here. This view is only the quick-glance debt read: balance, required cash, factual alerts, and the accounts currently surfacing pressure or review signals.",
           )}
           <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <div className="rounded-3xl border border-blue-300 bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 px-4 py-4 text-white shadow-[0_24px_46px_-30px_rgba(37,99,235,0.65)]">
@@ -3573,7 +3573,7 @@ export function DebtSection({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-base font-semibold text-slate-900">Immediate State</p>
-              <p className="mt-1 text-sm text-slate-600">This is the short debt read that matters now: what is already damaging, what is building next, and which accounts deserve the first look.</p>
+              <p className="mt-1 text-sm text-slate-600">This is the short debt read: what is already damaging, what is building next, and which accounts currently carry active pressure.</p>
             </div>
             <button
               type="button"
@@ -3639,7 +3639,7 @@ export function DebtSection({
             </div>
 
             <div className="dashboard-shell-inner rounded-2xl p-4">
-              <p className="text-sm font-semibold text-slate-900">Top debts needing attention</p>
+              <p className="text-sm font-semibold text-slate-900">Accounts with active pressure</p>
               <div className="mt-4 space-y-3">
                 {topAttentionAccounts.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-sm text-slate-600">

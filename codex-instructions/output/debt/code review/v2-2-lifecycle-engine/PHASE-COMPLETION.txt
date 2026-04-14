@@ -1,2 +1,3 @@
 Debt V2.2 type-specific intake and lifecycle engine is ready for Debt Team review.
+This follow-up added lib/types.ts to the package, tightened advisory-sounding Debt copy, and made no broad logic changes.
 Codex is waiting for explicit Debt Team follow-up.
