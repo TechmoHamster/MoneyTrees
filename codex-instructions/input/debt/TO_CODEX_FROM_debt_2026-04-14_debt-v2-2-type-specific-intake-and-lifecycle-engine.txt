@@ -1,0 +1,1076 @@
+To: Codex
+From: Debt Team
+Date: 2026-04-14
+Subject: Debt V2.2 — Type-Specific Intake and Lifecycle Engine
+
+Codex —
+
+Debt V2.2 is a singular coordinated product update.
+
+This is not a phased rollout.
+This is not a cosmetic pass.
+This is not a request to add disconnected debt features.
+
+Debt V2.2 combines two major improvements into one unified build:
+
+1. Type-specific debt intake
+2. Debt lifecycle and behavior modeling
+
+The goal is to make Debt behave less like a generic tracker and more like a real debt management engine.
+
+==================================================
+1. EXECUTIVE SUMMARY
+==================================================
+
+Debt V2.0 made the Debt section functionally strong.
+Debt V2.1 made the Debt section easier to navigate and use.
+
+Debt V2.2 should make Debt behavior-aware and lifecycle-aware.
+
+The core principle:
+Each debt type should be treated based on how it behaves, not just what it is called.
+
+That means:
+- the intake workflow should ask different questions depending on the debt type
+- each debt type should have its own behavior rules, risks, and lifecycle expectations
+- all debts should still save into one master Debt system behind the scenes
+- downstream sections should receive structured facts without taking over Debt ownership
+
+Debt V2.2 should support:
+- type-specific setup flows
+- type-specific behavior rules
+- standing states
+- arrangement overlays
+- term versioning
+- lifecycle events
+- partial payments
+- failed / reversed payments
+- cure logic
+- hardship / deferment / forbearance states
+- interest capitalization
+- credit-card grace-period loss / regain
+- transfers, refinances, consolidations, and account continuity
+- settlements / collections states
+- source-quality / trust labeling
+- duplicate / correction protection
+- inspectable event history
+
+Build the lifecycle model first.
+Then attach type-specific behaviors to it.
+
+==================================================
+2. PRODUCT ROLE AND BOUNDARIES
+==================================================
+
+Debt remains:
+- a dedicated product section
+- the owner of debt truth
+- the owner of debt math
+- the owner of debt lifecycle state
+- the owner of debt schedules
+- a producer of structured debt facts for the rest of the app
+
+Debt does NOT become:
+- a second Bills section
+- a second Overview page
+- a second Reporting page
+- an Atlas clone
+- a recommendation engine
+- a hidden scoring engine
+- a legal advice surface
+
+Debt owns lifecycle truth.
+Atlas may later interpret that truth elsewhere.
+Bills remains operational.
+Overview remains visibility-first.
+Reporting remains analytical.
+
+These boundaries are locked.
+
+==================================================
+3. REQUIRED TYPE-SPECIFIC INTAKE MODEL
+==================================================
+
+The Add Debt flow must become debt-type-specific.
+
+Current V2.1 flow is cleaner, but it still needs stronger intelligence around what each debt type actually needs.
+
+Required behavior:
+- user chooses debt type first
+- Debt then shows only the fields relevant to that type by default
+- advanced fields remain available through progressive disclosure
+- all debt types still normalize into one master Debt object / schedule / event system behind the scenes
+
+Do not dump every possible debt field into every setup flow.
+
+==================================================
+4. DEBT TYPE SETUP SEQUENCES AND BEHAVIOR RULES
+==================================================
+
+--------------------------------------------------
+A. MORTGAGE
+--------------------------------------------------
+
+Treatment:
+A mortgage is secured, long-term installment debt tied to a property.
+
+Primary risks:
+- missed payments
+- foreclosure risk
+- escrow changes
+- adjustable-rate increases
+- long-term interest cost
+
+Required intake sequence:
+1. Property / loan name
+2. Lender
+3. Original loan amount
+4. Current principal balance
+5. Interest rate
+6. Fixed or adjustable rate
+7. Monthly payment
+8. Whether escrow is included
+9. Whether taxes and insurance are included
+10. Loan term
+11. Start date
+12. Maturity date
+13. Current status
+14. Whether auto-pay is enabled
+15. Save and generate payoff / payment tracking
+
+Behavior expectations:
+- treat as secured debt
+- support escrow-related fields where practical
+- support long-term amortization behavior where existing math allows
+- support missed-payment and cure visibility
+- support adjustable-rate / term-change events through the term model
+
+--------------------------------------------------
+B. STUDENT LOAN
+--------------------------------------------------
+
+Treatment:
+Student loan debt is education debt with special repayment statuses.
+It may behave differently depending on whether it is federal or private.
+
+Primary risks:
+- interest accrual
+- repayment status changes
+- missed payments
+- deferment / forbearance changes
+- forgiveness / IDR complexity
+- capitalization events
+
+Required intake sequence:
+1. Loan name
+2. Servicer
+3. Federal or private
+4. Loan type if known
+5. Original balance
+6. Current balance
+7. Interest rate
+8. Repayment status
+9. Repayment plan
+10. Monthly payment
+11. Due date
+12. Whether it is in deferment or forbearance
+13. Whether forgiveness tracking is needed
+14. Save and track payment / interest status
+
+Behavior expectations:
+- support deferment and forbearance as arrangement overlays
+- support no-payment-required states
+- support interest-accruing-while-no-payment-required states
+- support accrued interest and capitalization events
+- support repayment status changes as lifecycle events
+
+--------------------------------------------------
+C. AUTO LOAN
+--------------------------------------------------
+
+Treatment:
+An auto loan is secured installment debt tied to a vehicle.
+
+Primary risks:
+- repossession
+- negative equity
+- missed payments
+- insurance requirements
+
+Required intake sequence:
+1. Vehicle name
+2. Lender
+3. Original loan amount
+4. Current payoff balance
+5. Interest rate
+6. Monthly payment
+7. Due date
+8. Loan term
+9. Start date
+10. Vehicle value if the user wants equity tracking
+11. Whether insurance is required
+12. Current status
+13. Whether auto-pay is enabled
+14. Save and track payoff, equity, and secured-debt risk
+
+Behavior expectations:
+- treat as secured installment debt
+- support payoff tracking
+- support optional equity tracking if vehicle value is entered
+- support missed-payment, late, delinquent, and cure visibility
+- preserve insurance/collateral context where practical
+
+--------------------------------------------------
+D. OTHER LOAN
+--------------------------------------------------
+
+Treatment:
+Other loans are generic installment debts unless secured by collateral.
+
+Primary risks:
+- interest cost
+- cash-flow burden
+- missed payments
+- collateral loss if secured
+
+Required intake sequence:
+1. Loan name
+2. Lender
+3. Loan purpose
+4. Secured or unsecured
+5. Collateral if secured
+6. Original amount
+7. Current balance
+8. Interest rate
+9. Fixed or variable rate
+10. Monthly payment
+11. Due date
+12. Loan term
+13. Current status
+14. Save and generate payoff tracking
+
+Behavior expectations:
+- treat as installment debt by default
+- if secured, preserve collateral context
+- support rate-change and term-change events
+- support late / delinquent / cure transitions
+
+--------------------------------------------------
+E. FINANCED PURCHASE
+--------------------------------------------------
+
+Treatment:
+A financed purchase is installment debt tied to a specific item.
+
+Primary risks:
+- promo expiration
+- deferred interest
+- stacking too many financed purchases at once
+
+Required intake sequence:
+1. Purchased item
+2. Merchant / provider
+3. Original purchase amount
+4. Current balance
+5. Payment amount
+6. Payment frequency
+7. Total number of payments
+8. Remaining payments
+9. Interest rate
+10. Whether there is a promo offer
+11. Whether deferred interest applies
+12. Promo end date if applicable
+13. Final payment date
+14. Save and track payoff, promo deadlines, and stacking risk
+
+Behavior expectations:
+- support fixed installment countdown
+- support promo / deferred-interest event handling
+- support final payment date visibility
+- support stacking risk facts without advisory language
+
+--------------------------------------------------
+F. CREDIT CARD
+--------------------------------------------------
+
+Treatment:
+A credit card is revolving transaction debt.
+It needs both account tracking and transaction / statement tracking.
+
+Primary risks:
+- high interest
+- utilization
+- late payments
+- minimum-payment traps
+- promo balance expiration
+- grace-period loss
+
+Required intake sequence:
+1. Card name
+2. Issuer
+3. Credit limit
+4. Current balance
+5. Statement balance
+6. Minimum payment
+7. Due date
+8. Statement closing date
+9. APR
+10. Whether there is a promo APR balance
+11. Promo expiration date if applicable
+12. Whether auto-pay is enabled
+13. Current status
+14. Save and track utilization, payments, purchases, and interest
+
+Behavior expectations:
+- preserve V2B minimum-payment rule system
+- support statement balance vs current balance separation
+- support transaction / purchase history where available
+- support grace-period active, lost, regain pending, and regained states
+- support promo balance expiration
+- support failed / reversed payments
+- support late / delinquent / cure logic
+
+--------------------------------------------------
+G. BNPL
+--------------------------------------------------
+
+Treatment:
+BNPL is short-term structured debt.
+It usually has little or no interest, but can create cash-flow stacking risk.
+
+Primary risks:
+- multiple small payments hitting close together
+- missed installment payments
+- fees or interest depending on provider
+
+Required intake sequence:
+1. Purchase name
+2. BNPL provider
+3. Merchant
+4. Original purchase amount
+5. Total number of payments
+6. Payment amount
+7. Payment frequency
+8. Payments already made
+9. Remaining payments
+10. Next payment date
+11. Final payment date
+12. Whether there are fees or interest
+13. Save and track payment countdown and cash-flow stacking
+
+Behavior expectations:
+- support short-term schedule generation
+- support payment countdown
+- support cash-flow stacking flags
+- support missed / failed installment handling where payment history supports it
+
+--------------------------------------------------
+H. LINE OF CREDIT
+--------------------------------------------------
+
+Treatment:
+A line of credit is revolving borrowing debt, not the same as a credit card.
+
+Primary risks:
+- immediate interest accrual
+- variable rates
+- utilization
+- draw-period expiration
+- collateral risk if secured
+
+Required intake sequence:
+1. Line of credit name
+2. Lender
+3. Secured or unsecured
+4. Collateral if secured
+5. Credit limit
+6. Current drawn balance
+7. Available credit
+8. Interest rate
+9. Fixed or variable rate
+10. Minimum payment
+11. Due date
+12. Draw period end date if applicable
+13. Repayment period start date if applicable
+14. Save and track utilization, interest, rate risk, and draw-period risk
+
+Behavior expectations:
+- treat as revolving borrowing debt
+- do not treat exactly like a credit card
+- support draw period / repayment period lifecycle facts
+- support secured collateral context if applicable
+- support utilization and rate-risk visibility
+
+==================================================
+5. MASTER DATA STRUCTURE EXPECTATION
+==================================================
+
+The intake workflow may vary by debt type, but saved data must feed one master Debt system.
+
+Best structure:
+- Debt object: stores the account/debt itself
+- Payment history: tracks payments made
+- Transaction history: tracks card purchases, card payments, and line-of-credit draws where available
+- Payment schedule: tracks future expected payments
+- Risk / lifecycle engine: flags late status, high APR, promo deadlines, utilization, secured collateral risk, BNPL stacking, lifecycle standing, and cure needs
+- Dashboard / Debt views: summarize total debt, active accounts, upcoming payments, payoff progress, and urgent factual risks
+
+Codex should add new types/fields as needed, but must avoid destabilizing the existing V2.0/V2.1 math and UI.
+
+==================================================
+6. CORE LIFECYCLE MODEL
+==================================================
+
+Debt V2.2 must use a structured lifecycle model.
+
+--------------------------------------------------
+A. Standing State Model
+--------------------------------------------------
+
+Standing state is the account’s primary lifecycle position.
+
+Allowed standing states:
+- current
+- grace_window
+- late
+- delinquent
+- cured
+- closed_with_balance
+- charged_off
+- collections
+- resolved
+- paid_off
+- inactive
+
+Rules:
+- an account has one primary standing state at a time
+- standing state must be explainable from visible rules and events
+- standing state changes must be logged in history
+
+--------------------------------------------------
+B. Arrangement Overlay Model
+--------------------------------------------------
+
+Arrangement overlays are not the same thing as standing state.
+They modify or annotate account behavior.
+
+Allowed arrangement overlays:
+- hardship_active
+- deferment
+- forbearance
+- reduced_payment_arrangement
+- settlement_active
+- dispute_active
+- collector_payment_plan
+- temporary_skip_approved
+
+Rules:
+- overlays may coexist with standing state
+- overlays may pause, modify, or constrain standing deterioration depending on account rules
+- overlays must have start dates, optional end dates, and explicit behavior settings
+
+--------------------------------------------------
+C. Term Model
+--------------------------------------------------
+
+The term model defines financial terms used for forward calculations.
+
+Examples:
+- APR
+- promo APR active / expired
+- minimum payment behavior
+- payment recast
+- term extension / shortening
+- capitalization behavior
+- grace-period status for cards
+
+Rules:
+- term changes must be effective-dated
+- historical calculations preserve prior versions
+- future calculations use the active version going forward
+- term changes must appear in the event timeline
+
+--------------------------------------------------
+D. Event Model
+--------------------------------------------------
+
+The lifecycle engine must use a formal event model.
+
+Each event should have:
+- event type
+- effective date
+- posted / recorded date where relevant
+- event source
+- source-quality / trust label
+- reversible / correctable flag
+- whether it changes standing state, overlay state, term state, continuity chain, or multiple layers
+
+Supported event examples:
+- payment_posted
+- partial_payment_posted
+- payment_pending
+- payment_failed
+- payment_reversed
+- late_fee_applied
+- returned_payment_fee_applied
+- standing_state_changed
+- arrangement_started
+- arrangement_ended
+- interest_capitalized
+- apr_changed
+- payment_recast
+- promo_expired
+- transfer_started
+- transfer_completed
+- account_closed
+- collections_confirmed
+- settlement_started
+- settlement_completed
+- account_cured
+- account_resolved
+
+--------------------------------------------------
+E. Identity / Continuity Model
+--------------------------------------------------
+
+Debt continuity must be explicit.
+
+The system must distinguish between:
+- obligation identity
+- account identity
+- servicer identity
+- predecessor account
+- successor account
+- transfer vs refinance vs sale vs consolidation
+
+Recommended identity fields:
+- obligation_chain_id
+- account_id
+- predecessor_account_id
+- successor_account_id
+- continuity_event_type
+- continuity_effective_date
+- transferred_amount
+- closure_reason
+
+This is required to prevent double-counting and preserve history.
+
+--------------------------------------------------
+F. Trust / Source-Quality Model
+--------------------------------------------------
+
+Lifecycle logic must remain trust-sensitive.
+
+Recommended source-quality types:
+- lender_confirmed
+- user_entered
+- estimated_default
+- system_derived
+- manual_confirmed
+
+Every major lifecycle transition must be explainable.
+
+Examples:
+- Late because due date passed and no cure payment was recorded.
+- Delinquent because the delinquency threshold is 30 days past due.
+- Collections state is manual-confirmed by user.
+- Arrangement overlay is user-entered and not lender-confirmed.
+
+==================================================
+7. PRECEDENCE RULES
+==================================================
+
+Debt V2.2 must define how multiple conditions interact.
+
+Required standards:
+- standing state precedence must be explicit
+- arrangement overlays must not replace standing state
+- term changes must not silently overwrite lifecycle history
+- severe states must not flatten the rest of the account model
+
+Required precedence questions to handle:
+- Can an account be delinquent and in hardship at the same time?
+- Does hardship pause standing deterioration or only annotate it?
+- If an account is in collections and disputed, which state is primary?
+- If a payment fails after being initiated, which date controls standing progression?
+- If a balance transfer occurs while the old account still has trailing balance, how is that represented?
+
+==================================================
+8. REQUIRED BEHAVIOR AREAS
+==================================================
+
+--------------------------------------------------
+A. Partial Payment + Cure Logic
+--------------------------------------------------
+
+Debt must support:
+- required amount due
+- amount paid
+- remaining amount to cure
+- unpaid amount after partial payment
+- whether standing remains current, late, delinquent, or cured
+- whether fees / interest affect cure amount
+- whether multiple partial payments in one cycle combine toward cure
+
+Design questions Codex must resolve in implementation:
+- payment allocation rules
+- whether allocation is lender-defined, user-defined, or estimated
+- whether late fees become part of cure amount
+- what happens if payment posts after due date but inside grace window
+
+--------------------------------------------------
+B. Late / Delinquent / Cure Transitions
+--------------------------------------------------
+
+Debt must support rule-driven standing progression.
+
+Required rule inputs:
+- due date
+- grace window
+- late threshold
+- delinquency threshold
+- late-fee behavior
+- cure logic
+- whether payment failure resumes progression
+
+Required outputs:
+- current standing state
+- days past due
+- next escalation date
+- amount needed to cure
+- transition explanation
+- state change history
+
+--------------------------------------------------
+C. Hardship / Workout / Modified Payment States
+--------------------------------------------------
+
+Debt must support real-world arrangement overlays.
+
+Required overlay fields:
+- overlay type
+- start date
+- end date
+- temporary required payment
+- whether interest accrues
+- whether standing progression pauses
+- notes / lender terms
+- trust / source-quality label
+
+--------------------------------------------------
+D. Interest Capitalization
+--------------------------------------------------
+
+Debt must support accrued-but-not-capitalized interest separately from principal.
+
+Required behavior:
+- track accrued interest
+- track capitalization event date
+- move accrued interest into principal on capitalization
+- recalculate future projections from the new principal
+- preserve pre-capitalization history
+
+--------------------------------------------------
+E. Credit Card Grace-Period Loss / Regain
+--------------------------------------------------
+
+Debt must support:
+- grace period active
+- grace period lost
+- grace period regain pending
+- grace period regained
+
+Required outputs:
+- whether new purchases accrue interest immediately
+- residual / trailing interest risk
+- what condition is required to regain grace period
+- confidence level of that interpretation
+
+--------------------------------------------------
+F. Payment Failure / Reversal Handling
+--------------------------------------------------
+
+Debt must support:
+- payment_pending
+- payment_completed
+- payment_failed
+- payment_reversed
+- returned_payment_fee_applied
+
+Rules:
+- failed / reversed payments do not satisfy the obligation
+- standing progression must account for failed payments
+- event history must remain inspectable
+- duplicate / replayed events must not corrupt history
+
+--------------------------------------------------
+G. Transfer / Refi / Consolidation Continuity
+--------------------------------------------------
+
+Debt must support explicit continuity handling for:
+- balance transfer
+- refinance
+- consolidation
+- servicer transfer
+- debt sale
+- account replacement
+
+Required outputs:
+- predecessor / successor linkage
+- continuity event type
+- effective date
+- transferred amount
+- closure reason
+- chain-level continuity visibility
+
+--------------------------------------------------
+H. Settlement / Collections States
+--------------------------------------------------
+
+Debt must support severe-state accounting clearly.
+
+Required values:
+- original balance
+- charged-off balance where relevant
+- claimed balance now
+- settlement offer amount
+- accepted settlement amount
+- remaining settlement balance
+- forgiven amount
+- paid_collection state
+- settled state
+- resolved state
+
+Collections / charge-off / settlement state changes should generally require user confirmation.
+
+--------------------------------------------------
+I. Variable Rate / Term Change Behavior
+--------------------------------------------------
+
+Debt must support:
+- APR change
+- payment recast
+- promo APR expiry
+- term extension
+- term shortening
+
+These must use effective-dated term versions.
+
+--------------------------------------------------
+J. Status History / Event Timeline
+--------------------------------------------------
+
+Debt account detail must include an event timeline.
+
+The timeline should show:
+- event type
+- event date
+- source
+- source quality
+- whether event changed standing, overlay, term model, or continuity chain
+- whether the event was corrected or reversed later
+
+==================================================
+9. SOURCE-OF-TRUTH CONFLICT RULES
+==================================================
+
+Debt V2.2 must define what happens when sources disagree.
+
+Example conflicts:
+- Bills shows payment completed, but Debt still appears delinquent
+- user marks hardship active, but no pause rule exists
+- transfer amount does not match successor opening balance
+- settlement amount conflicts with remaining balance
+- failed payment event arrives after a temporary current state was inferred
+
+Required behavior:
+- surface the conflict visibly
+- do not silently pick a winner where ambiguity matters
+- let the user resolve or confirm
+- preserve auditability
+
+==================================================
+10. DUPLICATE / CORRECTION PROTECTION
+==================================================
+
+Debt must guard against duplicate or corrected events.
+
+Required protections:
+- duplicate payment import protection
+- duplicate transfer event protection
+- capitalization correction handling
+- fee reversal handling
+- reclassified status transition correction
+- event correction history
+
+No lifecycle engine is trustworthy if the same event can be counted twice.
+
+==================================================
+11. UX / INFORMATION ARCHITECTURE
+==================================================
+
+Debt V2.2 must preserve V2.1 progressive disclosure.
+
+Top-level Debt should remain calm.
+
+Recommended structure:
+
+1. Summary layer:
+- delinquent count
+- late count
+- amount needed to cure
+- active hardship count
+- failed payment count
+- collections / settlement count where meaningful
+
+2. Account list layer:
+- compact standing-state badge
+- compact arrangement overlay badge
+- amount needed to cure
+- next escalation date where relevant
+
+3. Account detail layer:
+- lifecycle summary
+- event timeline
+- arrangement detail
+- term version history
+- continuity links
+- source conflict visibility
+- trust / source-quality labels
+
+4. Settings / rule layer:
+- grace window
+- delinquency thresholds
+- standing transition rules
+- arrangement behavior
+- payment allocation assumptions
+
+The top-level screen must not become a lifecycle dump.
+
+==================================================
+12. CROSS-SECTION INTEGRATION
+==================================================
+
+--------------------------------------------------
+A. Bills
+--------------------------------------------------
+
+Bills remains:
+- the operational payment workspace
+- payment-entry surface
+- payment-status source
+- fee and payment detail truth
+
+Debt consumes Bills truth and determines:
+- whether obligation was satisfied
+- whether partial payment remains
+- whether standing progression applies
+- whether cure occurred
+
+Bills must not own lifecycle transitions.
+
+--------------------------------------------------
+B. Overview
+--------------------------------------------------
+
+Overview may surface:
+- number of late accounts
+- number of delinquent accounts
+- amount needed to cure
+- number of active hardship overlays
+- number of failed payments
+- collections presence
+
+Overview must not create local lifecycle logic or urgency semantics.
+
+--------------------------------------------------
+C. Reporting
+--------------------------------------------------
+
+Reporting may analyze:
+- late / delinquent trends
+- cure trends
+- failed payment counts
+- hardship / forbearance counts
+- collections / settlement counts
+- lifecycle transitions over time
+- balance continuity after refi / transfer events
+
+Reporting remains analytical, not advisory.
+
+--------------------------------------------------
+D. Atlas
+--------------------------------------------------
+
+Atlas may consume:
+- standing state
+- arrangement overlays
+- amount needed to cure
+- days past due
+- failed payment events
+- capitalization events
+- continuity facts
+- severe-state facts
+- trust / source-quality labels
+
+Atlas may interpret those facts later.
+Debt does not become Atlas.
+
+==================================================
+13. ACCEPTANCE CRITERIA
+==================================================
+
+Debt V2.2 is successful when:
+
+1. Add Debt asks debt-type-specific setup questions.
+2. Each debt type has behavior rules aligned with how that debt actually behaves.
+3. All debt types normalize into one master Debt system behind the scenes.
+4. Standing state is modeled separately from arrangement overlays.
+5. Term changes are versioned by effective date.
+6. Lifecycle events are first-class and inspectable.
+7. Partial payment handling supports cure amount logic.
+8. Failed / reversed payments do not incorrectly satisfy obligations.
+9. Late / delinquent / cure transitions are rule-driven and explainable.
+10. Hardship / deferment / forbearance overlays are supported cleanly.
+11. Interest capitalization is tracked as an event and changes future projections correctly.
+12. Credit card grace-period loss / regain is represented.
+13. Transfer / refi / consolidation continuity does not double-count balances.
+14. Collections / settlement states are supported with accounting clarity.
+15. Source conflicts are surfaced and resolvable.
+16. Duplicate / corrected events do not corrupt balances or history.
+17. The UI remains calm at the summary level.
+18. Overview, Reporting, Bills, and Atlas consume outputs without ownership drift.
+
+==================================================
+14. SCENARIO-BASED ACCEPTANCE TESTS
+==================================================
+
+Codex must add or update tests around real scenarios, not only checklist coverage.
+
+Required scenarios:
+
+Scenario 1:
+Minimum due = $75.
+User pays $40 by due date.
+Remaining cure = $35.
+Account is partial, not satisfied.
+
+Scenario 2:
+Payment initiated before due date.
+Payment fails two days later.
+Account remains unpaid.
+Standing progression continues.
+
+Scenario 3:
+Hardship active.
+Interest accrual on.
+Standing freeze on.
+Standing does not worsen.
+Accrued interest continues.
+
+Scenario 4:
+Promo APR expires mid-cycle.
+Future interest recalculates from effective date forward only.
+
+Scenario 5:
+Student loan deferment ends.
+Prior accrued interest capitalizes.
+Principal increases.
+Future interest recalculates.
+
+Scenario 6:
+Balance transfer closes old account and opens successor.
+Historical continuity preserved.
+No double-counting.
+
+Scenario 7:
+Account is delinquent and dispute overlay becomes active.
+Standing and overlay remain distinct and inspectable.
+
+Scenario 8:
+A payment is marked completed in Bills, then later reversed.
+Debt removes the satisfaction effect, preserves the reversal event, and recalculates standing state.
+
+Scenario 9:
+A collections state is manually confirmed.
+Debt records the confirmation source and exposes severe-state facts to Atlas without making legal or credit-repair recommendations.
+
+==================================================
+15. IMPLEMENTATION DIRECTIVE
+==================================================
+
+Debt V2.2 must be implemented as one coordinated rollout.
+
+There will be no phased implementation for this brief.
+
+Codex should:
+- build the full type-specific intake and lifecycle-engine expansion in one pass
+- preserve the Debt / Bills / Overview / Reporting / Atlas boundaries
+- keep Debt factual and non-advisory
+- preserve V2.0 math and V2.1 usability gains
+- include updated source files
+- include diffs where applicable
+- include MANIFEST.txt
+- include VALIDATION.txt
+- include scenario-based tests
+- clearly list limitations or intentionally deferred edge cases
+
+The implementation should not be treated as complete unless the type-specific intake model, lifecycle model, event model, term model, continuity model, and trust/source-quality model are represented clearly in code and UI.
+
+==================================================
+16. REQUIRED REVIEW PACKAGE
+==================================================
+
+When complete, stop and return a review package to Debt Team.
+
+Create the review package at:
+codex-instructions/output/debt/code review/v2-2-lifecycle-engine/
+
+Required package contents:
+- MANIFEST.txt
+- VALIDATION.txt
+- full readable source files for touched files
+- diffs if available
+- scenario test notes if applicable
+
+Required output memo:
+Create a memo in codex-instructions/output/debt/ explaining:
+- what was changed
+- how type-specific intake was implemented
+- how debt-type behavior rules were implemented
+- how lifecycle standing state was implemented
+- how arrangement overlays were implemented
+- how term versioning was implemented
+- how lifecycle events and event timeline were implemented
+- how continuity handling was implemented
+- how source-quality / trust rules were implemented
+- how duplicate / correction protection was implemented
+- what was intentionally deferred
+- validation results
+
+Validation required:
+- npm run lint
+- npm run test
+- npm run build
+
+Completion statement required:
+- Debt V2.2 type-specific intake and lifecycle engine is ready for Debt Team review
+- Codex is waiting for explicit Debt Team follow-up
+
+==================================================
+17. FINAL PRODUCT DIRECTION
+==================================================
+
+Debt V2.2 should not be framed as more debt features.
+
+It should be framed as:
+
+Debt Lifecycle Engine — Type-Specific Intake and Additional Behaviors Expansion
+
+Core rule:
+Build the lifecycle model first.
+Then attach the behaviors to it.
+
+The final experience should make Debt feel like a real debt management system, not just a clean tracker.
+
+— Debt Team
