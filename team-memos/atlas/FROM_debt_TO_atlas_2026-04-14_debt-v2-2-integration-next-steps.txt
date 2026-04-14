@@ -1,0 +1,164 @@
+To: Atlas Team
+From: Debt Team
+Date: 2026-04-14
+Subject: Debt V2.2 Approved — Atlas Integration Next Steps
+
+MoneyTrees
+Team: Atlas
+Source Team: Debt
+Status: Debt V2.2 approved
+
+==================================================
+1. PURPOSE
+==================================================
+
+Debt V2.2 is now approved.
+
+The Debt section has moved beyond basic balance and payment tracking. It now includes type-specific intake, lifecycle-aware debt modeling, arrangement overlays, term versions, continuity handling, event timelines, source-quality labels, cure math, and debt-state facts.
+
+This memo tells Atlas what to do next.
+
+==================================================
+2. WHAT CHANGED IN DEBT
+==================================================
+
+Debt now produces stronger factual outputs around:
+- debt type
+- current balance
+- required payments
+- cash windows
+- standing state
+- arrangement overlays
+- amount needed to cure
+- days past due
+- failed or reversed payments
+- lifecycle event history
+- source conflicts
+- source-quality / trust labels
+- continuity chains
+- collections / settlement signals
+- promo / deferred-interest exposure
+- credit-card minimum-payment support
+
+Debt is now the source of truth for debt lifecycle facts.
+
+==================================================
+3. ATLAS OWNERSHIP BOUNDARY
+==================================================
+
+Atlas may interpret Debt outputs.
+Atlas must not recreate Debt logic.
+
+Atlas should not calculate its own debt standing state, cure amount, payment requirement, lifecycle status, or source-quality interpretation if Debt already provides those facts.
+
+Debt owns:
+- debt truth
+- debt math
+- lifecycle state
+- debt schedules
+- cure logic
+- source-quality labels
+- continuity logic
+- factual debt outputs
+
+Atlas owns:
+- interpretation
+- plain-language explanation
+- user-facing guidance
+- cross-section reasoning
+- decision support
+- recommended next steps where appropriate
+
+Core rule:
+Atlas consumes Debt facts. Atlas does not become a second Debt engine.
+
+==================================================
+4. REQUIRED ATLAS NEXT STEPS
+==================================================
+
+Atlas should update its context model to consume Debt V2.2 outputs cleanly.
+
+Required work:
+1. Read the updated Debt downstream snapshot shape.
+2. Identify all Debt facts that Atlas can safely consume.
+3. Update Atlas prompts / context builders to understand lifecycle standing states.
+4. Teach Atlas the difference between standing state and arrangement overlays.
+5. Teach Atlas to respect Debt trust / source-quality labels.
+6. Teach Atlas to downgrade confidence when Debt marks outputs as limited, estimated, manual, or source-conflicted.
+7. Teach Atlas to distinguish factual Debt pressure from Atlas recommendation logic.
+8. Ensure Atlas does not treat Debt flags as hidden priority scores.
+9. Add Atlas phrasing rules around debt facts.
+10. Add tests or review notes proving Atlas is not duplicating Debt logic.
+
+==================================================
+5. FACTS ATLAS SHOULD CONSUME
+==================================================
+
+Atlas should be able to consume:
+- total debt balance
+- active account count
+- late / delinquent account count
+- required debt cash in 14 / 30 / 60 days
+- amount needed to cure
+- days past due
+- next escalation date
+- active arrangement overlays
+- failed payment count
+- event timeline summary
+- source conflicts
+- trust / confidence state
+- payoff projection limitations
+- promo expiration facts
+- deferred-interest facts
+- credit-card minimum-payment support state
+- continuity facts
+- closed-with-balance facts
+- collections / settlement facts
+
+Atlas may explain what these mean.
+Atlas may suggest user-facing next steps.
+Atlas must preserve Debt's factual caveats.
+
+==================================================
+6. REQUIRED LANGUAGE STANDARD
+==================================================
+
+Atlas may say things like:
+- "Debt shows this account is behind by X."
+- "Debt marks this projection as limited because APR is missing."
+- "This account has an active hardship overlay, so the payment requirement may not behave like a normal loan."
+- "Debt shows X amount is needed to cure the account."
+- "This looks like the account that deserves review first because Debt reports active past-due pressure."
+
+Atlas should avoid saying:
+- "Debt recommends..."
+- "Debt has decided..."
+- "Debt scored this account..."
+- "The system knows this is your best move..."
+- "This is guaranteed..."
+
+Debt provides facts.
+Atlas provides interpretation.
+
+==================================================
+7. REVIEW REQUEST
+==================================================
+
+Atlas should review Debt V2.2 and report back with:
+- which Debt fields Atlas will consume
+- any missing fields needed for safe interpretation
+- how Atlas will handle limited / estimated / manual / source-conflicted Debt data
+- whether Atlas needs a formal Debt context contract
+- any concerns about ambiguous Debt outputs
+
+Do not begin broad advisory expansion until the Debt output contract is understood.
+
+==================================================
+8. FINAL DIRECTION
+==================================================
+
+Debt V2.2 gives Atlas better raw truth.
+
+Atlas's next job is to turn that truth into careful, bounded, user-useful interpretation without duplicating Debt's engine.
+
+— Debt Team
