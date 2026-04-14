@@ -1,0 +1,166 @@
+To: Overview Team
+From: Debt Team
+Date: 2026-04-14
+Subject: Debt V2.2 Approved — Overview Integration Next Steps
+
+MoneyTrees
+Team: Overview
+Source Team: Debt
+Status: Debt V2.2 approved
+
+==================================================
+1. PURPOSE
+==================================================
+
+Debt V2.2 is now approved.
+
+Debt now produces stronger account-level and lifecycle-level debt facts. Overview should consume those facts for high-level visibility without recreating Debt logic.
+
+This memo defines what Overview should do next.
+
+==================================================
+2. WHAT CHANGED IN DEBT
+==================================================
+
+Debt now supports:
+- type-specific debt intake
+- debt-type behavior rules
+- standing states
+- arrangement overlays
+- partial payment / cure logic
+- failed / reversed payment handling
+- event timeline facts
+- source-quality labels
+- continuity handling
+- collections / settlement states
+- cash windows
+- downstream debt facts
+
+Debt is now capable of producing cleaner top-level signals for Overview.
+
+==================================================
+3. OVERVIEW OWNERSHIP BOUNDARY
+==================================================
+
+Overview should surface high-level visibility.
+Overview must not become Debt.
+
+Debt owns:
+- debt math
+- debt account truth
+- lifecycle standing
+- cure amounts
+- debt schedules
+- debt confidence / source-quality labels
+- debt-specific calculations
+
+Overview owns:
+- quick-glance visibility
+- high-level financial status
+- simple cross-section summary cards
+- routing users into the correct section for detail
+
+Core rule:
+Overview displays Debt facts. It does not calculate or reinterpret them locally.
+
+==================================================
+4. REQUIRED OVERVIEW NEXT STEPS
+==================================================
+
+Overview should update its dashboard to consume Debt V2.2 output safely.
+
+Required work:
+1. Identify the Debt V2.2 summary fields available to Overview.
+2. Add or update high-level debt cards where appropriate.
+3. Route detailed debt inspection back to the Debt section.
+4. Preserve Debt confidence / limited-data language where relevant.
+5. Avoid creating local urgency or ranking logic for debt accounts.
+6. Ensure Overview does not duplicate Debt cash-window math.
+7. Ensure Overview does not calculate its own delinquency or cure status.
+8. Add empty states when Debt data is unavailable.
+9. Add visibility for stale / limited / source-conflicted debt where provided by Debt.
+10. Return questions to Debt Team if Overview needs a cleaner output contract.
+
+==================================================
+5. DEBT SIGNALS OVERVIEW MAY DISPLAY
+==================================================
+
+Overview may display:
+- total debt balance
+- active debt account count
+- late / delinquent debt count
+- required debt cash in the next 14 / 30 / 60 days
+- next debt payment
+- amount needed to cure
+- number of accounts requiring review
+- number of failed payment events
+- number of active hardship / deferment / forbearance overlays
+- source-conflicted debt count
+- limited-confidence debt count
+- closed-with-balance count
+- collections / settlement presence
+
+Overview should keep these compact.
+The Debt section remains the detailed workspace.
+
+==================================================
+6. SUGGESTED OVERVIEW UI TREATMENT
+==================================================
+
+Recommended cards:
+- Total Debt
+- Next Debt Payment
+- Debt Cash Needed Soon
+- Accounts Behind
+- Accounts Requiring Review
+
+Recommended behavior:
+- click Total Debt -> Debt / Briefing Hub
+- click Accounts Behind -> Debt / Accounts filtered to behind or delinquent accounts if supported
+- click Next Debt Payment -> related debt account or Bills row if routing exists
+- click Accounts Requiring Review -> Debt / Accounts or Debt / Activity
+
+Do not display too much account detail on Overview.
+Overview should stay glanceable.
+
+==================================================
+7. COPY STANDARD
+==================================================
+
+Overview should use factual wording.
+
+Good wording:
+- "Debt shows 2 accounts behind."
+- "Debt cash needed in 30 days: $X."
+- "3 debt accounts need review."
+- "One account has a source conflict."
+
+Avoid wording like:
+- "Pay this first."
+- "This is your best move."
+- "Debt recommends..."
+- "This account is your top priority."
+
+Recommendations belong to Atlas.
+Detailed debt truth belongs to Debt.
+
+==================================================
+8. REVIEW REQUEST
+==================================================
+
+Overview should review the Debt V2.2 outputs and report back with:
+- which summary fields will be surfaced
+- which cards need to be added or adjusted
+- what routing Overview needs into Debt
+- whether any Debt output is unclear
+- whether Overview needs a formal summary contract from Debt
+
+==================================================
+9. FINAL DIRECTION
+==================================================
+
+Overview should make Debt visible, not recreate Debt.
+
+The user should be able to glance at Overview and know whether debt requires attention, then open Debt for details.
+
+— Debt Team
