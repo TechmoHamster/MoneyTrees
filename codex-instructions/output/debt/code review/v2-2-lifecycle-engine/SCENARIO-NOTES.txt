@@ -1,0 +1,12 @@
+Debt V2.2 scenario coverage added
+
+Scenarios covered in lib/debt.test.ts:
+1. Partial payment remains short of cure and standing stays unsatisfied.
+2. Payment initiated then failed; standing progression continues and conflict stays visible.
+3. Hardship active with interest accrual and standing freeze.
+4. Promo APR expiry applies from its effective date forward only.
+5. Student-loan deferment ending with capitalization recalculates future interest from the larger principal.
+6. Balance-transfer continuity suppresses predecessor projection and avoids double-counting.
+7. Delinquent standing and dispute overlay coexist without flattening either state.
+8. Payment completed in Bills then reversed removes satisfaction effect and recalculates standing.
+9. Manual collections confirmation produces severe-state lifecycle facts with source-quality visibility.

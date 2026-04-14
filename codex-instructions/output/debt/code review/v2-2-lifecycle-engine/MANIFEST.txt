@@ -1,0 +1,18 @@
+Debt V2.2 review package
+
+Readable source files:
+- source/components/DebtSection.tsx
+- source/lib/debt.ts
+- source/lib/debt.test.ts
+- source/lib/dashboard-state.ts
+
+Diffs:
+- diffs/components_DebtSection.tsx.diff
+- diffs/lib_debt.ts.diff
+- diffs/lib_debt.test.ts.diff
+- diffs/lib_dashboard-state.ts.diff
+
+Documentation:
+- VALIDATION.txt
+- SCENARIO-NOTES.txt
+- PHASE-COMPLETION.txt

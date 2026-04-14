@@ -1,0 +1,70 @@
+To: Debt Team
+From: Codex
+Date: 2026-04-14
+Subject: Debt V2.2 — Type-Specific Intake and Lifecycle Engine
+
+Debt V2.2 is implemented and packaged for review.
+
+What changed
+- Expanded Debt intake so the guided flow now adapts more directly by debt type instead of presenting one generic setup sequence.
+- Preserved normalization into one shared Debt account model while collecting type-specific fields for mortgage, student loan, auto loan, other loan, line of credit, financed purchase, credit card, and BNPL cases.
+- Kept standing state separate from arrangement overlays and exposed lifecycle detail through the account detail surfaces already present in Debt.
+- Hardened continuity handling so predecessor obligations are suppressed when a confirmed successor account fully takes over the transferred balance, preventing double-counting in downstream projected rows.
+- Exposed lifecycle-rule assumptions in Debt settings so grace windows, delinquency thresholds, partial-payment allocation behavior, and cure treatment stay inspectable.
+- Added scenario-based lifecycle tests covering the nine required V2.2 cases.
+
+Type-specific intake
+- DebtSection now varies labels, helper text, and field groups by debt type.
+- Mortgage, student loan, auto loan, line of credit, financed purchase, BNPL, and installment-style loans now surface more relevant fields by default.
+- Advanced lifecycle sections remain progressive-disclosure based rather than front-loading every field.
+
+Debt-type behavior rules
+- Debt math still normalizes into one engine.
+- Type-specific behavior is attached through stored fields, effective term versions, overlays, lifecycle events, and continuity links rather than branching the whole downstream model.
+
+Standing state
+- Standing state remains derived and explainable from account truth, bills, overlays, and lifecycle events.
+- Severe states, grace-window handling, late/delinquent progression, cure amount, and next escalation remain part of the lifecycle snapshot.
+
+Arrangement overlays
+- Arrangement overlays remain first-class and distinct from standing state.
+- Hardship, deferment, forbearance, dispute, settlement, collector plan, and temporary-skip overlays continue to flow into lifecycle detail and downstream facts.
+
+Term versioning
+- Effective-dated term versions remain active in the debt engine.
+- V2.2 tests now cover promo expiry and capitalization scenarios so forward math reflects term changes from the right date onward.
+
+Lifecycle events and timeline
+- Lifecycle events remain first-class and inspectable.
+- The account detail timeline continues to expose event type, date, source, source quality, and correction-related metadata.
+- New test coverage now exercises failed payments, reversed payments, capitalization, collections confirmation, and dispute coexistence.
+
+Continuity handling
+- Balance transfer, refinance, consolidation, servicer transfer, debt sale, and account replacement continuity types continue to be modeled.
+- Downstream projection now suppresses predecessor schedule rows when a confirmed successor account fully assumes the transferred balance.
+
+Source-quality and trust rules
+- Source quality remains visible in overlays, term versions, lifecycle events, conflict handling, and downstream facts.
+- Manual-confirmed collections state is now covered in scenario tests.
+
+Duplicate and correction protection
+- Existing event normalization and duplicate suppression remain in place.
+- Reversal and failed-payment scenarios are now covered explicitly in tests so incorrect satisfaction effects are removed and conflicts remain visible.
+
+Intentionally deferred
+- No new Atlas-specific interpretation layer was added.
+- No new Bills ownership logic was added beyond bounded downstream projection safeguards.
+- No redesign of Overview or Reporting was introduced.
+
+Validation
+- npm run lint: passed
+- npm run test: passed
+- 7 test files passed
+- 95 tests passed
+- npm run build: passed
+
+Review package
+- codex-instructions/output/debt/code review/v2-2-lifecycle-engine/
+
+Debt V2.2 type-specific intake and lifecycle engine is ready for Debt Team review.
+Codex is waiting for explicit Debt Team follow-up.
