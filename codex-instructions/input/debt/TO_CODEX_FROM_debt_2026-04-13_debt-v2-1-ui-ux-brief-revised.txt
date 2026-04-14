@@ -1,0 +1,430 @@
+To: Codex
+From: Debt Team
+Date: 2026-04-13
+Subject: Debt V2.1 — UI / UX Refinement Brief (Revised)
+
+Codex —
+
+This revised brief supersedes the earlier Debt V2.1 UI / UX brief.
+
+Debt 2.0 is now functionally strong and ready from a capability standpoint. The next issue is usability.
+
+Debt 2.1 is a UI / UX refinement pass.
+
+The goal is not to rebuild the debt engine.
+The goal is to make the existing Debt capability easier to understand, easier to enter data into, and easier to navigate.
+
+==================================================
+1. PRODUCT GOAL
+==================================================
+
+Turn the Debt section from one dense workspace into a cleaner, navigable debt management hub.
+
+Debt should feel like a dedicated mini-app inside the finance tracker, with clear areas for:
+- quick overview
+- accounts
+- guided debt entry
+- activity / history
+- reports
+- settings
+
+The current implementation has strong functionality, but it is too dense and visually busy. This affects UX and makes the value of the Debt section harder to access.
+
+Debt 2.1 should reduce friction without removing existing power.
+
+==================================================
+2. CORE UI / UX DIRECTION
+==================================================
+
+Implement a cleaner Debt section structure with stronger navigation, hierarchy, and layout control.
+
+Primary improvements:
+1. Add dedicated Debt section navigation
+2. Create a Briefing Hub for quick-glance debt status
+3. Separate Accounts, Add Debt, Activity, Reports, and Settings into clear internal views
+4. Improve large-screen behavior with max-width rules
+5. Standardize cards, section headers, forms, badges, and tables
+6. Support account identity through logos, icons, custom images, and accent colors where practical
+7. Give each debt account its own detail/object-style page or focused detail view
+8. Add learnability patterns such as hide/show info blocks and inline tooltips wherever appropriate
+
+==================================================
+3. REQUIRED DEBT NAVIGATION STRUCTURE
+==================================================
+
+Add an internal Debt navigation model:
+
+Debt
+- Briefing Hub
+- Accounts
+- Add Debt
+- Activity
+- Reports
+- Settings
+
+This does not need to become separate routes unless the current app architecture naturally supports that.
+Tabs, internal section navigation, or state-based views are acceptable.
+
+The important requirement is that Debt no longer presents every major function in one dense visible workspace.
+
+==================================================
+4. BRIEFING HUB
+==================================================
+
+Create a quick-glance Debt landing view.
+
+The Briefing Hub should show only the most important current debt status information.
+
+Include:
+- total debt balance
+- active debt count
+- behind / delinquent debt count
+- next debt payment
+- required cash in 14 / 30 / 60 days
+- payoff progress summary where supported
+- high-priority factual alerts
+- top debts needing attention based on factual flags, not advisory ranking
+
+Important boundary note:
+Some of this information may later also be consumed by the Overview team.
+For now, Debt may show the Debt-owned briefing hub, but do not turn it into the global Overview page.
+
+Keep this view compact.
+Do not show every detail panel here.
+
+==================================================
+5. ACCOUNTS VIEW
+==================================================
+
+Create a cleaner central place to view all debt objects.
+
+Accounts should be grouped by debt type where practical:
+- Credit Cards
+- Loans
+- BNPL
+- Financed Purchases
+- Lines of Credit if supported by existing types or future-safe structure
+- Closed / Paid Off
+
+Each account card / row should show:
+- logo, icon, or fallback debt-type icon
+- nickname / provider name
+- current balance
+- APR where available
+- minimum or scheduled payment
+- next due date
+- status
+- quick action to edit or open details
+
+This should replace the current feeling that account list, summary, form, and detail are all competing at once.
+
+==================================================
+6. ADD DEBT VIEW — HIGHEST PRIORITY
+==================================================
+
+The current add/edit form is too dense and intimidating.
+Debt 2.1 must convert debt entry into a guided flow.
+
+Recommended flow:
+1. Choose debt type
+2. Basic info
+3. Payment terms
+4. Interest / promo terms
+5. Current status
+6. Review & save
+
+This should feel like a walkthrough, not a giant form.
+
+Debt-type-driven behavior is required:
+- Auto loans should only ask for auto-loan-relevant fields by default
+- Student loans should surface deferment / payment requirement states naturally
+- BNPL / financed purchases should emphasize purchase amount, payment count, cadence, and remaining payments
+- Credit cards should keep the advanced minimum-payment system, but it must be progressively disclosed
+
+Credit-card advanced fields should not visually dominate debt entry for non-card debts.
+
+Use progressive disclosure:
+- Basic fields first
+- Advanced fields collapsed by default
+- Credit-card rule builder only visible when needed
+- Promo / grace-period details only visible when relevant
+
+==================================================
+7. ACTIVITY VIEW
+==================================================
+
+Create an Activity area for historical debt events.
+
+This can start as a structured placeholder if the current data model does not fully support every activity type yet, but it should be shaped correctly.
+
+Activity should support or prepare for:
+- payments
+- purchases for credit cards / lines of credit
+- interest charges
+- fees
+- BNPL / financed purchase installment activity
+- account status changes
+
+Do not invent fake activity.
+Only display real available data or a clear empty state.
+
+==================================================
+8. REPORTS VIEW
+==================================================
+
+Create a Debt-local Reports area for debt-specific analytical views.
+
+Reports can include or prepare for:
+- payoff timelines
+- interest saved
+- debt category breakdown
+- snowball / avalanche comparisons if supported by existing factual outputs
+- monthly debt cash requirement
+- balance trends
+
+Boundary note:
+Some of this may later be consumed by the Reporting team.
+Debt may provide a debt-local reports view, but do not rebuild the full Reporting section inside Debt.
+
+If data is not yet available, use clear empty or coming-soon states instead of fake charts.
+
+==================================================
+9. SETTINGS VIEW
+==================================================
+
+Create a Debt Settings area for global Debt behavior.
+
+Settings should be global Debt preferences, not individual account editing.
+
+Suggested global settings:
+- default grouping / sorting
+- show logos vs icons
+- hide paid-off accounts
+- default payment assumption
+- APR projection method
+- promo APR handling
+- grace-period behavior
+- Bills integration behavior
+- due-soon alert threshold
+- promo-ending alert threshold
+- custom debt categories if supported
+
+Do not overbuild persistence if the current app state model does not support all settings yet.
+A structured UI shell with safe default behavior is acceptable where needed, but avoid fake toggles that do nothing unless clearly marked as not yet wired.
+
+==================================================
+10. INDIVIDUAL DEBT DETAIL VIEW
+==================================================
+
+Each debt should have its own focused detail/object-style page or panel.
+
+Recommended account detail tabs:
+- Overview
+- Payments / Transactions
+- Payoff Plan
+- Details
+- Settings
+
+The detail view should show:
+- account name / nickname
+- logo or selected icon
+- current balance
+- status
+- APR
+- credit limit or original amount
+- minimum / scheduled payment
+- next due date
+- entered date if available
+- last verified date if available
+- payoff estimate
+- linked bills
+- notes
+
+Account-specific settings belong in the account detail view.
+Global system behavior belongs in Debt Settings.
+
+==================================================
+11. LARGE-SCREEN LAYOUT RULES
+==================================================
+
+The current UI stretches too much on large monitors.
+
+Implement stricter large-screen rules:
+- center the Debt content shell
+- use max-width around 1440–1560px
+- use 24–32px page padding
+- avoid endlessly stretching cards
+- avoid helper text sitting far right on wide screens
+- standardize section headers
+- standardize input / label height and spacing
+
+Debt should look designed on a 27-inch monitor, not stretched.
+
+==================================================
+12. VISUAL SYSTEM CLEANUP
+==================================================
+
+Clean up visual density.
+
+Required improvements:
+- reduce repeated Estimated badges where the same trust state is already clear
+- cut down microcopy inside small cards
+- avoid nested card-inside-card overload where possible
+- convert repeated payoff scenario cards into a table or compact comparison layout
+- strengthen hierarchy between primary, secondary, and reference data
+- keep card sizes and alignment consistent
+- reduce competing borders and repeated small panels
+
+Do not remove trust / confidence information entirely.
+Just make it less repetitive and less visually noisy.
+
+==================================================
+13. HELP / LEARNABILITY PATTERNS
+==================================================
+
+Debt 2.1 must add two learnability patterns wherever they are appropriate.
+
+A. Hide / Show Info Pattern
+- Panels that automatically display explanatory helper text should support a hide/show info control
+- Model this after the same style / behavior used in the Overview section
+- Default behavior can be either visible or hidden depending on what already feels most consistent in the app, but the user must be able to collapse this explanatory copy
+- Use this for panel-level explanatory blurbs, helper descriptions, and “what this panel does” copy
+- Do not hide the core data itself; only the explanatory information layer
+
+B. Inline “What’s this?” Tooltips
+- Add inline help affordances for fields, labels, concepts, and controls that may not be obvious
+- These can be a question-mark icon, “What’s this?” trigger, or comparable inline help control
+- On hover, focus, or tap/click, show a small contextual pop-up beside the control
+- This pop-up should explain the field in plain language
+
+Examples of likely tooltip candidates:
+- Payment cadence
+- APR projection method
+- Payment assumption
+- Grace period
+- Promo APR handling
+- Past due amount
+- Statement balance vs current balance
+- Minimum payment mode
+- Delinquent / behind state
+- Required cash windows
+- Projected remaining interest
+
+Requirements:
+- Use these patterns consistently across Debt where they are genuinely helpful
+- Do not spam every label with a tooltip if the meaning is already obvious
+- Prioritize fields and panels that are unfamiliar, technical, or easy to misunderstand
+- Keep tooltip copy short, plain-language, and non-technical
+- Ensure the pattern works for mouse and touch interactions
+
+==================================================
+14. LOGO / ICON IDENTITY SYSTEM
+==================================================
+
+Add or prepare support for stronger account identity.
+
+Each debt should support, where practical:
+- provider logo
+- selected custom icon
+- uploaded custom image if current app supports uploads
+- selected accent color
+
+Examples:
+- Chase Sapphire logo for a card
+- Capital One logo for a card
+- car icon for auto loan
+- graduation cap for student loan
+- hospital icon for medical debt
+- shopping bag icon for BNPL
+
+If provider-logo lookup or image upload is not currently supported, implement a safe fallback system:
+- debt-type icon
+- user-selected icon
+- accent color
+
+Do not add brittle external logo fetching unless the app already has a safe pattern for it.
+
+==================================================
+15. NAMING / COPY CLEANUP
+==================================================
+
+Reduce developer-facing language in user-facing UI.
+
+Suggested renames:
+- Current Payoff Date -> Projected Payoff Date
+- Remaining Interest -> Projected Remaining Interest
+- Factual Flags -> Account Signals
+- Consequence Visibility -> Account Impact
+- Downstream Output Preview -> Shared Debt Summary, or hide behind an advanced/debug-style disclosure
+
+Do not expose internal architecture language like downstream, payload, feed readiness, or consumer unless it is in a developer/review-only context.
+
+==================================================
+16. NON-NEGOTIABLE RULES
+==================================================
+
+- Do not remove V2.0 debt math capabilities
+- Do not weaken trust / confidence integrity
+- Do not turn Debt into Atlas
+- Do not rebuild global Overview or Reporting inside Debt
+- Do not break Bills integration boundaries
+- Do not invent fake data
+- Do not add unrelated features
+- Prioritize usability, clarity, progressive disclosure, hierarchy, and learnability
+
+Debt 2.1 is a usability pass, not a logic rewrite.
+
+==================================================
+17. REQUIRED REVIEW PACKAGE
+==================================================
+
+When complete, stop and return a review package to Debt Team.
+
+Create the review package at:
+codex-instructions/output/debt/code review/v2-1-ui-ux/
+
+Required package contents:
+- MANIFEST.txt
+- VALIDATION.txt
+- full readable source files for touched files
+- diffs if available
+- any screenshots or notes if generated locally
+
+Required output memo:
+Create a memo in codex-instructions/output/debt/ explaining:
+- what was changed
+- how the Debt navigation was implemented
+- how the Add Debt flow was changed
+- how large-screen layout was improved
+- how visual density was reduced
+- how hide/show info behavior was applied
+- how inline tooltip behavior was applied
+- what was intentionally deferred
+- validation results
+
+Validation required:
+- npm run lint
+- npm run test
+- npm run build
+
+Completion statement required:
+- Debt v2.1 UI / UX pass is ready for Debt Team review
+- Codex is waiting for explicit Debt Team follow-up
+
+==================================================
+18. REVIEW STANDARD
+==================================================
+
+Debt Team will review this pass for:
+- reduced visual density
+- easier debt entry
+- clearer navigation
+- better information hierarchy
+- large-screen polish
+- stronger learnability
+- preserved V2.0 functionality
+- preserved cross-section boundaries
+
+Optimize for making Debt feel easier to use without making it less capable.
+
+— Debt Team
