@@ -1,0 +1,632 @@
+To: Debt Team
+From: Debt Team
+Date: 2026-04-14
+Subject: Debt V3.0 — Final Product Objectives Brief
+
+MoneyTrees
+Version: Final Draft
+Purpose: Define Debt V3.0 after V2.2 without duplicating V2.2 lifecycle-engine scope
+
+==================================================
+1. DOCUMENT PURPOSE
+==================================================
+
+This brief defines what Debt V3.0 should accomplish after Debt V2.2 is completed and reviewed.
+
+Debt V3.0 is not intended to reinvent the Debt section.
+Debt V3.0 is intended to mature, verify, harden, audit, and polish what V2.0 through V2.2 establish.
+
+Version framing:
+- V1 made Debt real.
+- V2.0 made Debt decision-grade.
+- V2.1 made Debt easier to use.
+- V2.2 makes Debt behavior-aware and lifecycle-aware.
+- V3.0 should make Debt dependable, auditable, verified, operationally complete, and mature enough that future work becomes incremental.
+
+This final V3 brief intentionally removes most direct lifecycle-engine build scope because V2.2 already owns:
+- type-specific intake
+- standing states
+- arrangement overlays
+- lifecycle events
+- term versioning
+- continuity handling
+- source-quality labels
+- partial payment and cure logic
+- failed / reversed payments
+- collections / settlement states
+- event timeline foundations
+
+V3.0 should not rebuild those systems.
+V3.0 should evaluate, harden, refine, and operationalize them.
+
+==================================================
+2. PRODUCT ROLE
+==================================================
+
+Debt remains:
+- a dedicated product section
+- the owner of debt truth
+- the owner of debt math
+- the owner of debt lifecycle facts
+- an account-centered workspace
+- a producer of structured debt facts for the rest of MoneyTrees
+- the owner of debt schedules, account states, verification states, and debt-specific calculations
+
+Debt is still not:
+- a second Bills section
+- a second Overview page
+- a second Reporting page
+- a second Atlas panel
+- a recommendation engine
+- a strategy engine
+- a hidden scoring engine
+- a generic finance dashboard
+- a legal advice surface
+- an alternate system-logic layer
+
+Core rule:
+Debt produces accurate, inspectable debt truth.
+Atlas interprets that truth.
+Bills operationalizes payment rows.
+Overview surfaces high-level signals.
+Reporting analyzes historical patterns.
+
+Debt V3.0 should improve what those sections receive without becoming those sections.
+
+==================================================
+3. PRIMARY PRODUCT GOAL
+==================================================
+
+Debt V3.0 should make the Debt section feel:
+- complete
+- trustworthy
+- robust
+- polished
+- inspectable
+- auditable
+- operationally stable
+- reliable during messy account states
+- less dependent on user workaround behavior
+- mature enough that future version growth is incremental, not structural
+
+The main goal of V3.0 is not to add broad new concepts.
+The main goal is to make the existing Debt vision fully dependable.
+
+In plain terms:
+- V2.2 should make Debt lifecycle-aware.
+- V3.0 should make Debt lifecycle-aware with verification, auditability, graceful failure handling, reliable maintenance workflows, stable output contracts, and premium UX polish.
+
+==================================================
+4. V3.0 PRODUCT OBJECTIVES
+==================================================
+
+Debt V3.0 should deliver eight maturity upgrades.
+
+--------------------------------------------------
+A. V2.2 SYSTEM AUDIT AND HARDENING
+--------------------------------------------------
+
+V3.0 must begin by auditing what V2.2 implemented.
+
+Required audit areas:
+- type-specific intake completeness
+- standing-state behavior correctness
+- arrangement overlay behavior correctness
+- term versioning integrity
+- lifecycle event reliability
+- continuity chain behavior
+- partial-payment / cure logic
+- failed / reversed payment behavior
+- severe-state handling
+- source-quality / trust handling
+- downstream output correctness
+
+Goal:
+Confirm V2.2 works as a stable lifecycle foundation before expanding anything else.
+
+V3.0 should fix gaps, inconsistencies, and brittle areas discovered in the V2.2 implementation.
+
+--------------------------------------------------
+B. HIGHER ACCURACY AND DEEPER MODEL FIDELITY
+--------------------------------------------------
+
+Debt V3.0 should improve accuracy for supported debt types without redefining the whole model.
+
+Priority areas:
+- better credit-card minimum-payment fidelity
+- stronger revolving debt behavior
+- better promo and deferred-interest handling
+- better payoff modeling under changing balances
+- better statement-to-statement variation handling
+- better detection of stale or unreliable assumptions
+- better edge-state reliability when account truth is incomplete
+
+Debt V3.0 should reduce false simplifications.
+
+The section should become more accurate in the cases it already claims to support.
+
+--------------------------------------------------
+C. VERIFICATION AND MAINTENANCE WORKFLOWS
+--------------------------------------------------
+
+Debt V3.0 should reduce manual upkeep while keeping truth visible.
+
+Required workflows:
+- statement refresh checklist
+- stale account review queue
+- minimum-payment rule verification flow
+- mismatch review queue
+- promo deadline review queue
+- fragile projection review queue
+- accounts missing required fields queue
+- accounts requiring user confirmation queue
+- last-verified maintenance prompts
+
+The goal is guided maintenance, not black-box automation.
+
+Debt should make it easy for the user to keep accounts trustworthy over time.
+
+--------------------------------------------------
+D. TRUST / CONFIDENCE SYSTEM MATURITY
+--------------------------------------------------
+
+Debt V3.0 should turn trust from a badge into a real product system.
+
+Every major output should have:
+- trust state
+- reason
+- source
+- freshness date where applicable
+- explanation
+- safe-use boundary
+
+Required trust states:
+- Exact
+- Custom
+- Estimated
+- Limited
+- Manual
+- Stale
+- Unknown / Unavailable where necessary
+
+Trust should be tied to:
+- data quality
+- rule quality
+- freshness
+- source reliability
+- user confirmation status
+- statement verification status
+- calculation completeness
+
+Debt must not fake precision.
+
+--------------------------------------------------
+E. DEBT HEALTH INTEGRITY CHECKS
+--------------------------------------------------
+
+Debt V3.0 should include internal checks that identify unreliable or inconsistent debt truth.
+
+Required checks:
+- balance changed unexpectedly
+- minimum due changed outside expected tolerance
+- payment posted but projection did not update
+- statement balance and current balance diverge in a projection-relevant way
+- promo balance is close to expiration
+- account is marked current but verification is stale
+- closed account still has remaining balance
+- manual override conflicts with statement-derived logic
+- scheduled payment does not match account state
+- payment requirement and interest-accrual state conflict
+- lifecycle standing conflicts with Bills payment truth
+- continuity transfer amount does not match successor opening balance
+
+These are not recommendations.
+They are debt-integrity facts.
+
+--------------------------------------------------
+F. GRACEFUL FAILURE-STATE HANDLING
+--------------------------------------------------
+
+Debt V3.0 should define what happens when the clean model breaks or required data is missing.
+
+Required failure states:
+- statement missing
+- lender rule changed
+- user skipped updates
+- balance unavailable
+- minimum payment unavailable
+- promo terms incomplete
+- account paused
+- hardship / deferment / forbearance state incomplete
+- payment posted late
+- account closed but still owed
+- calculation confidence too weak for reliable projection
+- lifecycle state conflict
+- continuity conflict
+- source conflict unresolved
+
+Each failure state should define:
+- what is known
+- what is unknown
+- what calculations are still safe
+- what outputs must be downgraded
+- what warning should be shown
+- what downstream systems should be told
+- what user action resolves the issue
+
+Failure states should degrade gracefully.
+Debt must never pretend precision where source data does not support it.
+
+--------------------------------------------------
+G. SOURCE AUDIT TRAIL AND EVIDENCE STANDARD
+--------------------------------------------------
+
+Every major debt output should be traceable.
+
+Recommended source labels:
+- manual entry
+- statement-derived
+- lender rule
+- calculated
+- estimated
+- custom override
+- stale
+- limited-data
+- imported
+- user-confirmed
+- lender-confirmed where supported
+- system-derived
+
+For each important output, the user should be able to answer:
+- where did this number come from?
+- when was it last verified?
+- how confident is the system?
+- what assumption is being used?
+- what would make this number wrong?
+- what downstream surfaces are allowed to use this value?
+
+Debt V3.0 should support evidence over narrative.
+
+--------------------------------------------------
+H. POLISH, STABILITY, AND UX REFINEMENT
+--------------------------------------------------
+
+Debt V3.0 should make the section feel premium and effortless.
+
+Targets:
+- smoother setup and maintenance flows
+- cleaner account detail hierarchy
+- more elegant advanced credit-card rule setup
+- calmer low-data states
+- better readability of lifecycle / trust / verification surfaces
+- better compactness in account-list scanning
+- stronger consistency between summary, list, and detail views
+- fewer confusing knobs
+- clearer maintenance prompts
+- better mobile usability where applicable
+- fewer repeated badges and redundant helper blocks
+- faster path from “something is wrong” to “what needs review”
+
+The UI should not become louder.
+It should become more refined.
+
+==================================================
+5. INFORMATION ARCHITECTURE STANDARD
+==================================================
+
+Debt V3.0 should preserve the architecture established by V2.1 and expanded by V2.2.
+
+Primary layers:
+1. Summary layer
+2. Account list layer
+3. Account detail layer
+4. Maintenance / verification layer
+5. Settings / rule layer
+
+V3.0 should refine these layers rather than replace them.
+
+Summary should become:
+- cleaner
+- more stable
+- better in low-data and high-data states
+- better at surfacing factual cash pressure
+- better at identifying accounts needing review
+- better at showing stale / limited / verification-needed states without visual clutter
+
+Account list should become:
+- easier to scan
+- better at showing real account state
+- better at filtering and grouping
+- clearer about what deserves inspection
+- stronger at showing stale, limited, or verification-needed states
+- compact but not cryptic
+
+Account detail should become:
+- richer
+- cleaner
+- easier to inspect
+- better at exposing assumptions, trust, verification, lifecycle state, and account truth
+- better at explaining degraded outputs
+- better at tracing source and event history without overwhelming the user
+
+Maintenance / verification should become:
+- the home for statement refreshes
+- stale account review
+- mismatch review
+- fragile projection review
+- missing data review
+- confirmation prompts
+
+==================================================
+6. CREDIT CARD V3.0 OBJECTIVES
+==================================================
+
+Credit cards remain the most complex supported debt type.
+V3.0 should improve credit-card maturity without claiming perfect issuer replication.
+
+Debt V3.0 should improve:
+- issuer-like rule fidelity where possible
+- rule verification durability
+- statement refresh experience
+- stored-rule vs actual-statement mismatch detection
+- balance bucket handling
+- residual / trailing interest support
+- promo expiration accuracy
+- split between payment assumption and actual minimum logic
+- purchase APR / cash advance APR / promo APR awareness where supported
+- payment allocation assumptions
+- deferred-interest warnings where applicable
+- stale rule and stale statement behavior
+
+Credit-card values must remain separate:
+- statement balance
+- current balance
+- payoff balance where applicable
+- minimum due
+- past due
+- interest charged
+- fees charged
+- promo balance
+- balance subject to minimum-payment logic
+- payment assumption
+- verified statement minimum
+
+Debt V3.0 should avoid:
+- pretending to perfectly replicate every issuer agreement by default
+- hiding rule behavior behind black-box logic
+- silently changing user-defined rules
+- blending separate credit-card values together in misleading ways
+- treating generic presets as issuer-confirmed formulas
+
+Goal:
+Honest fidelity, visible assumptions, and clear degradation when precision is not possible.
+
+==================================================
+7. CASH-FLOW PRESSURE OUTPUTS
+==================================================
+
+Debt V3.0 should expose factual cash-pressure outputs without becoming an advisor.
+
+Required outputs:
+- debt cash required in the next 7 days
+- debt cash required in the next 14 days
+- debt cash required in the next 30 days
+- debt cash required in the next 60 days
+- minimum needed to stay current
+- past-due amount
+- amount needed to cure
+- delinquency exposure
+- promo-expiration amount and date
+- deferred-interest exposure
+- accounts requiring verification
+- accounts with stale debt data
+- accounts with fragile projections
+
+These are facts, not recommendations.
+
+Atlas may interpret them.
+Debt should produce them clearly.
+
+==================================================
+8. DOWNSTREAM OUTPUT CONTRACTS
+==================================================
+
+Debt V3.0 should define clean output contracts for the rest of MoneyTrees.
+
+Recommended downstream outputs:
+- account balance truth
+- minimum due truth
+- due date truth
+- debt cash-pressure windows
+- cure amount truth
+- payoff projection confidence
+- stale-data flags
+- promo-risk flags
+- past-due flags
+- closed-but-owed flags
+- lifecycle standing facts
+- arrangement overlay facts
+- verification-needed facts
+- source conflict facts
+- account verification status
+- projection-safe / projection-limited status
+- confidence state per major output
+
+Each output should define:
+- source
+- owner
+- freshness
+- confidence
+- intended consumer
+- safe-use boundary
+- whether it is safe for Atlas interpretation
+- whether it is safe for Overview visibility
+- whether it is safe for Reporting analysis
+- whether it is safe for Bills operational rows
+
+This keeps Debt from becoming Atlas while making Atlas, Overview, Reporting, and Bills stronger.
+
+==================================================
+9. FAILURE-STATE STANDARD
+==================================================
+
+Debt V3.0 must define failure behavior for every supported debt type.
+
+For each failure state, Debt should define:
+- visible user-facing message
+- safe outputs
+- downgraded outputs
+- disabled outputs
+- downstream signals
+- recovery action
+- whether the account needs review
+
+Examples:
+
+Statement missing:
+- known: account exists and prior data may exist
+- unknown: current minimum, latest interest, latest fees
+- safe: show stored balance with stale / limited label
+- downgraded: payoff projection
+- downstream: mark as stale or verification-needed
+
+Promo terms incomplete:
+- known: promo exists
+- unknown: precise expiration risk
+- safe: show promo present
+- downgraded: promo consequence modeling
+- downstream: promo-risk-limited flag
+
+Minimum payment unavailable:
+- known: balance and APR may exist
+- unknown: required payment
+- safe: show account balance
+- downgraded: cash window and payoff projection
+- downstream: minimum-due-unknown flag
+
+Continuity conflict:
+- known: predecessor and successor account both exist
+- unknown: whether transfer amount fully reconciles
+- safe: show both accounts with conflict label
+- downgraded: chain-level balance confidence
+- downstream: continuity-conflict flag
+
+Lifecycle conflict:
+- known: account state and events disagree
+- unknown: whether standing state or event history is stale
+- safe: show conflict and last known facts
+- downgraded: standing confidence
+- downstream: lifecycle-review-needed flag
+
+==================================================
+10. DEFINITION OF “NO V4 NEEDED”
+==================================================
+
+If V3.0 is intended to be the final evolutionary leap, the team must define what that means.
+
+Debt V3.0 is complete when future improvements are mostly:
+- issuer coverage improvements
+- automation refinements
+- UX polish
+- bug fixes
+- additional edge-case support
+- performance / stability improvements
+- minor modeling refinements
+- better import / sync support if the broader product adds it
+
+Debt V3.0 is not complete if future work still requires:
+- redefining Debt’s role
+- rebuilding trust states
+- rebuilding credit-card modeling
+- rebuilding verification workflows
+- changing downstream ownership boundaries
+- adding basic failure-state handling after the fact
+- inventing major new debt surfaces
+- turning Debt into an advisor because downstream outputs are insufficient
+- rebuilding lifecycle foundations already expected from V2.2
+
+The goal is not that Debt never changes again.
+The goal is that Debt no longer needs major product reinvention.
+
+==================================================
+11. NON-GOALS
+==================================================
+
+Debt V3.0 is not trying to:
+- redefine the section’s purpose
+- rebuild V2.2 lifecycle foundations from scratch
+- become an advisory product
+- become a strategy engine
+- take over Atlas functions
+- take over Bills operations
+- replace Reporting
+- replace Overview
+- become a giant cross-product dashboard
+- introduce hidden scoring systems
+- create opaque intelligence layers
+- over-expand the top-level screen
+- blur ownership boundaries
+- guarantee perfect issuer-level formula coverage in every case
+- replace statement review
+- hide financial truth behind automation
+
+V3.0 is not a breadth push.
+V3.0 is a maturity push.
+
+==================================================
+12. HARD V3.0 ACCEPTANCE CRITERIA
+==================================================
+
+Debt V3.0 should be considered successful when:
+
+1. V2.2 lifecycle systems have been audited and hardened rather than rebuilt.
+2. Every supported debt type has documented modeling rules and verification behavior.
+3. Every projection shows its assumptions.
+4. Every account has visible confidence / trust status.
+5. Every trust state has a defined reason, source, freshness status, and safe-use boundary.
+6. Every stale account is visibly flagged.
+7. Every manual, estimated, custom, limited, stale, and unknown field is identifiable.
+8. Every statement-derived field stores a last-verified date where applicable.
+9. Every credit-card rule can be verified, marked stale, marked limited, marked manual, or flagged for mismatch.
+10. Every downstream output has an owner, definition, freshness status, confidence state, and safe-use boundary.
+11. Every low-data state degrades gracefully instead of pretending precision.
+12. Debt cash-pressure windows exist for 7, 14, 30, and 60 days.
+13. Debt-health integrity checks detect mismatches, stale inputs, conflicts, and fragile projections.
+14. Failure states are defined for missing statements, missing balances, unavailable minimums, incomplete promo terms, weak calculation confidence, lifecycle conflicts, and continuity conflicts.
+15. Credit-card handling preserves separate statement balance, current balance, minimum due, fees, interest, past due, promo balance, and rule verification behavior.
+16. Verification workflows exist for statement refresh, minimum-payment rule mismatch, stale accounts, missing data, and fragile projections.
+17. Summary, list, detail, and maintenance views feel polished, consistent, and non-overloaded.
+18. Bills, Overview, Reporting, and Atlas all benefit from stronger Debt outputs without boundary drift.
+19. Debt remains account-centric, factual, and non-advisory.
+20. No hidden urgency scoring, local recommendation logic, or black-box prioritization exists inside Debt.
+21. Remaining future work is mostly refinement, coverage, automation, and maintenance rather than broad new product leaps.
+
+==================================================
+13. FINAL PRODUCT DIRECTION
+==================================================
+
+Debt V3.0 should make the Debt section mature enough that the next chapter is not “Debt V4.”
+
+The desired end state is:
+- role complete
+- architecture stable
+- core capabilities robust
+- verification workflows dependable
+- trust system mature
+- calculations auditable
+- failure states handled
+- downstream contracts defined
+- maintenance workflows clear
+- UX polished
+- remaining work incremental
+
+In plain terms:
+V1 made Debt real.
+V2.0 made Debt decision-grade.
+V2.1 made Debt usable.
+V2.2 makes Debt lifecycle-aware.
+V3.0 makes Debt complete enough that future work becomes version refinement, not product reinvention.
+
+That is the standard.
+
+— Debt Team
