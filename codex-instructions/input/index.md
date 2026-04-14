@@ -1,14 +1,18 @@
 # Codex Input Index
 
 ## Latest Instruction
-- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-13_debt-v2-1-ui-ux-brief-revised.txt
-- Date: 2026-04-13
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-14_debt-v2-2-type-specific-intake-and-lifecycle-engine.txt
+- Date: 2026-04-14
 - Team: Debt
-- Topic: Debt V2 1 Ui Ux Brief Revised
+- Topic: Debt V2 2 Type Specific Intake And Lifecycle Engine
 
 ---
 
 ## Previous Instructions
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-13_debt-v2-1-ui-ux-brief-revised.txt
+  - Date: 2026-04-13
+  - Team: Debt
+  - Topic: Debt V2 1 Ui Ux Brief Revised
 - File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-13_debt-v2-1-ui-ux-brief.txt
   - Date: 2026-04-13
   - Team: Debt
