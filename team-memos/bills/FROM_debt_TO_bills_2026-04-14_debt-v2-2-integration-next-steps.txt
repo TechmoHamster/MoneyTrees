@@ -1,0 +1,201 @@
+To: Bills Team
+From: Debt Team
+Date: 2026-04-14
+Subject: Debt V2.2 Approved — Bills Integration Next Steps
+
+MoneyTrees
+Team: Bills
+Source Team: Debt
+Status: Debt V2.2 approved
+
+==================================================
+1. PURPOSE
+==================================================
+
+Debt V2.2 is now approved.
+
+Debt now produces stronger debt schedules, lifecycle facts, cure amounts, payment requirement states, and source-quality labels. Bills needs to consume the operational rows without taking ownership of Debt's account model or lifecycle engine.
+
+This memo defines Bills' next steps.
+
+==================================================
+2. WHAT CHANGED IN DEBT
+==================================================
+
+Debt now supports:
+- type-specific debt intake
+- lifecycle standing states
+- arrangement overlays
+- payment requirement states
+- interest accrual states
+- partial payment / cure logic
+- failed and reversed payment events
+- continuity handling
+- source conflicts
+- event timeline facts
+- cash windows
+- bounded near-term operational obligations
+
+Debt now produces debt-derived payment rows that Bills can show and track operationally.
+
+==================================================
+3. BILLS OWNERSHIP BOUNDARY
+==================================================
+
+Bills remains the operational payment workspace.
+Bills must not become Debt.
+
+Debt owns:
+- debt account structure
+- debt math
+- payoff projections
+- lifecycle standing
+- arrangement overlays
+- cure amount logic
+- debt schedules
+- term versions
+- source-quality labels
+- continuity chains
+
+Bills owns:
+- payment due rows
+- payment completion status
+- paid date
+- paid amount
+- payment method
+- payment notes
+- late fee entry where operationally relevant
+- operational bill filtering and display
+
+Core rule:
+Bills can mark operational payment rows as paid, past due, or upcoming.
+Debt determines what those events mean for the debt account.
+
+==================================================
+4. REQUIRED BILLS NEXT STEPS
+==================================================
+
+Bills should review how debt-derived rows are displayed and edited.
+
+Required work:
+1. Confirm debt-derived rows are visually marked as linked to Debt.
+2. Prevent structural edits to debt-derived rows in Bills.
+3. Route structural changes back to Debt.
+4. Allow operational payment actions where appropriate.
+5. Ensure paid / failed / reversed / partial payment information is passed back cleanly to Debt if supported.
+6. Preserve sourceDebtAccountId, sourceDebtType, and sourceDebtOccurrenceDate.
+7. Avoid local cure logic inside Bills.
+8. Avoid local delinquency logic inside Bills.
+9. Avoid local payoff math inside Bills.
+10. Confirm Bills does not double-count debt-derived rows against manually created duplicates.
+
+==================================================
+5. DEBT-DERIVED ROW BEHAVIOR
+==================================================
+
+Debt-derived rows should support:
+- viewing due date
+- viewing amount
+- viewing linked debt account
+- marking paid where appropriate
+- recording paid amount
+- recording paid date
+- recording payment method
+- recording payment note
+- recording late fee where appropriate
+
+Debt-derived rows should not support direct editing of:
+- debt account balance
+- APR
+- term length
+- minimum-payment rule
+- lifecycle standing
+- arrangement overlay
+- payoff assumption
+- source-quality label
+- continuity chain
+- payment schedule generation rules
+
+Those belong in Debt.
+
+==================================================
+6. PARTIAL / FAILED / REVERSED PAYMENT HANDOFF
+==================================================
+
+Bills should be prepared to represent operational payment truth clearly.
+
+Important cases:
+- full payment completed
+- partial payment completed
+- payment pending
+- payment failed
+- payment reversed
+- late fee applied
+- returned payment fee applied
+
+Debt V2.2 uses these facts to determine:
+- whether obligation was satisfied
+- whether cure amount remains
+- whether standing progression continues
+- whether a reversal removes payment satisfaction
+- whether late / delinquent state applies
+
+Bills should not make those lifecycle determinations itself.
+
+==================================================
+7. UX STANDARD FOR BILLS
+==================================================
+
+Debt-derived rows should be clear but not noisy.
+
+Recommended labels:
+- "Linked to Debt"
+- "Managed by Debt"
+- "Edit account in Debt"
+- "Payment status tracked here"
+
+Avoid labels like:
+- "Debt recommends"
+- "Priority debt"
+- "Pay this first"
+
+Bills should remain operational.
+Recommendations belong to Atlas.
+
+==================================================
+8. DUPLICATE PROTECTION
+==================================================
+
+Bills should help prevent duplicate debt rows.
+
+Required review:
+- if a debt-derived row exists, discourage creating a manual duplicate bill for the same account and same due date
+- if a manual bill appears to match a debt-derived row, surface a conflict or warning if supported
+- keep source fields intact so Debt can match payment activity back to the correct account
+
+No debt lifecycle engine is reliable if the same obligation can be counted twice.
+
+==================================================
+9. REVIEW REQUEST
+==================================================
+
+Bills should review Debt V2.2 outputs and report back with:
+- whether current debt-derived row handling is enough
+- whether additional payment status values are needed
+- whether partial payment support requires Bills UI changes
+- whether failed / reversed payment support requires Bills UI changes
+- whether duplicate prevention needs a dedicated Bills workflow
+- whether Bills needs a formal Debt-derived-row contract
+
+==================================================
+10. FINAL DIRECTION
+==================================================
+
+Bills should become the clean operational surface for debt payments.
+
+Debt owns the lifecycle meaning.
+Bills records the payment reality.
+
+That boundary must stay clean.
+
+— Debt Team
