@@ -1,0 +1,160 @@
+To: Codex
+From: Debt Team
+Date: 2026-04-14
+Subject: Debt V2.2 Review Follow-Up — Package Completeness, Copy Boundary, and Confirmation
+
+MoneyTrees
+Team: Debt
+Phase: V2.2 Review Follow-Up
+Priority: Small follow-up / approval-blocking cleanup
+
+==================================================
+1. REVIEW RESULT
+==================================================
+
+Debt Team reviewed the V2.2 lifecycle-engine review package.
+
+Directionally, V2.2 is approved.
+
+The implementation appears substantial and aligned with the V2.2 memo:
+- type-specific intake is present
+- lifecycle policy defaults are present
+- standing-state resolution is present
+- arrangement overlays are present
+- term versions are present
+- lifecycle event normalization is present
+- duplicate suppression is present
+- cure math is present
+- failed / reversed payment handling is present
+- continuity suppression is present
+- downstream debt lifecycle facts are present
+- the nine requested lifecycle scenarios are covered by tests
+
+Validation reported:
+- npm run lint: passed
+- npm run test: passed
+- 7 test files passed
+- 95 tests passed
+- npm run build: passed
+
+This is not a rejection.
+This is a targeted follow-up before final Debt Team approval.
+
+==================================================
+2. REQUIRED FOLLOW-UP ITEMS
+==================================================
+
+Please complete the following small review-blocking cleanup items.
+
+--------------------------------------------------
+A. ADD TYPES FILE TO REVIEW PACKAGE
+--------------------------------------------------
+
+The V2.2 review package manifest currently lists:
+- source/components/DebtSection.tsx
+- source/lib/debt.ts
+- source/lib/debt.test.ts
+- source/lib/dashboard-state.ts
+
+However, the V2.2 implementation clearly depends on new or expanded Debt types and constants from @/lib/types, including lifecycle events, arrangement overlays, source qualities, term versions, standing states, continuity, and related constants.
+
+Required action:
+- Add source/lib/types.ts to the V2.2 review package.
+- Add the corresponding diff file if applicable.
+- Update MANIFEST.txt to include the types file.
+- Confirm whether types.ts changed as part of V2.2 or whether the required types were already present from earlier phases.
+
+Acceptance standard:
+The review package must be complete enough that Debt Team can inspect every source contract required by V2.2.
+
+--------------------------------------------------
+B. CLEAN UP ADVISORY-SOUNDING UI COPY
+--------------------------------------------------
+
+Debt must remain factual and account-centric.
+Debt should not sound like Atlas, a recommendation engine, or a priority-ranking system.
+
+Review the DebtSection copy for language that implies local advice, scoring, or prioritization.
+
+Examples to tighten:
+- “Behind debt needs first attention”
+- “Top debts needing attention”
+- “score” style internal language where it leaks into product behavior or copy
+- anything that implies Debt is deciding what the user should do first
+
+Preferred direction:
+- “Debt pressure signals”
+- “Accounts with active pressure”
+- “Accounts requiring review”
+- “Accounts with current risk flags”
+- “Review signals”
+- “Active account conditions”
+
+Important boundary:
+Debt may surface facts.
+Debt may show pressure, stale data, missing fields, cure amounts, lifecycle conflicts, and cash windows.
+Debt must not become an advisor.
+Atlas interprets and recommends.
+
+Acceptance standard:
+UI copy should read as factual debt-state reporting, not advice or prioritization.
+
+--------------------------------------------------
+C. CONFIRM NO BROAD LOGIC CHANGES
+--------------------------------------------------
+
+This follow-up should be narrow.
+
+Please do not use this memo as permission to refactor or expand the V2.2 implementation.
+
+Required action:
+- Make only the package-completeness and copy-boundary changes above.
+- Re-run validation.
+- Provide a short completion memo confirming the exact files changed.
+
+Validation required:
+- npm run lint
+- npm run test
+- npm run build
+
+==================================================
+3. FINAL APPROVAL CONDITION
+==================================================
+
+Debt Team expects to approve V2.2 after this follow-up if:
+
+1. source/lib/types.ts is included or explicitly accounted for in the V2.2 review package.
+2. MANIFEST.txt is updated.
+3. Any required type diff is included.
+4. Advisory-sounding Debt UI copy is cleaned up.
+5. No broad logic or architecture changes are introduced.
+6. lint, tests, and build still pass.
+7. Codex returns a short completion note with exact changed files.
+
+==================================================
+4. WHAT NOT TO DO
+==================================================
+
+Do not begin V3.0 work yet.
+Do not expand the lifecycle engine.
+Do not introduce new Debt behavior.
+Do not redesign the Debt section.
+Do not convert Debt into a recommendation surface.
+Do not add hidden priority scoring as a product feature.
+Do not modify Atlas, Bills, Overview, or Reporting unless required by a build failure caused by this narrow cleanup.
+
+This is a final V2.2 cleanup pass only.
+
+==================================================
+5. RESPONSE EXPECTED
+==================================================
+
+Return a new review package or follow-up completion memo that includes:
+
+- changed files
+- whether types.ts changed or was only missing from the review package
+- updated validation results
+- confirmation that advisory-sounding Debt copy was tightened
+- confirmation that no broad logic changes were made
+
+— Debt Team
