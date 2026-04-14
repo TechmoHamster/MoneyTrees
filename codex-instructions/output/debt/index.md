@@ -1,13 +1,16 @@
 # Debt Codex Output Index
 
 ## Latest Result
-- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-13_debt-v2-1-ui-ux-pass.txt
-- Date: 2026-04-13
-- Topic: Debt V2 1 Ui Ux Pass
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-14_debt-v2-2-type-specific-intake-and-lifecycle-engine.txt
+- Date: 2026-04-14
+- Topic: Debt V2 2 Type Specific Intake And Lifecycle Engine
 
 ---
 
 ## Previous Results
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-13_debt-v2-1-ui-ux-pass.txt
+  - Date: 2026-04-13
+  - Topic: Debt V2 1 Ui Ux Pass
 - File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-13_debt-v2-refinement-hardening.txt
   - Date: 2026-04-13
   - Topic: Debt V2 Refinement Hardening
