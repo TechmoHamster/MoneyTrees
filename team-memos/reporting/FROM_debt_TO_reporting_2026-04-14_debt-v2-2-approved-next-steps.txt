@@ -1,0 +1,335 @@
+To: Reporting Team
+From: Debt Team
+Date: 2026-04-14
+Subject: Debt V2.2 Approved — Reporting Next Steps
+
+Reporting Team —
+
+Debt V2.2 has now been reviewed and approved by Debt Team.
+
+Debt is now a type-specific intake and lifecycle-aware debt engine. That means Reporting has new structured Debt facts available for analytical use.
+
+This memo defines what Reporting should consume, what Reporting should analyze, and what Reporting must not take ownership of.
+
+==================================================
+1. CONTEXT
+==================================================
+
+Debt V2.2 now provides richer debt data, including:
+- debt-type-specific account facts
+- standing state
+- arrangement overlays
+- lifecycle events
+- term versions
+- continuity events
+- source-quality / trust labels
+- failed and reversed payment events
+- partial payment and cure facts
+- days past due
+- amount needed to cure
+- next escalation date
+- collections / settlement / charged-off facts
+- capitalization events
+- cash-window outputs
+- source conflicts
+- confidence / trust states
+
+Debt remains the owner of debt truth, debt math, lifecycle state, schedules, and debt-specific outputs.
+
+Reporting should analyze these outputs over time.
+Reporting must not recreate Debt logic.
+
+==================================================
+2. REPORTING BOUNDARY REMINDER
+==================================================
+
+Per Reporting operating rules, Reporting is the product analysis layer.
+
+Reporting explains:
+- what changed
+- compared to what
+- how the selected period looks
+- where concentration or pattern shifts exist
+- how system pressure/risk outputs changed over time
+
+Reporting is not:
+- a decision layer
+- a recommendation layer
+- a prioritization layer
+- a scoring layer
+- a second Overview
+- a lightweight Atlas clone
+
+Core rule:
+Observed change -> comparison baseline -> analytical meaning.
+Stop there.
+
+==================================================
+3. WHAT REPORTING SHOULD CONSUME FROM DEBT
+==================================================
+
+Reporting should consume Debt outputs as shared/system truth.
+
+Recommended Debt outputs for Reporting consumption:
+
+A. Account-level facts
+- debt type
+- current balance
+- original balance where available
+- APR / active rate where available
+- credit limit where relevant
+- scheduled payment / minimum due
+- next due date
+- account status
+- standing state
+- arrangement overlay state
+
+B. Lifecycle facts
+- standing-state transitions
+- arrangement start/end events
+- hardship / deferment / forbearance counts
+- late / delinquent / cured transitions
+- failed payment counts
+- reversed payment counts
+- partial payment counts
+- cure amount changes
+- days-past-due changes
+- collections / charge-off / settlement state changes
+
+C. Term and projection facts
+- APR changes
+- promo expiration events
+- capitalization events
+- payment recast events
+- term extension / shortening events
+- payoff projection confidence
+- projected remaining interest where available
+
+D. Continuity facts
+- transfer events
+- refinance events
+- consolidation events
+- servicer transfer events
+- predecessor / successor account links
+- continuity conflict flags
+
+E. Trust / data quality facts
+- source-quality labels
+- stale data flags
+- limited confidence flags
+- source conflict flags
+- verification-needed flags
+- missing-data flags
+
+F. Cash pressure facts
+- 14-day debt cash requirement
+- 30-day debt cash requirement
+- 60-day debt cash requirement
+- minimum needed to stay current
+- amount needed to cure
+- past-due amount
+
+==================================================
+4. REPORTING ANALYTICS TO ADD OR PREPARE
+==================================================
+
+Reporting should add or prepare debt-focused analytical modules that follow Reporting's native insight format:
+
+1. What happened
+2. Compared to what
+3. Why it matters analytically
+
+Recommended modules:
+
+A. Debt balance trend
+- total debt balance over selected period
+- debt balance delta vs comparison period
+- balance changes by debt type
+
+B. Debt type breakdown
+- credit cards vs loans vs BNPL vs financed purchases vs mortgage vs student loans vs line of credit
+- concentration by debt type
+- debt-type share changes over time
+
+C. Payment behavior trend
+- completed payments
+- partial payments
+- missed / failed / reversed payments
+- cure events
+- payment consistency over selected period
+
+D. Late / delinquent trend
+- late account count over time
+- delinquent account count over time
+- cured account count over time
+- days-past-due trend where available
+
+E. Arrangement overlay trend
+- hardship count
+- deferment count
+- forbearance count
+- settlement-active count
+- dispute-active count
+- overlay changes across selected period
+
+F. Interest and fee analysis
+- interest charged / projected where available
+- late fees and returned payment fees where available
+- capitalization events
+- projected remaining interest trend where reliable
+
+G. Promo / deferred-interest analysis
+- promo expirations during selected period
+- promo balances near expiration
+- deferred-interest exposure where Debt provides it
+
+H. Cash-pressure trend
+- debt cash due by selected window
+- 14 / 30 / 60 day cash requirement comparison
+- amount needed to cure trend
+- past-due amount trend
+
+I. Continuity analysis
+- transfer / refinance / consolidation events
+- predecessor / successor continuity visibility
+- before/after balance continuity where safe
+- conflict flags where continuity does not reconcile
+
+J. Trust / data-quality analysis
+- stale account count
+- verification-needed count
+- limited-confidence output count
+- source-conflict count
+- accounts missing key data
+
+==================================================
+5. COPY AND INSIGHT RULES
+==================================================
+
+Reporting should keep copy analytical and neutral.
+
+Good examples:
+- Debt balance increased by $420 versus the previous period, mostly from credit-card balance growth.
+- Failed debt payments rose from 0 to 2 in the selected period, showing weaker payment completion during this window.
+- Three accounts were marked verification-needed, which limits confidence in some debt projections.
+- Debt cash required in the next 30 days increased by $180 versus the prior window.
+
+Bad examples:
+- Pay these debts first.
+- This is your top priority.
+- You should fix the delinquent accounts now.
+- Attack the highest-interest account first.
+- Focus on credit cards before anything else.
+
+Reporting may show contributors.
+Reporting may show concentration.
+Reporting may show change.
+Reporting may not recommend actions.
+
+==================================================
+6. TIME / COMPARISON REQUIREMENTS
+==================================================
+
+Debt analytics must obey Reporting's period rules.
+
+Every Debt reporting module must clearly respect:
+- selected reporting range
+- comparison window
+- KPI deltas
+- chart range
+- insight copy
+- export range
+- drill-down context
+
+If a debt event falls outside the selected period, do not count it inside the period.
+
+If a debt value is current-state only and not historical, label it as current-state rather than pretending it is a period trend.
+
+This is important for Debt because some outputs are snapshots and some are event history.
+Do not blend those without labeling the difference.
+
+==================================================
+7. DRILL-DOWN / EXPORT EXPECTATIONS
+==================================================
+
+Reporting should support drill-down into Debt-owned records without taking ownership of the records.
+
+Drill-down should allow the user to inspect:
+- account detail
+- lifecycle events
+- payment events
+- failed / reversed payment events
+- arrangement overlays
+- continuity chain facts
+- trust / source-quality facts
+
+Exports should include Debt reporting fields only when they are visible or selected in the current Reporting context.
+
+Exports must preserve:
+- active range
+- comparison range where relevant
+- source labels
+- confidence labels
+- Debt-owned field names
+
+==================================================
+8. WHAT REPORTING MUST NOT DO
+==================================================
+
+Do not:
+- recreate Debt payoff math
+- recreate standing-state logic
+- recreate cure logic
+- create local delinquency thresholds
+- create local debt risk scores
+- create local priority rankings
+- create debt recommendations
+- re-label Debt severity or standing states
+- flatten arrangement overlays into vague risk language
+- treat generic debt pressure as advice
+- create Atlas-style next-step cards
+
+Reporting should never say what the user should do.
+Reporting should show what changed and why it matters analytically.
+
+==================================================
+9. OPEN QUESTIONS FOR REPORTING
+==================================================
+
+Reporting should review and answer:
+
+1. Which Debt outputs should become KPI cards?
+2. Which Debt outputs should become charts?
+3. Which Debt lifecycle events should become trend modules?
+4. How should Reporting distinguish current snapshots from historical events?
+5. Which Debt fields should be exportable?
+6. How should Reporting handle limited-confidence or stale Debt data?
+7. What drill-down path should route from Reporting into Debt account details?
+8. Which Debt outputs should be reserved for Atlas interpretation instead of Reporting-native insight?
+
+==================================================
+10. REQUESTED FOLLOW-UP
+==================================================
+
+Debt Team requests a Reporting response memo covering:
+- which Debt V2.2 outputs Reporting plans to consume
+- which Debt-specific KPIs Reporting will add or prepare
+- which trend modules Reporting will add or prepare
+- how Reporting will handle snapshot vs event-history differences
+- how Reporting will display stale / limited / source-conflict debt data
+- how drill-down and exports should behave
+- any blockers or data-contract questions
+
+==================================================
+11. FINAL DIRECTION
+==================================================
+
+Debt V2.2 gives Reporting better debt history, state, and lifecycle data.
+
+Use that data to make Reporting more analytical, not more advisory.
+
+Debt owns the truth.
+Reporting explains the pattern.
+Atlas recommends the move.
+
+— Debt Team
