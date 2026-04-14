@@ -1,14 +1,18 @@
 # Codex Input Index
 
 ## Latest Instruction
-- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-13_debt-v2-refinement-brief.txt
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-13_debt-v2-1-ui-ux-brief.txt
 - Date: 2026-04-13
 - Team: Debt
-- Topic: Debt V2 Refinement Brief
+- Topic: Debt V2 1 Ui Ux Brief
 
 ---
 
 ## Previous Instructions
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-13_debt-v2-refinement-brief.txt
+  - Date: 2026-04-13
+  - Team: Debt
+  - Topic: Debt V2 Refinement Brief
 - File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-12_debt-v2d-integration-polish-and-hardening.txt
   - Date: 2026-04-12
   - Team: Debt
