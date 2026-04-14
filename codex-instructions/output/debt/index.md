@@ -1,13 +1,16 @@
 # Debt Codex Output Index
 
 ## Latest Result
-- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-14_debt-v2-2-type-specific-intake-and-lifecycle-engine.txt
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-14_debt-v2-2-review-follow-up-complete.txt
 - Date: 2026-04-14
-- Topic: Debt V2 2 Type Specific Intake And Lifecycle Engine
+- Topic: Debt V2 2 Review Follow Up Complete
 
 ---
 
 ## Previous Results
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-14_debt-v2-2-type-specific-intake-and-lifecycle-engine.txt
+  - Date: 2026-04-14
+  - Topic: Debt V2 2 Type Specific Intake And Lifecycle Engine
 - File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-13_debt-v2-1-ui-ux-pass.txt
   - Date: 2026-04-13
   - Topic: Debt V2 1 Ui Ux Pass
