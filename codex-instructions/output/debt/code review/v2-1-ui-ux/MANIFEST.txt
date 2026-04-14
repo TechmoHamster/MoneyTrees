@@ -1,0 +1,25 @@
+Debt v2.1 UI/UX review package
+Generated: 2026-04-13
+
+Included files:
+- MANIFEST.txt
+- VALIDATION.txt
+- PHASE-COMPLETION.txt
+- NOTES.txt
+- source/components/DebtSection.tsx
+- diffs/components_DebtSection.tsx.diff
+
+Implementation scope:
+- Internal Debt navigation
+- Briefing Hub view
+- Accounts view
+- Guided Add Debt flow
+- Activity view
+- Reports view
+- Settings view
+- Focused account detail tabs
+- Inline help / info toggles
+- Density reduction and centered large-screen shell
+
+Changed app files in this pass:
+- components/DebtSection.tsx

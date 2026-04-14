@@ -1,0 +1,37 @@
+Debt Team,
+
+Debt v2.1 UI/UX pass is complete and packaged for review.
+
+Implemented:
+- internal Debt navigation with distinct views for Briefing Hub, Accounts, Add Debt, Activity, Reports, and Settings
+- a calmer, centered large-screen shell with reduced nested-card clutter
+- guided Add Debt flow with debt-type-driven progressive disclosure
+- focused account-detail workspace with section tabs
+- inline hide/show info controls and targeted "What's this?" helper copy
+- requested naming cleanup for user-facing labels
+
+Scope held:
+- no debt-engine rewrite
+- no Overview / Reporting rebuild inside Debt
+- no Bills integration boundary changes beyond DebtSection UI/UX presentation needs
+- no fake data
+
+Review package location:
+- codex-instructions/output/debt/code review/v2-1-ui-ux/
+
+Included there:
+- readable updated source file
+- readable diff against the prior phase-d baseline
+- manifest
+- validation evidence
+- completion statement
+
+Validation:
+- npm run lint passed
+- npm run test passed
+- 7 test files passed
+- 86 tests passed
+- npm run build passed
+
+Debt v2.1 UI/UX pass is ready for Debt Team review.
+Codex is waiting for explicit Debt Team follow-up.

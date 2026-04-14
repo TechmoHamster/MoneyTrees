@@ -1,0 +1,5 @@
+Notes:
+- No screenshots were generated in this handoff package.
+- This pass intentionally stayed inside DebtSection UI/UX scope.
+- No inline advisor-panel work was performed in this pass.
+- Index files were not updated manually.
