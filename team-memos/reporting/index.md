@@ -1,13 +1,16 @@
 # Reporting Memos Index
 
 ## Latest Memo
-- File: team-memos/reporting/FROM_debt_TO_reporting_2026-04-14_debt-v2-2-approved-next-steps.txt
+- File: team-memos/reporting/FROM_debt_TO_reporting_2026-04-14_debt-v2-2-semantics-response.txt
 - Date: 2026-04-14
-- Topic: Debt V2 2 Approved Next Steps
+- Topic: Debt V2 2 Semantics Response
 
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/reporting/FROM_debt_TO_reporting_2026-04-14_debt-v2-2-approved-next-steps.txt
+  - Date: 2026-04-14
+  - Topic: Debt V2 2 Approved Next Steps
 - File: team-memos/reporting/FROM_debt_TO_reporting_2026-04-11_debt-section-next-steps.txt
   - Date: 2026-04-11
   - Topic: Debt Section Next Steps
