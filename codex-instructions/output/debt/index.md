@@ -1,13 +1,16 @@
 # Debt Codex Output Index
 
 ## Latest Result
-- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-14_debt-v2-2-cross-team-integration-summary.md
-- Date: 2026-04-14
-- Topic: Debt V2 2 Cross Team Integration Summary
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-15_debt-v2-2-followup-patch-summary.md
+- Date: 2026-04-15
+- Topic: Debt V2 2 Followup Patch Summary
 
 ---
 
 ## Previous Results
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-14_debt-v2-2-cross-team-integration-summary.md
+  - Date: 2026-04-14
+  - Topic: Debt V2 2 Cross Team Integration Summary
 - File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-14_debt-v2-2-review-follow-up-complete.txt
   - Date: 2026-04-14
   - Topic: Debt V2 2 Review Follow Up Complete
