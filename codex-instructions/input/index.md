@@ -1,14 +1,22 @@
 # Codex Input Index
 
 ## Latest Instruction
-- File: codex-instructions/input/bills/TO_CODEX_FROM_bills_2026-04-14_debt-v2-2-proof-request.txt
-- Date: 2026-04-14
-- Team: Bills
-- Topic: Debt V2 2 Proof Request
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-15_debt-account-identity-system.txt
+- Date: 2026-04-15
+- Team: Debt
+- Topic: Debt Account Identity System
 
 ---
 
 ## Previous Instructions
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-15_debt-v2-2-followup-patch.md
+  - Date: 2026-04-15
+  - Team: Debt
+  - Topic: Debt V2 2 Followup Patch
+- File: codex-instructions/input/bills/TO_CODEX_FROM_bills_2026-04-14_debt-v2-2-proof-request.txt
+  - Date: 2026-04-14
+  - Team: Bills
+  - Topic: Debt V2 2 Proof Request
 - File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-14_debt-v2-2-cross-team-integration-rev-a.md
   - Date: 2026-04-14
   - Team: Debt
