@@ -1,13 +1,16 @@
 # Debt Memos Index
 
 ## Latest Memo
-- File: team-memos/debt/FROM_atlas_TO_debt_2026-04-14_v2-2-review-contract.txt
+- File: team-memos/debt/FROM_bills_TO_debt_2026-04-14_debt-v2-2-integration-response.txt
 - Date: 2026-04-14
-- Topic: V2 2 Review Contract
+- Topic: Debt V2 2 Integration Response
 
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/debt/FROM_atlas_TO_debt_2026-04-14_v2-2-review-contract.txt
+  - Date: 2026-04-14
+  - Topic: V2 2 Review Contract
 - File: team-memos/debt/FROM_overview_TO_debt_2026-04-14_debt-v2-2-field-contract-request.txt
   - Date: 2026-04-14
   - Topic: Debt V2 2 Field Contract Request
@@ -35,9 +38,6 @@
 - File: team-memos/debt/FROM_investment-hq_TO_debt_2026-04-12_debt-feature-review.txt
   - Date: 2026-04-12
   - Topic: Debt Feature Review
-- File: team-memos/debt/FROM_director_TO_debt_2026-04-11_debt-approval.txt
-  - Date: 2026-04-11
-  - Topic: Debt Approval
 
 ---
 
