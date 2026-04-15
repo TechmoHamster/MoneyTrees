@@ -1,0 +1,107 @@
+To: Atlas Team
+From: Debt Team
+Date: 2026-04-14
+Subject: Debt V2.2 — Atlas Context Contract
+
+Atlas Team —
+
+This defines the exact Debt context contract.
+
+Core rule:
+Atlas interprets shared truth.
+Atlas does not redefine it. fileciteturn195file1
+
+==================================================
+1. CORE FIELDS
+==================================================
+
+For each account:
+- debtType
+- balance
+- minimumDue
+- dueDate
+- standingState
+- daysPastDue
+- cureAmount
+- nextEscalationDate
+- arrangementOverlays
+- failedPaymentCount
+- reversedPaymentCount
+- sourceQuality
+- trustState
+
+==================================================
+2. STANDING VS REQUIREMENT
+==================================================
+
+standingState = lifecycle position
+minimumDue = obligation requirement
+
+Atlas must not merge these concepts.
+
+==================================================
+3. TRUST RULE
+==================================================
+
+trustState values:
+- Exact
+- Custom
+- Estimated
+- Limited
+- Manual
+- Stale
+
+Atlas must downgrade tone when not Exact.
+
+==================================================
+4. EVENT SUMMARY
+==================================================
+
+Provide:
+- lastPaymentEvent
+- lastFailedPaymentEvent
+- lastStandingChange
+- lastArrangementChange
+
+Atlas uses this for explanation only.
+
+==================================================
+5. CONTINUITY
+==================================================
+
+Fields:
+- predecessorAccountId
+- successorAccountId
+- continuityType
+
+Atlas must explain, not flatten.
+
+==================================================
+6. PROMO / INTEREST
+==================================================
+
+Fields:
+- promoActive
+- promoEndDate
+- deferredInterest
+
+Atlas must not assume missing terms.
+
+==================================================
+7. PROHIBITED
+==================================================
+
+Atlas must not:
+- calculate new severity
+- redefine states
+- override trust
+
+==================================================
+8. ACCEPTANCE
+==================================================
+
+- all Atlas output traceable to Debt
+- no hidden scoring
+- tone matches trust
+
+— Debt Team
