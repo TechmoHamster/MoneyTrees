@@ -10,17 +10,18 @@ TEAM_MEMOS = ROOT / "team-memos"
 CODEX_INPUT = ROOT / "codex-instructions" / "input"
 CODEX_OUTPUT = ROOT / "codex-instructions" / "output"
 
+SUPPORTED_EXTENSIONS = {".txt", ".md"}
+
 TEAM_MEMO_RE = re.compile(
-    r"^FROM_(?P<sender>[a-z0-9_-]+)_TO_(?P<recipient>[a-z0-9_-]+|all)_(?P<date>\d{4}-\d{2}-\d{2})_(?P<topic>.+)\.txt$"
+    r"^FROM_(?P<sender>[a-z0-9_-]+)_TO_(?P<recipient>[a-z0-9_-]+|all)_(?P<date>\d{4}-\d{2}-\d{2})_(?P<topic>.+)\.(?P<ext>txt|md)$"
 )
 
 CODEX_INPUT_RE = re.compile(
-    r"^TO_CODEX_FROM_(?P<team>[a-z0-9_-]+)_(?P<date>\d{4}-\d{2}-\d{2})_(?P<topic>.+)\.txt$"
-    r"^TO_CODEX_FROM_(?P<team>[a-z0-9_-]+)_(?P<date>\d{4}-\d{2}-\d{2})_(?P<topic>.+)\.md$"
+    r"^TO_CODEX_FROM_(?P<team>[a-z0-9_-]+)_(?P<date>\d{4}-\d{2}-\d{2})_(?P<topic>.+)\.(?P<ext>txt|md)$"
 )
 
 CODEX_OUTPUT_RE = re.compile(
-    r"^FROM_CODEX_TO_(?P<team>[a-z0-9_-]+)_(?P<date>\d{4}-\d{2}-\d{2})_(?P<topic>.+)\.txt$"
+    r"^FROM_CODEX_TO_(?P<team>[a-z0-9_-]+)_(?P<date>\d{4}-\d{2}-\d{2})_(?P<topic>.+)\.(?P<ext>txt|md)$"
 )
 
 IGNORED_TEAM_MEMO_FOLDERS = {".gitkeep", ".ds_store"}
@@ -94,6 +95,15 @@ def list_subfolders(parent: Path, ignored: set[str]) -> list[str]:
     )
 
 
+def iter_supported_files(folder: Path):
+    if not folder.exists():
+        return
+
+    for file in folder.iterdir():
+        if file.is_file() and file.suffix.lower() in SUPPORTED_EXTENSIONS:
+            yield file
+
+
 def discover_team_memo_folders() -> list[str]:
     return list_subfolders(TEAM_MEMOS, IGNORED_TEAM_MEMO_FOLDERS)
 
@@ -136,6 +146,7 @@ def parse_team_memo(path: Path, all_recipients: set[str]) -> dict | None:
         "date": data["date"],
         "topic": data["topic"],
         "topic_title": title_case_topic(data["topic"]),
+        "ext": data["ext"],
     }
 
 
@@ -152,6 +163,7 @@ def parse_codex_input(path: Path) -> dict | None:
         "date": data["date"],
         "topic": data["topic"],
         "topic_title": title_case_topic(data["topic"]),
+        "ext": data["ext"],
     }
 
 
@@ -168,6 +180,7 @@ def parse_codex_output(path: Path) -> dict | None:
         "date": data["date"],
         "topic": data["topic"],
         "topic_title": title_case_topic(data["topic"]),
+        "ext": data["ext"],
     }
 
 
@@ -180,7 +193,7 @@ def collect_team_memos(team_folders: list[str]) -> list[dict]:
         if not folder.exists():
             continue
 
-        for file in folder.glob("*.txt"):
+        for file in iter_supported_files(folder):
             parsed = parse_team_memo(file, discovered_teams)
             if parsed:
                 memos.append(parsed)
@@ -196,7 +209,7 @@ def collect_codex_inputs(codex_teams: list[str]) -> list[dict]:
         if not folder.exists():
             continue
 
-        for file in folder.glob("*.txt"):
+        for file in iter_supported_files(folder):
             parsed = parse_codex_input(file)
             if parsed:
                 records.append(parsed)
@@ -212,7 +225,7 @@ def collect_codex_outputs(codex_teams: list[str]) -> list[dict]:
         if not folder.exists():
             continue
 
-        for file in folder.glob("*.txt"):
+        for file in iter_supported_files(folder):
             parsed = parse_codex_output(file)
             if parsed:
                 records.append(parsed)
