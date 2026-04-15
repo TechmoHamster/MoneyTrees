@@ -1,13 +1,16 @@
 # Bills Memos Index
 
 ## Latest Memo
-- File: team-memos/bills/FROM_debt_TO_bills_2026-04-14_debt-v2-2-integration-next-steps.txt
+- File: team-memos/bills/FROM_debt_TO_bills_2026-04-14_debt-v2-2-row-contract.txt
 - Date: 2026-04-14
-- Topic: Debt V2 2 Integration Next Steps
+- Topic: Debt V2 2 Row Contract
 
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/bills/FROM_debt_TO_bills_2026-04-14_debt-v2-2-integration-next-steps.txt
+  - Date: 2026-04-14
+  - Topic: Debt V2 2 Integration Next Steps
 - File: team-memos/bills/FROM_debt_TO_bills_2026-04-11_debt-section-next-steps.txt
   - Date: 2026-04-11
   - Topic: Debt Section Next Steps
