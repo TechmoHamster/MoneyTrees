@@ -1,0 +1,342 @@
+To: Bills Team
+From: Debt Team
+Date: 2026-04-14
+Subject: Debt V2.2 — Debt-Derived Bills Row Contract
+
+Bills Team —
+
+Debt has reviewed your V2.2 integration response.
+
+This memo defines the Debt-derived row contract for Bills.
+
+Core rule:
+Debt owns lifecycle meaning.
+Bills records payment reality.
+
+Bills should remain table-first, operational, compact, and traceable.
+Debt-derived rows should support payment execution without turning Bills into a debt-management surface.
+
+==================================================
+1. CONTRACT PURPOSE
+==================================================
+
+Debt may generate bounded near-term obligations for Bills so the user can see and operate on upcoming debt payments inside the Bills workspace.
+
+These rows are operational mirrors of Debt-owned obligations.
+
+Bills may:
+- display the obligation
+- show due date and amount
+- mark payment activity
+- capture paid amount
+- capture paid date
+- capture payment method
+- capture payment note
+- capture failed / reversed / returned-payment fee events
+
+Bills may not:
+- edit the debt account structure
+- recalculate payoff math
+- change lifecycle standing
+- calculate cure amount
+- calculate delinquency
+- modify arrangement overlays
+- modify term versions
+- modify continuity chains
+- alter Debt-owned schedules
+
+==================================================
+2. NEAR-TERM WINDOW RULE
+==================================================
+
+Debt will only send bounded near-term obligations to Bills.
+
+Default operational window:
+- today through the next 60 calendar days
+
+Included rows:
+- unpaid scheduled debt obligations
+- unpaid upcoming minimum payments
+- unpaid BNPL / financed purchase installments
+- unpaid loan installments
+- unpaid credit-card required payments when Debt has enough data
+- cure-related operational obligations only when Debt emits them as a distinct obligation row
+
+Excluded rows:
+- paid rows
+- historical rows
+- full long-term debt schedules beyond 60 days
+- purely informational lifecycle events
+- payoff scenarios
+- projected optional extra payments
+- advisory action suggestions
+
+Bills should not generate additional debt schedule rows locally.
+
+==================================================
+3. REQUIRED ROW SHAPE
+==================================================
+
+Each Debt-derived Bills row should include the following fields.
+
+Required identifiers:
+- id: string
+- source: "debt"
+- sourceGenerated: true
+- sourceDebtAccountId: string
+- sourceDebtOccurrenceId: string
+- sourceDebtScheduleId?: string
+- sourceDebtEventId?: string
+- sourceDebtType: DebtType
+- sourceDebtDisplayName: string
+
+Required obligation fields:
+- dueDate: ISO date string
+- dueAmount: number
+- currency: string, default "USD"
+- paymentStatus: DebtBillsPaymentStatus
+- obligationKind: DebtBillsObligationKind
+- isDebtDerived: true
+- isStructuralEditLocked: true
+
+Recommended display fields:
+- accountNickname?: string
+- providerName?: string
+- debtTypeLabel?: string
+- standingState?: DebtStandingState
+- arrangementOverlayLabels?: string[]
+- trustState?: DebtTrustState
+- sourceQuality?: DebtSourceQuality
+- routeTarget: DebtBillsRouteTarget
+
+Optional payment capture fields:
+- paidAmount?: number
+- paidDate?: ISO date string
+- paymentMethod?: string
+- paymentNote?: string
+- paymentEventId?: string
+- paymentPostedDate?: ISO date string
+- paymentRecordedDate?: ISO date string
+
+Optional fee fields:
+- feeAmount?: number
+- feeType?: "late_fee" | "returned_payment_fee" | "other_fee"
+- feeEventId?: string
+
+Optional duplicate / conflict fields:
+- duplicateWarning?: boolean
+- duplicateCandidateBillIds?: string[]
+- sourceConflict?: boolean
+- conflictReason?: string
+
+==================================================
+4. ENUMS
+==================================================
+
+DebtBillsPaymentStatus:
+- upcoming
+- pending
+- partially_paid
+- paid
+- failed
+- reversed
+- skipped_approved
+- canceled
+
+DebtBillsObligationKind:
+- scheduled_installment
+- minimum_payment
+- bnpl_installment
+- financed_purchase_installment
+- cure_payment
+- arrangement_payment
+- returned_payment_fee
+- late_fee
+
+DebtBillsRouteTarget:
+- debt_account_detail
+- debt_schedule_detail
+- debt_activity_event
+- bills_row_detail
+
+DebtType should preserve Debt-owned values.
+Bills should display friendly labels but store stable Debt values.
+
+==================================================
+5. ALLOWED BILLS ACTIONS
+==================================================
+
+Bills may allow:
+- mark paid
+- mark partial payment
+- mark payment pending
+- mark payment failed
+- mark payment reversed
+- add paid amount
+- add paid date
+- add payment method
+- add payment note
+- add operational fee event
+- inspect linked Debt account
+- route to Debt detail
+
+Bills should show these as operational payment actions, not debt-management actions.
+
+==================================================
+6. BLOCKED STRUCTURAL ACTIONS
+==================================================
+
+Bills must block editing of:
+- sourceDebtAccountId
+- sourceDebtOccurrenceId
+- debt type
+- debt account balance
+- APR
+- term length
+- minimum-payment rule
+- lifecycle standing
+- arrangement overlay
+- payoff assumption
+- source-quality label
+- continuity chain
+- schedule-generation rules
+- due amount generated by Debt unless Debt explicitly allows override
+- due date generated by Debt unless Debt explicitly allows override
+
+Blocked actions should route to Debt with copy such as:
+- "Managed by Debt"
+- "Edit account in Debt"
+- "Debt controls this schedule"
+
+==================================================
+7. PAYMENT EVENT HANDOFF BACK TO DEBT
+==================================================
+
+When Bills captures a payment action on a Debt-derived row, Bills should emit an operational payment event back to Debt.
+
+Required event fields:
+- eventId: string
+- source: "bills"
+- sourceDebtAccountId: string
+- sourceDebtOccurrenceId: string
+- billsRowId: string
+- eventType: DebtBillsPaymentEventType
+- amount?: number
+- paymentDate?: ISO date string
+- postedDate?: ISO date string
+- recordedDate: ISO datetime string
+- paymentMethod?: string
+- note?: string
+- feeAmount?: number
+- feeType?: string
+
+DebtBillsPaymentEventType:
+- payment_pending
+- payment_posted
+- partial_payment_posted
+- payment_failed
+- payment_reversed
+- late_fee_applied
+- returned_payment_fee_applied
+
+Debt will determine:
+- whether the obligation is satisfied
+- remaining cure amount
+- lifecycle standing impact
+- delinquency impact
+- arrangement impact
+- event timeline update
+
+Bills must not infer those outcomes.
+
+==================================================
+8. PARTIAL PAYMENT RULE
+==================================================
+
+Bills may record a partial payment against one Debt-derived row.
+
+Recommended behavior:
+- keep one operational row
+- update paymentStatus to partially_paid
+- store cumulative paidAmount
+- emit one payment event per actual payment action
+- show remaining amount operationally if Debt provides or confirms it
+
+Debt decides whether the partial payment satisfies, partially cures, or fails to cure the account.
+
+Bills should not split partial payments into multiple obligation rows unless Debt explicitly sends multiple rows.
+
+==================================================
+9. FAILED / REVERSED PAYMENT RULE
+==================================================
+
+If a payment fails or reverses:
+- Bills updates paymentStatus to failed or reversed
+- Bills preserves the payment event history
+- Bills emits the failed/reversed event back to Debt
+- Debt removes satisfaction effect and recalculates lifecycle state
+
+Bills should not mark the obligation satisfied after a failed or reversed payment.
+
+==================================================
+10. RETURNED PAYMENT FEES
+==================================================
+
+Returned-payment fees should be represented as operational fee events by default.
+
+Default rule:
+- use feeType = returned_payment_fee
+- attach to the original sourceDebtOccurrenceId when related
+- do not create a separate standalone row unless Debt emits one
+
+Late fees follow the same default pattern unless Debt emits a separate fee obligation.
+
+==================================================
+11. DUPLICATE DETECTION RULE
+==================================================
+
+Bills should not silently merge, delete, or suppress debt-derived rows.
+
+Phase 1 matching rule:
+Flag duplicateWarning = true when a manual Bills row appears to match a Debt-derived row by:
+- linked or similar account/provider label
+- dueDate within 0 to 2 days
+- amount within a small tolerance
+- same broad category or debt tag where available
+
+Bills should surface a quiet duplicate warning and let the user resolve.
+
+Bills should not mutate canonical rows automatically.
+
+==================================================
+12. EMPTY / EDGE BEHAVIOR
+==================================================
+
+No near-term debt obligations:
+- Bills shows no Debt-derived rows.
+- Optional compact copy: "No Debt-linked bills in this window."
+
+Debt account missing schedule data:
+- Debt should not emit a Bills row unless amount and dueDate are known enough for operational use.
+- Debt may emit a review flag elsewhere, not an operational Bills row.
+
+Limited confidence:
+- Bills may display a compact "Limited" or "Needs review" marker if Debt sends it.
+- Bills must not reinterpret confidence.
+
+==================================================
+13. IMPLEMENTATION STANDARD
+==================================================
+
+Bills should implement Debt-derived rows as linked operational records.
+
+Acceptance standard:
+- debt-derived rows are clear but quiet
+- structural edits are blocked
+- payment actions remain available
+- duplicate warnings are visible but non-destructive
+- failed/reversed/partial payment states are supported
+- Bills does not calculate lifecycle meaning
+- Debt receives operational events cleanly
+
+— Debt Team
