@@ -1,0 +1,253 @@
+To: Director Orion
+From: Atlas Team
+Date: 2026-04-14
+Subject: Debt-Atlas Integration Spec v2.2
+
+MoneyTrees
+Team: Atlas
+Related Team: Debt
+Status: Ready for Codex handoff after director review
+
+==================================================
+1. PURPOSE
+==================================================
+
+This brief defines the scoped Debt V2.2 → Atlas integration work.
+
+Debt V2.2 has provided a formal Atlas context contract. Atlas now needs a controlled integration pass so it can consume Debt facts, preserve Debt caveats, and improve debt-aware guidance without duplicating Debt-owned logic.
+
+This is not a broad Atlas expansion.
+This is a context-model, confidence, language, and test-alignment pass.
+
+Core goal:
+Atlas consumes Debt V2.2 truth and turns it into careful interpretation and recommendations without becoming a second Debt engine.
+
+==================================================
+2. SOURCE CONTRACT
+==================================================
+
+Debt V2.2 has defined the allowed Atlas-facing context fields.
+
+For each debt account, Atlas may consume:
+- debtType
+- balance
+- minimumDue
+- dueDate
+- standingState
+- daysPastDue
+- cureAmount
+- nextEscalationDate
+- arrangementOverlays
+- failedPaymentCount
+- reversedPaymentCount
+- sourceQuality
+- trustState
+
+Event explanation fields:
+- lastPaymentEvent
+- lastFailedPaymentEvent
+- lastStandingChange
+- lastArrangementChange
+
+Continuity fields:
+- predecessorAccountId
+- successorAccountId
+- continuityType
+
+Promo / interest fields:
+- promoActive
+- promoEndDate
+- deferredInterest
+
+TrustState allowed values:
+- Exact
+- Custom
+- Estimated
+- Limited
+- Manual
+- Stale
+
+Important Debt rule:
+- standingState = lifecycle position
+- minimumDue = obligation requirement
+
+Atlas must not merge standingState and minimumDue into one concept.
+
+==================================================
+3. ATLAS OWNERSHIP BOUNDARY
+==================================================
+
+Atlas owns:
+- interpretation
+- plain-language explanation
+- user-facing guidance
+- cross-section reasoning
+- decision support
+- recommended next steps where appropriate
+
+Debt owns:
+- debt truth
+- debt math
+- lifecycle state
+- debt schedules
+- cure logic
+- source-quality labels
+- continuity logic
+- factual debt outputs
+
+Atlas must not:
+- calculate new severity
+- redefine Debt states
+- override Debt trust
+- recalculate cureAmount
+- recalculate standingState
+- reinterpret sourceQuality
+- flatten continuity chains into a single account truth
+- assume missing promo or interest terms
+- use Debt flags as hidden priority scores
+
+Core rule:
+Atlas consumes Debt facts. Atlas does not become a second Debt engine.
+
+==================================================
+4. REQUIRED CODEX WORK
+==================================================
+
+Codex should perform a scoped implementation pass with the following work items.
+
+1. Update Atlas context contracts
+- Add or confirm Debt V2.2 fields in Atlas facts / advisor context types.
+- Keep Debt fields clearly labeled as Debt-owned upstream facts.
+- Do not rename fields in ways that change meaning.
+- Do not collapse standingState and minimumDue into one field.
+
+2. Update Atlas context builders
+- Ensure Atlas can receive the approved Debt V2.2 fields from the shared Debt downstream snapshot.
+- Preserve trustState and sourceQuality in the Atlas context.
+- Preserve event fields as explanation-only inputs.
+- Preserve continuity fields without flattening them.
+- Preserve promo / deferred-interest fields without assuming missing terms.
+
+3. Add trust/tone handling
+- If trustState is Exact, Atlas may use normal confidence language.
+- If trustState is Custom, Estimated, Limited, Manual, or Stale, Atlas must downgrade tone.
+- Downgraded tone should avoid certainty-heavy language.
+- Atlas must preserve the Debt caveat in user-facing explanation.
+- Atlas must not present estimated or limited Debt facts as confirmed truth.
+
+4. Add Debt-aware phrasing safeguards
+
+Allowed patterns:
+- "Debt shows..."
+- "Debt marks..."
+- "Debt reports..."
+- "Based on Debt's current standing state..."
+- "Debt indicates this account is behind by X."
+- "Debt marks this output as limited / estimated / source-conflicted."
+
+Avoid / prohibit:
+- "Debt recommends..."
+- "Debt decided..."
+- "Debt scored this..."
+- "Debt knows this is your best move..."
+- "This is guaranteed..."
+
+5. Add interpretation rules for arrangement overlays
+- Atlas should explain when an arrangement overlay changes how the account should be understood.
+- Atlas must not reinterpret the overlay into a new state.
+- Atlas must not assume the account behaves like a normal loan when Debt reports an active hardship, settlement, deferment, or similar overlay.
+
+6. Add event-summary handling
+- lastPaymentEvent, lastFailedPaymentEvent, lastStandingChange, and lastArrangementChange are explanation-only.
+- Atlas may use them to explain why a recommendation exists.
+- Atlas must not convert event history into hidden scoring.
+
+7. Add continuity handling
+- predecessorAccountId, successorAccountId, and continuityType must be preserved.
+- Atlas may explain continuity where useful.
+- Atlas must not flatten predecessor/successor accounts into a single unqualified account truth.
+
+8. Add promo / deferred-interest handling
+- Atlas may explain promoActive, promoEndDate, and deferredInterest.
+- Atlas must not assume missing promo terms.
+- Atlas must not invent projected penalty exposure unless Debt provides the needed fields.
+
+9. Add tests / review notes
+Codex must add tests or explicit review notes proving:
+- Atlas does not calculate new Debt severity.
+- Atlas does not redefine standingState.
+- Atlas does not override trustState.
+- Atlas downgrades tone when trustState is not Exact.
+- Atlas does not merge standingState and minimumDue.
+- Atlas treats event fields as explanation-only.
+- Atlas preserves continuity fields without flattening.
+- Atlas does not use Debt flags as hidden priority scores.
+
+==================================================
+5. ACCEPTANCE CRITERIA
+==================================================
+
+The implementation passes only if:
+
+1. Atlas can consume all approved Debt V2.2 context fields.
+2. Atlas preserves Debt-owned labels and caveats.
+3. Atlas confidence/tone changes when trustState is not Exact.
+4. Atlas does not recompute Debt-owned fields.
+5. Atlas does not create a separate Debt scoring or severity layer.
+6. Atlas output remains traceable to Debt facts.
+7. Event summary fields are used for explanation only.
+8. Continuity fields are not flattened or silently merged.
+9. Promo/deferred-interest fields are not over-assumed.
+10. Tests or review notes confirm boundary compliance.
+
+==================================================
+6. FILES / AREAS TO REVIEW
+==================================================
+
+Codex should inspect and update only the relevant Atlas-facing areas.
+
+Likely areas:
+- advisor facts / contracts
+- advisor context builders
+- advisor service layer
+- Atlas recommendation explanation logic
+- Atlas trust / confidence logic
+- Atlas UI copy where Debt facts are surfaced
+- advisor tests
+
+Avoid unrelated edits to:
+- Debt-owned math
+- Debt-owned lifecycle logic
+- Bills operational logic unless required only for context flow
+- Reporting interpretation rules
+- Overview presentation rules
+
+==================================================
+7. NON-GOALS
+==================================================
+
+Do not:
+- redesign Atlas
+- add a new Debt advisor engine
+- add broad new recommendation categories
+- add debt-local scoring
+- change Debt math
+- change Debt state definitions
+- create a new cross-system pressure/risk engine
+- merge Debt and Bills ownership
+- introduce OpenAI / LLM behavior
+
+This is an integration discipline pass, not a feature expansion.
+
+==================================================
+8. FINAL DIRECTION
+==================================================
+
+Debt V2.2 gives Atlas richer upstream truth.
+
+Atlas should now be updated to consume that truth safely, explain it clearly, and preserve every caveat that affects confidence.
+
+The success standard is not that Atlas becomes more aggressive.
+The success standard is that Atlas becomes more useful while staying fully traceable to Debt-owned facts.
+
+— Atlas Team
