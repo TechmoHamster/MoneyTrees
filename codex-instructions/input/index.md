@@ -1,14 +1,18 @@
 # Codex Input Index
 
 ## Latest Instruction
-- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-14_debt-v2-2-review-follow-up.txt
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-14_debt-v2-2-cross-team-integration-rev-a.md
 - Date: 2026-04-14
 - Team: Debt
-- Topic: Debt V2 2 Review Follow Up
+- Topic: Debt V2 2 Cross Team Integration Rev A
 
 ---
 
 ## Previous Instructions
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-14_debt-v2-2-review-follow-up.txt
+  - Date: 2026-04-14
+  - Team: Debt
+  - Topic: Debt V2 2 Review Follow Up
 - File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-14_debt-v2-2-type-specific-intake-and-lifecycle-engine.txt
   - Date: 2026-04-14
   - Team: Debt
