@@ -1,0 +1,200 @@
+To: Debt Team
+From: Bills Team
+Date: 2026-04-14
+Subject: Response — Debt V2.2 Integration Next Steps
+
+Debt Team —
+
+Received and reviewed.
+
+Bills accepts the integration boundary outlined in the Debt V2.2 memo.
+
+Bills will operate as the clean operational surface for debt payments, while Debt remains the owner of debt account structure, lifecycle meaning, schedules, cure logic, payoff math, source-quality labels, and account-level state.
+
+==================================================
+1. ALIGNMENT CONFIRMED
+==================================================
+
+Bills agrees with the core rule:
+
+Debt owns lifecycle meaning.
+Bills records payment reality.
+
+Bills will not become a debt-management UI.
+Bills will not expose debt account editing.
+Bills will not calculate cure logic, delinquency logic, payoff math, arrangement logic, or lifecycle standing.
+
+Debt-derived rows in Bills should remain operational rows only.
+
+==================================================
+2. BILLS ACCEPTED RESPONSIBILITIES
+==================================================
+
+Bills is prepared to support debt-derived operational rows for:
+- viewing due date
+- viewing amount
+- viewing linked debt account reference
+- marking paid where appropriate
+- recording paid amount
+- recording paid date
+- recording payment method
+- recording payment note
+- recording late fee where operationally relevant
+
+Bills can also prepare for operational states such as:
+- full payment completed
+- partial payment completed
+- payment pending
+- payment failed
+- payment reversed
+- late fee applied
+- returned payment fee applied
+
+However, Bills will treat these as payment-event facts only.
+Debt must determine what those facts mean for account standing, cure amount, delinquency, continuity, or lifecycle progression.
+
+==================================================
+3. REQUIRED CONTRACT BEFORE IMPLEMENTATION
+==================================================
+
+Before implementation, Bills needs a formal Debt-derived-row contract.
+
+That contract should define:
+- required fields
+- optional fields
+- source identifiers
+- allowed payment states
+- allowed edit actions in Bills
+- blocked structural fields
+- event handoff behavior back to Debt
+- duplicate detection expectations
+- near-term window rules
+
+At minimum, Bills expects debt-derived rows to preserve:
+- sourceDebtAccountId
+- sourceDebtType
+- sourceDebtOccurrenceDate
+- sourceDebtDisplayName or equivalent
+- dueDate
+- dueAmount
+- paymentStatus
+- sourceGenerated flag or equivalent
+
+Bills should not infer these from display text.
+They need to be explicit fields.
+
+==================================================
+4. NEAR-TERM WINDOW REQUIRED
+==================================================
+
+Bills agrees that only bounded near-term debt obligations should appear in the Bills table.
+
+Bills requests that Debt define the exact near-term window before sending schedule rows.
+
+Open question:
+- Does near-term mean current month?
+- next 30 days?
+- next statement window?
+- next N upcoming obligations?
+
+This must be defined before implementation.
+
+Full debt schedules should not be pushed into Bills.
+That would damage table clarity, grouping behavior, and scan speed.
+
+==================================================
+5. EDITING BOUNDARY
+==================================================
+
+Debt-derived rows in Bills should be visibly marked as linked to Debt.
+
+Recommended language accepted:
+- Linked to Debt
+- Managed by Debt
+- Edit account in Debt
+- Payment status tracked here
+
+Bills should allow operational payment actions only.
+
+Bills should block structural editing of:
+- debt account balance
+- APR
+- term length
+- minimum-payment rule
+- lifecycle standing
+- arrangement overlay
+- payoff assumption
+- source-quality label
+- continuity chain
+- payment schedule generation rules
+
+Structural changes should route back to Debt.
+
+==================================================
+6. DUPLICATE PROTECTION
+==================================================
+
+Bills agrees duplicate protection is required.
+
+Bills recommends a staged approach:
+
+Phase 1:
+- warn when a manual bill appears to match a debt-derived row by account/source, due date, and amount
+- keep both records visible unless user action confirms otherwise
+
+Phase 2:
+- offer a guided resolution flow if duplicate detection becomes reliable enough
+
+Bills should not silently merge or delete records without user confirmation.
+
+==================================================
+7. UI IMPACT EXPECTATION
+==================================================
+
+Bills expects some UI changes may be needed for:
+- Debt-linked row badges
+- locked-field behavior
+- payment event display
+- partial payment display
+- failed/reversed payment display
+- duplicate warnings
+
+However, these must stay quiet and table-first.
+
+Debt-linked rows should be clear but not noisy.
+Bills should not show lifecycle complexity unless needed for operational payment handling.
+
+==================================================
+8. OPEN QUESTIONS FOR DEBT
+==================================================
+
+Bills needs Debt to clarify:
+
+1. What exact fields will a debt-derived row include?
+2. What is the near-term obligation window?
+3. What payment states should Bills support directly?
+4. How should failed and reversed payments be handed back to Debt?
+5. Should partial payments create multiple payment events or update one row state?
+6. What duplicate matching rules does Debt expect Bills to use?
+7. Should returned-payment fees be treated as fee_amount, separate operational fee events, or separate rows?
+8. What field should Bills use as the immutable source occurrence identifier?
+
+==================================================
+9. FINAL POSITION
+==================================================
+
+Bills is aligned with the integration direction.
+
+Debt should generate structured obligations.
+Bills should operationalize them cleanly.
+
+Bills will protect:
+- table-first workflow
+- payment record truth
+- clear source linkage
+- no duplicate debt truth
+- no lifecycle logic inside Bills
+
+Once Debt provides the row contract, Bills can review implementation impact and define the required UI/data changes.
+
+— Bills Team
