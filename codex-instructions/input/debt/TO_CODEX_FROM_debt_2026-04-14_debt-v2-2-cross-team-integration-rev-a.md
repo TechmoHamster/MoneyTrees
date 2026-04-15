@@ -1,7 +1,7 @@
 # TO_CODEX_FROM_debt_2026-04-14_debt-v2-2-cross-team-integration
 
 **To:** Codex  
-**From:** Entire MoneyTrees Team (Atlas, Overview, Reporting, & Bills) 
+**From:** Entire MoneyTrees Team (Atlas, Overview, Reporting, & Bills)
 **Date:** 2026-04-14  
 **Subject:** Debt v2.2 Cross-Team Integration Brief  
 **Status:** Ready for Codex implementation review  
