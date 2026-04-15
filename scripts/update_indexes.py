@@ -16,6 +16,7 @@ TEAM_MEMO_RE = re.compile(
 
 CODEX_INPUT_RE = re.compile(
     r"^TO_CODEX_FROM_(?P<team>[a-z0-9_-]+)_(?P<date>\d{4}-\d{2}-\d{2})_(?P<topic>.+)\.txt$"
+    r"^TO_CODEX_FROM_(?P<team>[a-z0-9_-]+)_(?P<date>\d{4}-\d{2}-\d{2})_(?P<topic>.+)\.md$"
 )
 
 CODEX_OUTPUT_RE = re.compile(
