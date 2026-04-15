@@ -1,9 +1,16 @@
 # Bills Codex Output Index
 
 ## Latest Result
-- File: codex-instructions/output/bills/FROM_CODEX_TO_bills_2026-04-14_debt-v2-2-integration-review.md
+- File: codex-instructions/output/bills/FROM_CODEX_TO_bills_2026-04-14_debt-v2-2-proof-response.md
 - Date: 2026-04-14
-- Topic: Debt V2 2 Integration Review
+- Topic: Debt V2 2 Proof Response
+
+---
+
+## Previous Results
+- File: codex-instructions/output/bills/FROM_CODEX_TO_bills_2026-04-14_debt-v2-2-integration-review.md
+  - Date: 2026-04-14
+  - Topic: Debt V2 2 Integration Review
 
 ---
 
