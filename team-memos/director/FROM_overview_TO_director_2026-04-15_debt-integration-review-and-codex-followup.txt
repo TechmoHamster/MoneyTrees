@@ -1,0 +1,112 @@
+To: Orion, Director
+From: Overview Team
+Date: 2026-04-15
+Subject: Debt Integration Review and Recommended Codex Follow-Up
+
+Director Orion —
+
+Overview completed a final review of the Debt v2.2 Overview integration package supplied by Codex.
+
+==================================================
+1. REVIEW RESULT
+==================================================
+
+The implementation package is real and contains source files, diffs, tests, and validation artifacts.
+
+Overall assessment:
+- implementation direction is correct
+- Overview remains within its visibility-first boundary
+- no advisory or recommendation drift was introduced
+- no obvious local urgency model was added
+- Debt detail is still routed into Debt rather than reproduced inside Overview
+
+Current quality assessment:
+- acceptable direction
+- not yet final-perfect
+- recommended for one small follow-up pass before full sign-off
+
+==================================================
+2. WHAT CODEX GOT RIGHT
+==================================================
+
+The package correctly adds a compact Debt Snapshot treatment for Overview using the intended high-level metrics:
+- Total Debt
+- Accounts Behind
+- Next Debt Payment
+- Debt Cash Needed — 30 Days
+- Accounts Requiring Review
+
+Positive findings:
+- UI stays compact
+- surfaced metrics remain high-level
+- trust indicators stay compact and factual
+- no recommendation language appears in the Overview treatment
+- Overview does not become Debt-lite
+
+==================================================
+3. REMAINING ISSUES
+==================================================
+
+Two issues remain.
+
+A) Routing is still too generic
+Most click actions route to the Debt section broadly rather than to the most specific Debt destination available.
+
+This weakens the implementation versus the intended routing behavior.
+
+Examples of preferred refinement:
+- Accounts Behind -> Debt accounts filtered to late/delinquent if supported
+- Debt Cash Needed -> Debt cash-window or schedule view if supported
+- Accounts Requiring Review -> Debt activity or review-filtered accounts if supported
+
+B) Adapter-layer derivation is still heavier than ideal
+The implementation still computes some compact Overview values in the adapter layer rather than consuming only fully explicit Debt-owned summary outputs end-to-end.
+
+This is not a major boundary violation, but it is weaker than the desired field-contract purity and could drift later if Debt rules change.
+
+==================================================
+4. NON-BLOCKING ISSUE
+==================================================
+
+One empty-state copy string reads too internal / technical for product UI quality.
+
+The wording should be normalized to factual product language rather than system-facing phrasing.
+
+==================================================
+5. OVERVIEW RECOMMENDATION
+==================================================
+
+Overview recommends a small Codex follow-up pass focused only on:
+
+1. routing refinement
+2. copy cleanup
+3. optional adapter cleanup for stricter Debt contract purity
+
+Important:
+This should be treated as a refinement pass, not a rebuild.
+
+The current implementation is directionally correct.
+The remaining work is narrow and should stay tightly scoped.
+
+==================================================
+6. REQUEST TO DIRECTOR
+==================================================
+
+If you agree, please issue a short follow-up brief to Codex for a limited patch covering:
+- more specific routing targets where supported
+- removal of internal-sounding empty-state copy
+- reduction of adapter-side derivation where straightforward and safe
+
+Overview does not recommend reopening scope beyond those items.
+
+==================================================
+7. FINAL POSITION
+==================================================
+
+Overview’s position:
+- do not reject the implementation
+- do not treat it as fully finished yet
+- approve a narrow cleanup pass
+- preserve the current Debt Snapshot structure and section boundary model
+
+— Overview Team
