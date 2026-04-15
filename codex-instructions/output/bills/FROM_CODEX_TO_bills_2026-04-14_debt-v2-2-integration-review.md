@@ -34,3 +34,7 @@ No ownership drift was introduced. Bills remains operational. Debt remains owner
 ## Code review package
 - `code review/debt-v2-2-integration/`
 - Includes readable source files, focused diffs, manifest, validation, and boundary notes for the Bills portion of this integration brief.
+
+## Proof follow-up
+- Detailed verification response: `FROM_CODEX_TO_bills_2026-04-14_debt-v2-2-proof-response.md`
+- Auditable proof file: `code review/debt-v2-2-integration/PROOF-VERIFICATION.md`

@@ -4,12 +4,15 @@ Scope
 - Debt-generated row semantics for Bills
 - Operational-only Bills bridge
 - Structural ownership remains in Debt
+- Proof verification for actual Bills completion status
 
 Readable source files
 - source/lib/debt.ts
 - source/lib/types.ts
-- source/components/BillRow.tsx
+- source/components/FinanceDashboard.tsx
 - source/components/BillsTable.tsx
+- source/components/BillRow.tsx
+- source/components/PaymentDetailsModal.tsx
 - source/lib/debt.test.ts
 
 Diffs
@@ -19,5 +22,8 @@ Diffs
 - diffs/components_BillsTable.tsx.diff
 - diffs/lib_debt.test.ts.diff
 
+Verification
+- PROOF-VERIFICATION.md
+
 Notes
-- Bills UI files are included for review context even though the new semantic bridge is primarily emitted from lib/debt.ts.
+- FinanceDashboard.tsx and PaymentDetailsModal.tsx are included because they contain the actual Bills-side structural-lock and payment-capture behavior referenced in the proof audit.
