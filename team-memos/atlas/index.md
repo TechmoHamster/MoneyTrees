@@ -1,13 +1,16 @@
 # Atlas Memos Index
 
 ## Latest Memo
-- File: team-memos/atlas/FROM_debt_TO_atlas_2026-04-14_debt-v2-2-integration-next-steps.txt
+- File: team-memos/atlas/FROM_debt_TO_atlas_2026-04-14_debt-v2-2-context-contract.txt
 - Date: 2026-04-14
-- Topic: Debt V2 2 Integration Next Steps
+- Topic: Debt V2 2 Context Contract
 
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/atlas/FROM_debt_TO_atlas_2026-04-14_debt-v2-2-integration-next-steps.txt
+  - Date: 2026-04-14
+  - Topic: Debt V2 2 Integration Next Steps
 - File: team-memos/atlas/FROM_debt_TO_atlas_2026-04-12_v1-review-and-v2-prep.txt
   - Date: 2026-04-12
   - Topic: V1 Review And V2 Prep
