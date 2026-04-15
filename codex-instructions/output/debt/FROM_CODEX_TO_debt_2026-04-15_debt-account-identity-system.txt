@@ -1,0 +1,22 @@
+Debt account identity system is implemented and packaged for review.
+
+What changed
+- Added Debt account identity metadata to the debt model and dashboard-state normalization.
+- Added a local provider logo registry backed by Simple Icons.
+- Added a searchable local icon picker backed by Iconify icon data.
+- Added a reusable DebtAccountIdentityFrame with fixed-size rendering rules.
+- Integrated identity selection into Add Debt and Edit Account.
+- Added identity preview to the Add Debt review step.
+- Updated Debt account list and detail header rendering to use the shared identity frame.
+
+Validation
+- npm run lint passed
+- npm run test passed
+- 107 tests passed
+- npm run build passed
+
+Review package
+- codex-instructions/output/debt/code review/debt-account-identity-system/
+
+Deferred
+- custom_image upload flow was intentionally deferred and documented in the package.

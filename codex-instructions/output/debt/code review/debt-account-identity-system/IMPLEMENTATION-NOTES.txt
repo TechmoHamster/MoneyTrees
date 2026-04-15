@@ -1,0 +1,37 @@
+Implementation notes
+
+1. Identity model changes
+- Added optional DebtAccount identity fields:
+  - identityMode
+  - providerKey
+  - iconKey
+  - accentColor
+  - displayLabel
+  - customImageAssetId
+- These fields are persistence-only metadata and do not affect debt math, trust, lifecycle, or downstream semantics.
+
+2. Provider logo registry approach
+- Implemented a local, deterministic provider registry in lib/debt-identity.ts.
+- Logos are sourced from Simple Icons and rendered locally inside the app.
+- Provider matching is deterministic through providerKey plus alias-based suggestion logic.
+- No runtime hotlinked logos or third-party fetches are used in normal rendering.
+
+3. Icon picker approach
+- Implemented a searchable local icon picker backed by Iconify icon data packages.
+- Search results are ranked with debt-type-recommended icons first.
+- Default icons remain debt-type-specific when the user does not choose an explicit identity.
+
+4. Identity frame behavior
+- Implemented a reusable DebtAccountIdentityFrame component.
+- Fixed-size contexts:
+  - sm for compact/table surfaces
+  - md for account list rows
+  - lg for detail/review surfaces
+- Provider logos use contain-style rendering inside the fixed frame.
+- Icons are centered and normalized inside the same frame.
+- Fallback behavior stays deterministic.
+
+5. Deferred items
+- custom_image upload flow is intentionally deferred.
+- The model is future-ready through customImageAssetId and custom_image mode support, but no upload/storage UI was added in this pass.
+- Reason: the brief allowed custom_image only if trivial, and the current stack does not yet have a Debt-owned upload flow wired for Supabase Storage or Cloudinary.

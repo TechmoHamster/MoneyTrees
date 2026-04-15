@@ -1,0 +1,18 @@
+Debt account identity system review package
+Date: 2026-04-15
+
+Source files
+- source/components/DebtAccountIdentityFrame.tsx
+- source/components/DebtAccountIdentityEditor.tsx
+- source/components/DebtSection.tsx
+- source/lib/debt-identity.ts
+- source/lib/debt-identity.test.ts
+- source/lib/types.ts
+- source/lib/dashboard-state.ts
+- source/package.json
+
+Notes
+- Identity model fields were added to DebtAccount in lib/types.ts.
+- Dashboard-state normalization now persists the new identity fields.
+- DebtSection integrates the identity editor into Add Debt, review, account list, and account detail flows.
+- package.json changed because Iconify and Simple Icons were added for local icon and logo support.
