@@ -1,0 +1,11 @@
+Overview Debt v2.2 Follow-up Patch Review Package
+
+Files
+- source/components/DebtOverviewSnapshotSection.tsx
+- source/components/FinanceDashboard.tsx
+- source/components/DebtSection.tsx
+- diffs/components_DebtOverviewSnapshotSection.tsx.diff
+- diffs/components_FinanceDashboard.tsx.diff
+- diffs/components_DebtSection.tsx.diff
+- NOTES.txt
+- VALIDATION.txt

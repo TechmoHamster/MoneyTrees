@@ -1,0 +1,10 @@
+Overview follow-up proof
+- Tightened Debt snapshot helper copy so it stays product-facing and factual.
+- Routing is more specific now:
+  - Accounts Behind -> Debt accounts view anchored to a behind account when supported
+  - Next Debt Payment -> specific account detail
+  - Debt Cash Needed - 30 Days -> Debt reports view
+  - Accounts Requiring Review -> Debt accounts view anchored to a review-signaled account when supported
+- No local debt meaning, recommendation, or urgency engine was introduced in Overview.
+Screenshot note
+- Overview snapshot UI copy changed, but no screenshots were generated in this packaging pass.

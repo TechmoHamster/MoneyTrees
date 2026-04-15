@@ -1,0 +1,18 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/reporting/code review/debt-v2-2-integration/source/lib/types.ts	2026-04-14 23:26:27
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/types.ts	2026-04-15 01:49:08
+@@ -53,6 +53,7 @@
+   paidAmount?: number;
+   paymentMethod?: string;
+   paymentNote?: string;
++  debtPaymentStatusUpdatedAt?: string;
+   notes?: string;
+   sourceType?: "manual" | "debt-derived";
+   sourceGenerated?: boolean;
+@@ -192,6 +193,7 @@
+   eventType: DebtLifecycleEventType;
+   effectiveDate: string;
+   recordedDate?: string;
++  paymentPostedDate?: string;
+   source: string;
+   sourceQuality: DebtSourceQuality;
+   reversible: boolean;

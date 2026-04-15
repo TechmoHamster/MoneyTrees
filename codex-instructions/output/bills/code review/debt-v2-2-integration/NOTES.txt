@@ -2,4 +2,4 @@ Boundary notes
 - Bills receives bounded debt-derived rows plus Debt-owned semantics.
 - Bills remains operational: payment capture, fee capture, routing into Debt.
 - Bills does not infer lifecycle state.
-- This package now includes a proof audit that separates model readiness from Bills UI/workflow readiness.
+- Diff files in this package were regenerated as actual readable diffs after the initial package shipped with empty placeholders.

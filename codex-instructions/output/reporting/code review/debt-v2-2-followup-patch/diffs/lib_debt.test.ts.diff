@@ -1,0 +1,81 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/reporting/code review/debt-v2-2-integration/source/lib/debt.test.ts	2026-04-14 23:26:27
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/debt.test.ts	2026-04-15 09:10:56
+@@ -562,6 +562,40 @@
+     });
+     expect(reporting?.snapshotContextNote).toContain("current debt state only");
+   });
++
++  it("uses payment posted dates for debt payment-event reporting when available", () => {
++    const snapshot = buildDebtDownstreamSnapshot(
++      [
++        createDebtAccount({
++          id: "debt-1",
++          providerName: "Card One",
++          debtType: "Credit Card",
++          currentBalance: 1200,
++          minimumPayment: 75,
++          scheduledPaymentAmount: 75,
++          interestAccrual: "Interest Accruing",
++          apr: 24,
++          lifecycleEvents: [
++            {
++              id: "evt-reversed",
++              eventType: "payment_reversed",
++              effectiveDate: "2026-03-01",
++              paymentPostedDate: "2026-04-10",
++              source: "Bills",
++              sourceQuality: "system_derived",
++              reversible: true,
++            },
++          ],
++        }),
++      ],
++      [],
++    );
++
++    const reporting = buildDebtReportingSnapshot(snapshot, "month");
++
++    expect(reporting?.eventSummary.paymentReversals).toBe(1);
++    expect(reporting?.eventContextNote).toContain("payment posted dates");
++  });
+ });
+ 
+ describe("calculateDebtSummary", () => {
+@@ -709,6 +743,37 @@
+     );
+     expect(snapshot.flaggedAccountCount).toBeGreaterThanOrEqual(1);
+     expect(snapshot.confidenceSummary.Exact).toBe(1);
++  });
++
++  it("marks quiet duplicate warnings when manual debt rows overlap debt-derived rows", () => {
++    const account = createDebtAccount({
++      id: "debt-1",
++      providerName: "Auto Loan",
++      debtType: "Auto Loan",
++      nextDueDate: "2026-04-15",
++      minimumPayment: 200,
++      scheduledPaymentAmount: 200,
++    });
++
++    const merged = mergeDebtBills(
++      [
++        {
++          id: "manual-1",
++          name: "Auto Loan",
++          category: "Debt",
++          status: "Upcoming",
++          dueDate: "2026-04-16",
++          amount: 200,
++          sourceType: "manual",
++        },
++      ],
++      [account],
++    );
++
++    expect(merged.find((bill) => bill.id === "manual-1")?.duplicateWarning).toBe(true);
++    expect(
++      merged.find((bill) => bill.sourceType === "debt-derived")?.duplicateCandidateBillIds,
++    ).toContain("manual-1");
+   });
+ 
+   it("keeps limited-confidence credit-card outputs strict for downstream consumers", () => {

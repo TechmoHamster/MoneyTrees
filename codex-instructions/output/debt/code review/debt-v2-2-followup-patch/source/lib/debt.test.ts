@@ -1,0 +1,1289 @@
+import { describe, expect, it } from "vitest";
+import {
+  buildDebtDownstreamSnapshot,
+  buildDebtOverviewSnapshot,
+  buildDebtReportingSnapshot,
+  calculateDebtDerivedMetrics,
+  calculateDebtSummary,
+  mergeDebtBills,
+} from "@/lib/debt";
+import type { Bill, DebtAccount } from "@/lib/types";
+
+function createDebtAccount(overrides: Partial<DebtAccount> = {}): DebtAccount {
+  return {
+    id: "debt-1",
+    providerName: "Test Debt",
+    debtType: "Auto Loan",
+    currentBalance: 1000,
+    paymentCadence: "Monthly",
+    nextDueDate: "2026-04-15",
+    minimumPayment: 200,
+    scheduledPaymentAmount: 200,
+    lifecycleState: "Active",
+    paymentRequirement: "Payment Required",
+    interestAccrual: "No Interest Accruing",
+    ...overrides,
+  };
+}
+
+function createDebtBill(overrides: Partial<Bill> = {}): Bill {
+  return {
+    id: "bill-1",
+    name: "Debt Payment",
+    category: "Debt",
+    status: "Upcoming",
+    dueDate: "2026-04-15",
+    amount: 200,
+    sourceType: "debt-derived",
+    sourceDebtAccountId: "debt-1",
+    ...overrides,
+  };
+}
+
+describe("calculateDebtDerivedMetrics", () => {
+  it("builds exact payoff outputs for fixed no-interest debt", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        termLengthMonths: 5,
+      }),
+      [],
+    );
+
+    expect(metrics.payoffDateProjection).toBe("2026-08-15");
+    expect(metrics.payoffTrustState).toBe("Exact");
+    expect(metrics.paymentAmountTrustState).toBe("Exact");
+    expect(metrics.projectedRemainingInterest).toBe(0);
+    expect(metrics.projectedRemainingInterestTrustState).toBe("Exact");
+    expect(metrics.projection.methodLabel).toBe("Fixed payment schedule");
+    expect(metrics.projection.scenarios).toHaveLength(3);
+    expect(metrics.projection.scenarios[0]).toMatchObject({
+      label: "+$50",
+      trustState: "Exact",
+      payoffDate: "2026-07-15",
+      monthsSaved: 1,
+      projectedInterestSaved: 0,
+    });
+  });
+
+  it("keeps no-interest payoff trust manual when payment is user-entered without installment support", () => {
+    const metrics = calculateDebtDerivedMetrics(createDebtAccount(), []);
+
+    expect(metrics.paymentAmountTrustState).toBe("Manual");
+    expect(metrics.payoffTrustState).toBe("Manual");
+    expect(metrics.projection.scenarios[0]?.trustState).toBe("Manual");
+    expect(metrics.trustNotes).toContain(
+      "Projection uses a manually entered recurring payment amount without full amortization support.",
+    );
+  });
+
+  it("marks custom scheduled-payment overrides as custom instead of flattening them", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        termLengthMonths: 6,
+        minimumPayment: 150,
+        scheduledPaymentAmount: 225,
+      }),
+      [],
+    );
+
+    expect(metrics.paymentAmountTrustState).toBe("Custom");
+    expect(metrics.payoffTrustState).toBe("Custom");
+    expect(metrics.projection.scenarios[1]?.trustState).toBe("Custom");
+    expect(metrics.trustNotes).toContain(
+      "Projection uses a custom recurring payment instead of the baseline minimum payment.",
+    );
+  });
+
+  it("builds estimated payoff and interest outputs for APR-based debt", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        currentBalance: 1200,
+        minimumPayment: 110,
+        scheduledPaymentAmount: 110,
+        termLengthMonths: 12,
+        apr: 12,
+        interestAccrual: "Interest Accruing",
+      }),
+      [],
+    );
+
+    expect(metrics.payoffDateProjection).toBeDefined();
+    expect(metrics.payoffTrustState).toBe("Estimated");
+    expect(metrics.paymentAmountTrustState).toBe("Estimated");
+    expect(metrics.projectedRemainingInterest).toBeGreaterThan(0);
+    expect(metrics.projectedRemainingInterestTrustState).toBe("Estimated");
+    expect(metrics.projection.scenarios[0]?.trustState).toBe("Estimated");
+    expect(metrics.projection.scenarios[0]?.projectedInterestSaved).toBeGreaterThan(0);
+  });
+
+  it("marks projection limited when interest accrues but APR is missing", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        interestAccrual: "Interest Accruing",
+        apr: undefined,
+      }),
+      [],
+    );
+
+    expect(metrics.payoffDateProjection).toBeUndefined();
+    expect(metrics.payoffTrustState).toBe("Limited");
+    expect(metrics.projectedRemainingInterest).toBeUndefined();
+    expect(metrics.projection.scenarios).toHaveLength(0);
+    expect(metrics.projection.limitationNote).toContain("Current inputs are not sufficient");
+  });
+
+  it("falls back to installment-count timing when APR is missing but explicit counts exist", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        interestAccrual: "Interest Accruing",
+        apr: undefined,
+        totalPaymentCount: 24,
+        completedPaymentCount: 4,
+      }),
+      [],
+    );
+
+    expect(metrics.payoffDateProjection).toBe("2027-11-15");
+    expect(metrics.payoffTrustState).toBe("Exact");
+    expect(metrics.projection.methodLabel).toBe("Installment count schedule");
+    expect(metrics.projection.scenarios).toHaveLength(0);
+  });
+
+  it("keeps credit-card payoff projections visible but trust-limited", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        debtType: "Credit Card",
+        currentBalance: 900,
+        minimumPayment: 80,
+        scheduledPaymentAmount: 80,
+        apr: 18,
+        interestAccrual: "Interest Accruing",
+      }),
+      [],
+    );
+
+    expect(metrics.payoffDateProjection).toBeDefined();
+    expect(metrics.payoffTrustState).toBe("Limited");
+    expect(metrics.paymentAmountTrustState).toBe("Manual");
+    expect(metrics.projectedRemainingInterestTrustState).toBe("Limited");
+    expect(metrics.projection.scenarios[0]?.trustState).toBe("Limited");
+    expect(metrics.projection.limitationNote).toContain(
+      "Credit-card projections use the active payment assumption",
+    );
+  });
+
+  it("handles weekly cadence boundaries without collapsing payoff timing", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        paymentCadence: "Weekly",
+        currentBalance: 400,
+        minimumPayment: 100,
+        scheduledPaymentAmount: 100,
+        termLengthMonths: 4,
+      }),
+      [],
+    );
+
+    expect(metrics.payoffDateProjection).toBe("2026-05-06");
+    expect(metrics.projection.scenarios[0]?.payoffDate).toBe("2026-04-29");
+  });
+
+  it("marks invalid due-date input as limited instead of emitting unstable dates", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        nextDueDate: "2026-02-31",
+      }),
+      [],
+    );
+
+    expect(metrics.payoffDateProjection).toBeUndefined();
+    expect(metrics.payoffTrustState).toBe("Limited");
+    expect(metrics.projection.limitationNote).toContain("valid next due date");
+    expect(metrics.projection.scenarios).toHaveLength(0);
+  });
+
+  it("fails closed when payment is too low to amortize interest", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        currentBalance: 1000,
+        minimumPayment: 50,
+        scheduledPaymentAmount: 50,
+        apr: 100,
+        interestAccrual: "Interest Accruing",
+      }),
+      [],
+    );
+
+    expect(metrics.payoffDateProjection).toBeUndefined();
+    expect(metrics.projection.scenarios).toHaveLength(0);
+    expect(metrics.projection.limitationNote).toContain("Current inputs are not sufficient");
+  });
+
+  it("keeps longer-tail projections stable when the account can amortize", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        currentBalance: 20000,
+        minimumPayment: 250,
+        scheduledPaymentAmount: 250,
+        apr: 12,
+        interestAccrual: "Interest Accruing",
+        termLengthMonths: 120,
+      }),
+      [],
+    );
+
+    expect(metrics.payoffDateProjection).toBeDefined();
+    expect(metrics.projection.scenarios).toHaveLength(3);
+    expect(metrics.projectedRemainingInterest).toBeGreaterThan(0);
+  });
+
+  it("keeps static projection assumptions explicit and inspectable", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        apr: 9.99,
+        interestAccrual: "Interest Accruing",
+        termLengthMonths: 12,
+      }),
+      [],
+    );
+
+    expect(metrics.projection.assumptions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Behavior stays static",
+          note: "This is a static projection. It does not simulate future behavior changes.",
+        }),
+      ]),
+    );
+  });
+
+  it("builds 14 / 30 / 60 day debt cash windows and timing-cluster visibility", () => {
+    const bills = [
+      createDebtBill({
+        id: "bill-past-due",
+        dueDate: "2026-04-08",
+        amount: 120,
+        status: "Past Due",
+      }),
+      createDebtBill({
+        id: "bill-1",
+        dueDate: "2026-04-15",
+        amount: 125,
+      }),
+      createDebtBill({
+        id: "bill-2",
+        dueDate: "2026-04-20",
+        amount: 140,
+      }),
+      createDebtBill({
+        id: "bill-3",
+        dueDate: "2026-05-10",
+        amount: 160,
+      }),
+    ];
+
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        pastDueAmount: 180,
+      }),
+      bills,
+    );
+
+    expect(metrics.cashWindows).toHaveLength(3);
+    expect(metrics.cashWindows[0]).toMatchObject({
+      windowDays: 14,
+      requiredPaymentTotal: 265,
+      minimumCashNeededToStayCurrent: 445,
+      dueCount: 2,
+      nextDueDate: "2026-04-15",
+    });
+    expect(metrics.cashWindows[1]).toMatchObject({
+      windowDays: 30,
+      requiredPaymentTotal: 425,
+      minimumCashNeededToStayCurrent: 605,
+      dueCount: 3,
+    });
+    expect(metrics.cashWindows[2].requiredPaymentTotal).toBe(425);
+    expect(metrics.timingCluster?.count).toBe(2);
+    expect(metrics.factualFlags).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "Timing Cluster Forming" }),
+        expect.objectContaining({ type: "Payment Due Soon" }),
+      ]),
+    );
+  });
+
+  it("surfaces factual flags and consequence visibility for credit-card risk states", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        debtType: "Credit Card",
+        currentBalance: 950,
+        creditLimit: 1000,
+        minimumPayment: 80,
+        scheduledPaymentAmount: 80,
+        apr: 24,
+        interestAccrual: "Interest Accruing",
+        statementBalance: 950,
+        statementMinimumDue: 80,
+        paymentAssumptionMode: "Minimum Due",
+        minimumPaymentMode: "Manual Minimum Amount",
+        isDelinquent: true,
+        pastDueAmount: 120,
+        daysPastDue: 45,
+        lateFeeAmount: 35,
+        promoBalance: 300,
+        promoType: "Intro APR",
+        promoEndDate: "2026-04-25",
+        gracePeriodStatus: "Grace Period Lost",
+      }),
+      [createDebtBill({ amount: 80 })],
+    );
+
+    expect(metrics.factualFlags).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "Delinquent" }),
+        expect.objectContaining({ type: "Payment Due Soon" }),
+        expect.objectContaining({ type: "Promo Expiring Soon" }),
+        expect.objectContaining({ type: "High Utilization" }),
+        expect.objectContaining({ type: "Interest Accruing" }),
+      ]),
+    );
+    expect(metrics.consequences).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "Late Fee Exposure" }),
+        expect.objectContaining({ type: "Promo Expiration Risk" }),
+        expect.objectContaining({ type: "Loss of Grace Period" }),
+        expect.objectContaining({ type: "Increased Interest Burden" }),
+        expect.objectContaining({ type: "Delinquency Progression" }),
+      ]),
+    );
+  });
+
+  it("supports no-payment-required and closed-with-balance factual states", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        lifecycleState: "Closed With Balance",
+        paymentRequirement: "No Payment Required",
+        interestAccrual: "Interest Accruing",
+        apr: 9,
+      }),
+      [],
+    );
+
+    expect(metrics.factualFlags).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "No Payment Required" }),
+        expect.objectContaining({ type: "Interest Accruing While No Payment Required" }),
+        expect.objectContaining({ type: "Closed With Balance" }),
+      ]),
+    );
+    expect(metrics.consequences).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "Closed Account Balance Still Owed" }),
+        expect.objectContaining({ type: "Increased Interest Burden" }),
+      ]),
+    );
+  });
+
+  it("flags missing key inputs when reliability-limiting debt truth is absent", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        debtType: "Credit Card",
+        nextDueDate: undefined,
+        minimumPayment: undefined,
+        scheduledPaymentAmount: undefined,
+        apr: undefined,
+        interestAccrual: "Interest Accruing",
+        promoBalance: 200,
+        promoEndDate: undefined,
+      }),
+      [],
+    );
+
+    expect(metrics.factualFlags).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: "Missing Key Inputs Limiting Reliability",
+        }),
+      ]),
+    );
+  });
+});
+
+describe("debt downstream integration snapshots", () => {
+  it("emits bounded debt bill semantics for Bills consumers", () => {
+    const account = createDebtAccount({
+      providerName: "Auto Loan",
+      debtType: "Auto Loan",
+      nextDueDate: "2026-04-15",
+      minimumPayment: 240,
+      scheduledPaymentAmount: 240,
+      sourceConflicts: [
+        {
+          id: "conflict-1",
+          type: "payment-status-conflict",
+          summary: "Statement date and payment date disagree.",
+          detail: "Manual statement import and user entry differ.",
+          severity: "warning",
+          requiresConfirmation: true,
+        },
+      ],
+    });
+
+    const merged = mergeDebtBills([], [account]);
+    const bill = merged[0];
+
+    expect(bill).toMatchObject({
+      sourceType: "debt-derived",
+      sourceDebtAccountId: account.id,
+      sourceDebtProviderName: "Auto Loan",
+      sourceDebtTypeLabel: "Auto Loan",
+      sourceDebtRouteTarget: "debt_account_detail",
+      isStructuralEditLocked: true,
+      debtObligationKind: "scheduled_installment",
+      debtPaymentStatus: "upcoming",
+      sourceConflict: true,
+      conflictReason: "Statement date and payment date disagree.",
+    });
+  });
+
+  it("builds a compact overview debt snapshot without local meaning-making", () => {
+    const accounts = [
+      createDebtAccount({
+        providerName: "Student Loan",
+        debtType: "Student Loan",
+        currentBalance: 4200,
+        nextDueDate: "2026-04-20",
+        minimumPayment: 180,
+        scheduledPaymentAmount: 180,
+        lifecycleEvents: [
+          {
+            id: "standing-1",
+            eventType: "standing_state_changed",
+            effectiveDate: "2026-04-10",
+            source: "statement",
+            standingState: "late",
+            sourceQuality: "manual_confirmed",
+            reversible: false,
+          },
+        ],
+      }),
+    ];
+    const snapshot = buildDebtDownstreamSnapshot(
+      accounts,
+      mergeDebtBills([], accounts),
+    );
+
+    const overview = buildDebtOverviewSnapshot(snapshot);
+
+    expect(overview.totalDebtBalance).toBe(4200);
+    expect(overview.accountsBehindCount).toBe(1);
+    expect(overview.nextDebtPayment).toMatchObject({
+      accountName: "Student Loan",
+      routeTarget: "debt_account_detail",
+    });
+  });
+
+  it("builds neutral reporting debt analytics from debt-owned snapshot and event facts", () => {
+    const snapshot = buildDebtDownstreamSnapshot(
+      [
+        createDebtAccount({
+          id: "debt-1",
+          providerName: "Credit Card",
+          debtType: "Credit Card",
+          currentBalance: 1800,
+          minimumPayment: 90,
+          scheduledPaymentAmount: 90,
+          apr: 18,
+          interestAccrual: "Interest Accruing",
+          lifecycleEvents: [
+            {
+              id: "evt-failed",
+              eventType: "payment_failed",
+              effectiveDate: "2026-04-04",
+              source: "bills",
+              sourceQuality: "manual_confirmed",
+              reversible: true,
+            },
+            {
+              id: "evt-reversed",
+              eventType: "payment_reversed",
+              effectiveDate: "2026-04-05",
+              source: "bills",
+              sourceQuality: "manual_confirmed",
+              reversible: true,
+            },
+          ],
+        }),
+        createDebtAccount({
+          id: "debt-2",
+          providerName: "Auto Loan",
+          debtType: "Auto Loan",
+          currentBalance: 6400,
+          minimumPayment: 320,
+          scheduledPaymentAmount: 320,
+          lifecycleEvents: [
+            {
+              id: "evt-standing",
+              eventType: "standing_state_changed",
+              effectiveDate: "2026-04-06",
+              source: "lender",
+              standingState: "delinquent",
+              sourceQuality: "manual_confirmed",
+              reversible: false,
+            },
+            {
+              id: "evt-arrangement",
+              eventType: "arrangement_started",
+              effectiveDate: "2026-04-07",
+              source: "lender",
+              arrangementType: "reduced_payment",
+              sourceQuality: "manual_confirmed",
+              reversible: false,
+            },
+          ],
+        }),
+      ],
+      [],
+    );
+
+    const reporting = buildDebtReportingSnapshot(snapshot, "year");
+
+    expect(reporting).not.toBeNull();
+    expect(reporting?.eventSummary).toMatchObject({
+      paymentFailures: 1,
+      paymentReversals: 1,
+      standingTransitions: 1,
+      arrangementChanges: 1,
+    });
+    expect(reporting?.typeDistribution[0]).toMatchObject({
+      debtType: "Auto Loan",
+      totalBalance: 6400,
+    });
+    expect(reporting?.snapshotContextNote).toContain("current debt state only");
+  });
+
+  it("uses payment posted dates for debt payment-event reporting when available", () => {
+    const snapshot = buildDebtDownstreamSnapshot(
+      [
+        createDebtAccount({
+          id: "debt-1",
+          providerName: "Card One",
+          debtType: "Credit Card",
+          currentBalance: 1200,
+          minimumPayment: 75,
+          scheduledPaymentAmount: 75,
+          interestAccrual: "Interest Accruing",
+          apr: 24,
+          lifecycleEvents: [
+            {
+              id: "evt-reversed",
+              eventType: "payment_reversed",
+              effectiveDate: "2026-03-01",
+              paymentPostedDate: "2026-04-10",
+              source: "Bills",
+              sourceQuality: "system_derived",
+              reversible: true,
+            },
+          ],
+        }),
+      ],
+      [],
+    );
+
+    const reporting = buildDebtReportingSnapshot(snapshot, "month");
+
+    expect(reporting?.eventSummary.paymentReversals).toBe(1);
+    expect(reporting?.eventContextNote).toContain("payment posted dates");
+  });
+});
+
+describe("calculateDebtSummary", () => {
+  it("aggregates debt cash windows and timing-cluster visibility", () => {
+    const accountA = createDebtAccount({
+      id: "debt-1",
+      providerName: "Card One",
+      currentBalance: 600,
+      minimumPayment: 100,
+      scheduledPaymentAmount: 100,
+      pastDueAmount: 50,
+    });
+    const accountB = createDebtAccount({
+      id: "debt-2",
+      providerName: "Loan Two",
+      currentBalance: 800,
+      minimumPayment: 150,
+      scheduledPaymentAmount: 150,
+      nextDueDate: "2026-04-18",
+    });
+
+    const bills = [
+      createDebtBill({
+        id: "a1",
+        sourceDebtAccountId: "debt-1",
+        dueDate: "2026-04-15",
+        amount: 100,
+      }),
+      createDebtBill({
+        id: "a2",
+        sourceDebtAccountId: "debt-1",
+        dueDate: "2026-05-10",
+        amount: 100,
+      }),
+      createDebtBill({
+        id: "b1",
+        sourceDebtAccountId: "debt-2",
+        dueDate: "2026-04-18",
+        amount: 150,
+      }),
+    ];
+
+    const summary = calculateDebtSummary([accountA, accountB], bills);
+
+    expect(summary.requiredPaymentsIn14Days).toBe(250);
+    expect(summary.requiredPaymentsIn30Days).toBe(350);
+    expect(summary.requiredPaymentsIn60Days).toBe(350);
+    expect(summary.minimumCashNeededIn14Days).toBe(300);
+    expect(summary.minimumCashNeededIn30Days).toBe(400);
+    expect(summary.timingClusterCount).toBe(2);
+    expect(summary.timingClusterNote).toContain("2 required payments land between");
+  });
+});
+
+describe("buildDebtDownstreamSnapshot", () => {
+  it("builds bounded downstream obligations and structured account facts", () => {
+    const account = createDebtAccount({
+      id: "debt-1",
+      providerName: "Debt One",
+      debtType: "Installment Loan",
+      currentBalance: 1600,
+      minimumPayment: 200,
+      scheduledPaymentAmount: 200,
+      termLengthMonths: 12,
+      interestAccrual: "No Interest Accruing",
+      pastDueAmount: 60,
+      daysPastDue: 10,
+    });
+
+    const bills = [
+      createDebtBill({
+        id: "near-1",
+        sourceDebtAccountId: "debt-1",
+        dueDate: "2026-04-15",
+        amount: 200,
+        status: "Upcoming",
+      }),
+      createDebtBill({
+        id: "near-2",
+        sourceDebtAccountId: "debt-1",
+        dueDate: "2026-05-10",
+        amount: 200,
+        status: "Upcoming",
+      }),
+      createDebtBill({
+        id: "past-due-1",
+        sourceDebtAccountId: "debt-1",
+        dueDate: "2026-04-01",
+        amount: 175,
+        status: "Past Due",
+      }),
+      createDebtBill({
+        id: "paid-1",
+        sourceDebtAccountId: "debt-1",
+        dueDate: "2026-04-22",
+        amount: 200,
+        status: "Paid",
+      }),
+      createDebtBill({
+        id: "far-1",
+        sourceDebtAccountId: "debt-1",
+        dueDate: "2026-07-20",
+        amount: 200,
+        status: "Upcoming",
+      }),
+    ];
+
+    const snapshot = buildDebtDownstreamSnapshot([account], bills);
+
+    expect(snapshot.boundedOperationalWindowDays).toBe(60);
+    expect(snapshot.nearTermObligations).toHaveLength(2);
+    expect(snapshot.nearTermObligations[0]).toMatchObject({
+      billId: "near-1",
+      accountId: "debt-1",
+      providerName: "Debt One",
+      debtType: "Installment Loan",
+      dueDate: "2026-04-15",
+      amount: 200,
+    });
+    expect(snapshot.accountFacts).toHaveLength(1);
+    expect(snapshot.accountFacts[0]).toMatchObject({
+      accountId: "debt-1",
+      providerName: "Debt One",
+      nextScheduledPaymentAmount: 200,
+      payoffTrustState: "Exact",
+      primaryConfidenceState: "Exact",
+    });
+    expect(snapshot.accountFacts[0]?.primaryConfidenceDetail).toContain(
+      "aligned payment, payoff, and remaining-interest support",
+    );
+    expect(snapshot.accountFacts[0]?.paymentAssumption).toMatchObject({
+      label: "Scheduled Payment",
+      amount: 200,
+      trustState: "Exact",
+    });
+    expect(snapshot.accountFacts[0]?.linkedSchedule).toMatchObject({
+      billCount: 2,
+      boundedWindowDays: 60,
+      editableInBills: false,
+      owner: "Debt",
+    });
+    expect(snapshot.accountFacts[0]?.extraPaymentImpact).toHaveLength(3);
+    expect(snapshot.accountFacts[0]?.factualFlags).toEqual(
+      expect.arrayContaining([expect.objectContaining({ type: "Payment Due Soon" })]),
+    );
+    expect(snapshot.flaggedAccountCount).toBeGreaterThanOrEqual(1);
+    expect(snapshot.confidenceSummary.Exact).toBe(1);
+  });
+
+  it("marks quiet duplicate warnings when manual debt rows overlap debt-derived rows", () => {
+    const account = createDebtAccount({
+      id: "debt-1",
+      providerName: "Auto Loan",
+      debtType: "Auto Loan",
+      nextDueDate: "2026-04-15",
+      minimumPayment: 200,
+      scheduledPaymentAmount: 200,
+    });
+
+    const merged = mergeDebtBills(
+      [
+        {
+          id: "manual-1",
+          name: "Auto Loan",
+          category: "Debt",
+          status: "Upcoming",
+          dueDate: "2026-04-16",
+          amount: 200,
+          sourceType: "manual",
+        },
+      ],
+      [account],
+    );
+
+    expect(merged.find((bill) => bill.id === "manual-1")?.duplicateWarning).toBe(true);
+    expect(
+      merged.find((bill) => bill.sourceType === "debt-derived")?.duplicateCandidateBillIds,
+    ).toContain("manual-1");
+  });
+
+  it("keeps limited-confidence credit-card outputs strict for downstream consumers", () => {
+    const account = createDebtAccount({
+      id: "card-1",
+      providerName: "Card One",
+      debtType: "Credit Card",
+      currentBalance: 900,
+      minimumPayment: 80,
+      scheduledPaymentAmount: 80,
+      apr: 18,
+      interestAccrual: "Interest Accruing",
+      statementBalance: 900,
+      statementMinimumDue: 80,
+      paymentAssumptionMode: "Minimum Due",
+      minimumPaymentMode: "Manual Minimum Amount",
+    });
+
+    const bills = [
+      createDebtBill({
+        id: "card-bill-1",
+        sourceDebtAccountId: "card-1",
+        dueDate: "2026-04-15",
+        amount: 80,
+      }),
+    ];
+
+    const snapshot = buildDebtDownstreamSnapshot([account], bills);
+    const fact = snapshot.accountFacts[0];
+
+    expect(fact?.primaryConfidenceState).toBe("Limited");
+    expect(fact?.paymentAssumption).toMatchObject({
+      label: "Minimum Due",
+      amount: 80,
+      trustState: "Manual",
+    });
+    expect(fact?.projectedRemainingInterestTrustState).toBe("Limited");
+    expect(fact?.extraPaymentImpact[0]?.trustState).toBe("Limited");
+    expect(snapshot.limitedConfidenceAccountCount).toBe(1);
+  });
+
+  it("keeps downstream primary confidence limited when reliability gaps weaken otherwise-usable debt truth", () => {
+    const snapshot = buildDebtDownstreamSnapshot(
+      [
+        createDebtAccount({
+          id: "card-2",
+          providerName: "Card Two",
+          debtType: "Credit Card",
+          currentBalance: 600,
+          minimumPayment: 55,
+          scheduledPaymentAmount: 55,
+          statementBalance: 600,
+          statementMinimumDue: 55,
+          apr: 19.99,
+          interestAccrual: "Interest Accruing",
+          gracePeriodStatus: undefined,
+        }),
+      ],
+      [
+        createDebtBill({
+          id: "card-2-bill",
+          sourceDebtAccountId: "card-2",
+          dueDate: "2026-04-20",
+          amount: 55,
+        }),
+      ],
+    );
+
+    expect(snapshot.accountFacts[0]?.primaryConfidenceState).toBe("Limited");
+    expect(snapshot.accountFacts[0]?.primaryConfidenceDetail).toContain(
+      "downstream debt input is still missing",
+    );
+  });
+});
+
+describe("Debt V2.2 lifecycle scenarios", () => {
+  it("scenario 1: keeps a partial payment short of cure unsatisfied", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        currentBalance: 900,
+        nextDueDate: "2026-04-05",
+        minimumPayment: 75,
+        scheduledPaymentAmount: 75,
+        pastDueAmount: 35,
+        daysPastDue: 9,
+      }),
+      [
+        createDebtBill({
+          id: "partial-bill",
+          dueDate: "2026-04-05",
+          amount: 75,
+          paidAmount: 40,
+          paidDate: "2026-04-05",
+          status: "Past Due",
+        }),
+      ],
+    );
+
+    expect(metrics.lifecycle.requiredAmountDue).toBe(75);
+    expect(metrics.lifecycle.partialPaymentReceived).toBe(40);
+    expect(metrics.lifecycle.unpaidAmountAfterPartial).toBe(35);
+    expect(metrics.lifecycle.amountNeededToCure).toBe(35);
+    expect(metrics.lifecycle.standingState).toBe("late");
+  });
+
+  it("scenario 2: keeps standing progression active after a pending payment later fails", () => {
+    const snapshot = buildDebtDownstreamSnapshot(
+      [
+        createDebtAccount({
+          id: "failed-payment-account",
+          providerName: "Failed Payment Loan",
+          currentBalance: 1400,
+          nextDueDate: "2026-04-12",
+          minimumPayment: 75,
+          scheduledPaymentAmount: 75,
+          pastDueAmount: 75,
+          daysPastDue: 5,
+          lifecycleEvents: [
+            {
+              id: "payment-pending",
+              eventType: "payment_pending",
+              effectiveDate: "2026-04-12",
+              recordedDate: "2026-04-12",
+              source: "Debt",
+              sourceQuality: "user_entered",
+              reversible: true,
+              relatedBillId: "failed-bill",
+              amount: 75,
+              note: "Payment was initiated before the due date.",
+            },
+            {
+              id: "payment-failed",
+              eventType: "payment_failed",
+              effectiveDate: "2026-04-14",
+              recordedDate: "2026-04-14",
+              source: "Debt",
+              sourceQuality: "manual_confirmed",
+              reversible: true,
+              relatedBillId: "failed-bill",
+              amount: 75,
+              note: "The initiated payment failed two days later.",
+            },
+          ],
+        }),
+      ],
+      [
+        createDebtBill({
+          id: "failed-bill",
+          sourceDebtAccountId: "failed-payment-account",
+          dueDate: "2026-04-12",
+          amount: 75,
+          paidAmount: 75,
+          paidDate: "2026-04-12",
+          status: "Paid",
+        }),
+      ],
+    );
+
+    const fact = snapshot.accountFacts[0];
+    expect(fact?.amountNeededToCure).toBe(75);
+    expect(fact?.failedPaymentCount).toBe(1);
+    expect(fact?.standingState).toBe("late");
+    expect(fact?.sourceConflicts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: "payment-status-conflict",
+        }),
+      ]),
+    );
+  });
+
+  it("scenario 3: honors hardship standing freeze while interest still accrues", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        currentBalance: 4200,
+        nextDueDate: "2026-04-10",
+        minimumPayment: 140,
+        scheduledPaymentAmount: 140,
+        apr: 6.25,
+        interestAccrual: "Interest Accruing",
+        pastDueAmount: 140,
+        daysPastDue: 45,
+        arrangementOverlays: [
+          {
+            id: "hardship-overlay",
+            type: "hardship_active",
+            startDate: "2026-04-01",
+            status: "active",
+            sourceQuality: "manual_confirmed",
+            interestAccrues: true,
+            pauseStandingProgression: true,
+          },
+        ],
+      }),
+      [],
+    );
+
+    expect(metrics.lifecycle.standingState).toBe("current");
+    expect(metrics.lifecycle.activeOverlays).toHaveLength(1);
+    expect(metrics.lifecycle.activeOverlays[0]).toMatchObject({
+      type: "hardship_active",
+      interestAccrues: true,
+      pauseStandingProgression: true,
+    });
+    expect(metrics.factualFlags).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "Hardship Active" }),
+        expect.objectContaining({ type: "Interest Accruing" }),
+      ]),
+    );
+  });
+
+  it("scenario 4: applies promo APR expiry from its effective date forward only", () => {
+    const withPromoExpiry = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        debtType: "Credit Card",
+        currentBalance: 1000,
+        minimumPayment: 120,
+        scheduledPaymentAmount: 120,
+        statementBalance: 1000,
+        statementMinimumDue: 120,
+        paymentAssumptionMode: "Minimum Due",
+        minimumPaymentMode: "Manual Minimum Amount",
+        apr: 24,
+        interestAccrual: "Interest Accruing",
+        promoType: "Intro APR",
+        promoBalance: 1000,
+        promoEndDate: "2026-04-30",
+        termVersions: [
+          {
+            id: "promo-active",
+            effectiveDate: "2026-04-14",
+            sourceQuality: "manual_confirmed",
+            apr: 0,
+            minimumPayment: 120,
+            scheduledPaymentAmount: 120,
+            gracePeriodStatus: "Grace Period Active",
+            promoType: "Intro APR",
+            promoEndDate: "2026-04-30",
+          },
+          {
+            id: "promo-expired",
+            effectiveDate: "2026-05-01",
+            sourceQuality: "manual_confirmed",
+            apr: 24,
+            minimumPayment: 120,
+            scheduledPaymentAmount: 120,
+            gracePeriodStatus: "Grace Period Lost",
+          },
+        ],
+      }),
+      [],
+    );
+
+    const alwaysStandardApr = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        debtType: "Credit Card",
+        currentBalance: 1000,
+        minimumPayment: 120,
+        scheduledPaymentAmount: 120,
+        statementBalance: 1000,
+        statementMinimumDue: 120,
+        paymentAssumptionMode: "Minimum Due",
+        minimumPaymentMode: "Manual Minimum Amount",
+        apr: 24,
+        interestAccrual: "Interest Accruing",
+      }),
+      [],
+    );
+
+    expect(withPromoExpiry.projectedRemainingInterest).toBeDefined();
+    expect(alwaysStandardApr.projectedRemainingInterest).toBeDefined();
+    expect(withPromoExpiry.projectedRemainingInterest!).toBeLessThan(
+      alwaysStandardApr.projectedRemainingInterest!,
+    );
+    expect(withPromoExpiry.projection.assumptions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          label: "Effective-dated terms",
+        }),
+      ]),
+    );
+  });
+
+  it("scenario 5: recalculates future interest after student-loan capitalization", () => {
+    const capitalized = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        debtType: "Student Loan",
+        providerName: "Federal Loan",
+        currentBalance: 5200,
+        minimumPayment: 150,
+        scheduledPaymentAmount: 150,
+        apr: 6,
+        interestAccrual: "Interest Accruing",
+        accruedInterestBalance: 200,
+        capitalizedInterestTotal: 200,
+        nextDueDate: "2026-05-20",
+        lifecycleEvents: [
+          {
+            id: "deferment-ended-capitalization",
+            eventType: "interest_capitalized",
+            effectiveDate: "2026-04-14",
+            source: "Servicer",
+            sourceQuality: "lender_confirmed",
+            reversible: false,
+            amount: 200,
+            note: "Deferred interest capitalized when deferment ended.",
+          },
+        ],
+      }),
+      [],
+    );
+
+    const baseline = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        debtType: "Student Loan",
+        providerName: "Federal Loan",
+        currentBalance: 5000,
+        minimumPayment: 150,
+        scheduledPaymentAmount: 150,
+        apr: 6,
+        interestAccrual: "Interest Accruing",
+        nextDueDate: "2026-05-20",
+      }),
+      [],
+    );
+
+    expect(capitalized.projectedRemainingInterest).toBeGreaterThan(
+      baseline.projectedRemainingInterest ?? 0,
+    );
+    expect(capitalized.factualFlags).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "Interest Capitalized" }),
+      ]),
+    );
+    expect(capitalized.lifecycle.eventTimeline).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ eventType: "interest_capitalized" }),
+      ]),
+    );
+  });
+
+  it("scenario 6: preserves balance-transfer continuity without double-counting successor obligations", () => {
+    const predecessor = createDebtAccount({
+      id: "card-old",
+      providerName: "Old Card",
+      debtType: "Credit Card",
+      currentBalance: 500,
+      minimumPayment: 60,
+      scheduledPaymentAmount: 60,
+      statementBalance: 500,
+      statementMinimumDue: 60,
+      paymentAssumptionMode: "Minimum Due",
+      minimumPaymentMode: "Manual Minimum Amount",
+      apr: 21,
+      interestAccrual: "Interest Accruing",
+      continuity: {
+        obligationChainId: "chain-1",
+        successorAccountId: "card-new",
+        continuityEventType: "balance_transfer",
+        continuityEffectiveDate: "2026-04-14",
+        transferredAmount: 500,
+        closureReason: "Transferred to successor account",
+      },
+    });
+    const successor = createDebtAccount({
+      id: "card-new",
+      providerName: "New Card",
+      debtType: "Credit Card",
+      currentBalance: 500,
+      minimumPayment: 55,
+      scheduledPaymentAmount: 55,
+      statementBalance: 500,
+      statementMinimumDue: 55,
+      paymentAssumptionMode: "Minimum Due",
+      minimumPaymentMode: "Manual Minimum Amount",
+      apr: 18,
+      interestAccrual: "Interest Accruing",
+      continuity: {
+        obligationChainId: "chain-1",
+        predecessorAccountId: "card-old",
+        continuityEventType: "balance_transfer",
+        continuityEffectiveDate: "2026-04-14",
+        transferredAmount: 500,
+      },
+    });
+
+    const merged = mergeDebtBills([], [predecessor, successor]);
+
+    expect(merged.some((bill) => bill.sourceDebtAccountId === "card-old")).toBe(false);
+    expect(merged.some((bill) => bill.sourceDebtAccountId === "card-new")).toBe(true);
+  });
+
+  it("scenario 7: keeps delinquent standing distinct from an active dispute overlay", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        currentBalance: 1300,
+        nextDueDate: "2026-03-01",
+        minimumPayment: 120,
+        scheduledPaymentAmount: 120,
+        pastDueAmount: 240,
+        daysPastDue: 44,
+        isDelinquent: true,
+        arrangementOverlays: [
+          {
+            id: "dispute-overlay",
+            type: "dispute_active",
+            startDate: "2026-04-10",
+            status: "active",
+            sourceQuality: "manual_confirmed",
+          },
+        ],
+      }),
+      [],
+    );
+
+    expect(metrics.lifecycle.standingState).toBe("delinquent");
+    expect(metrics.lifecycle.activeOverlays).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "dispute_active" }),
+      ]),
+    );
+    expect(metrics.factualFlags).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "Dispute Active" }),
+      ]),
+    );
+  });
+
+  it("scenario 8: removes satisfaction effect when a completed bill payment is later reversed", () => {
+    const snapshot = buildDebtDownstreamSnapshot(
+      [
+        createDebtAccount({
+          id: "reversed-account",
+          providerName: "Reversed Loan",
+          currentBalance: 900,
+          nextDueDate: "2026-04-10",
+          minimumPayment: 90,
+          scheduledPaymentAmount: 90,
+          pastDueAmount: 90,
+          daysPastDue: 4,
+          lifecycleEvents: [
+            {
+              id: "payment-reversed",
+              eventType: "payment_reversed",
+              effectiveDate: "2026-04-13",
+              recordedDate: "2026-04-13",
+              source: "Debt",
+              sourceQuality: "manual_confirmed",
+              reversible: false,
+              relatedBillId: "reversed-bill",
+              amount: 90,
+              note: "Posted payment was later reversed.",
+            },
+          ],
+        }),
+      ],
+      [
+        createDebtBill({
+          id: "reversed-bill",
+          sourceDebtAccountId: "reversed-account",
+          dueDate: "2026-04-10",
+          amount: 90,
+          paidAmount: 90,
+          paidDate: "2026-04-10",
+          status: "Paid",
+        }),
+      ],
+    );
+
+    const fact = snapshot.accountFacts[0];
+    expect(fact?.amountNeededToCure).toBe(90);
+    expect(fact?.standingState).toBe("late");
+    expect(fact?.failedPaymentCount).toBe(1);
+    expect(fact?.sourceConflicts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "payment-status-conflict" }),
+      ]),
+    );
+  });
+
+  it("scenario 9: records manual collections confirmation with severe-state facts", () => {
+    const metrics = calculateDebtDerivedMetrics(
+      createDebtAccount({
+        currentBalance: 1800,
+        nextDueDate: "2026-04-20",
+        minimumPayment: 150,
+        scheduledPaymentAmount: 150,
+        lifecycleEvents: [
+          {
+            id: "collections-confirmed",
+            eventType: "collections_confirmed",
+            effectiveDate: "2026-04-13",
+            source: "User confirmation",
+            sourceQuality: "manual_confirmed",
+            reversible: false,
+            note: "Collections was confirmed manually by the user.",
+          },
+        ],
+      }),
+      [],
+    );
+
+    expect(metrics.lifecycle.standingState).toBe("collections");
+    expect(metrics.lifecycle.severeState).toBe(true);
+    expect(metrics.factualFlags).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ type: "Collections Confirmed" }),
+      ]),
+    );
+    expect(metrics.lifecycle.sourceQualitySummary).toContain("manual confirmed");
+  });
+});

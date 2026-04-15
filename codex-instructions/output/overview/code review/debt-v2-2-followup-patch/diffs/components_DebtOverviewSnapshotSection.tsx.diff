@@ -1,0 +1,62 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/overview/code review/debt-v2-2-integration/source/components/DebtOverviewSnapshotSection.tsx	2026-04-14 23:26:27
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/components/DebtOverviewSnapshotSection.tsx	2026-04-15 02:00:12
+@@ -36,7 +36,7 @@
+             Debt Snapshot
+           </h2>
+           <p className="mt-1 text-sm text-slate-600">
+-            Compact debt visibility only. Open Debt for lifecycle detail, schedules, and account-level edits.
++            Quick debt visibility only. Open Debt for account detail, schedules, and status history.
+           </p>
+         </div>
+ 
+@@ -78,7 +78,7 @@
+             {snapshot.accountsBehindCount}
+           </p>
+           <p className="mt-1 text-xs text-slate-600">
+-            Debt-defined late or delinquent accounts.
++            Late or delinquent accounts reported by Debt.
+           </p>
+         </button>
+ 
+@@ -99,7 +99,7 @@
+           <p className="mt-1 text-xs text-slate-600">
+             {snapshot.nextDebtPayment
+               ? `${snapshot.nextDebtPayment.accountName} due ${formatDate(snapshot.nextDebtPayment.dueDate)}`
+-              : "Debt has not emitted a near-term payment row."}
++              : "No near-term debt payment is currently scheduled."}
+           </p>
+         </button>
+ 
+@@ -115,7 +115,7 @@
+             {formatCurrency(snapshot.debtCashNeeded30d)}
+           </p>
+           <p className="mt-1 text-xs text-slate-600">
+-            Debt-owned 30-day cash window.
++            Required debt cash inside the next 30 days.
+           </p>
+         </button>
+ 
+@@ -132,7 +132,7 @@
+               {snapshot.accountsRequiringReviewCount}
+             </p>
+             <p className="mt-1 text-xs text-slate-600">
+-              Verification or conflict signals are active.
++              Verification or source-conflict signals are active.
+             </p>
+           </button>
+         ) : null}
+@@ -140,10 +140,10 @@
+ 
+       {hasTrustSignals ? (
+         <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+-          <span className="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-2.5 py-1 font-semibold text-slate-700">
+-            <InfoBadge />
+-            Debt trust indicators
+-          </span>
++            <span className="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-2.5 py-1 font-semibold text-slate-700">
++              <InfoBadge />
++            Debt trust signals
++            </span>
+           {snapshot.limitedConfidenceCount > 0 ? (
+             <span className="rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 font-semibold text-amber-700">
+               Limited {snapshot.limitedConfidenceCount}

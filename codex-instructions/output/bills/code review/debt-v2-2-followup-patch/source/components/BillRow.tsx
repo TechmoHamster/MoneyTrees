@@ -1,0 +1,567 @@
+"use client";
+
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  MoreHorizontal,
+  PencilLine,
+  Trash2,
+  X,
+} from "lucide-react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import type { Bill, DebtAccount, RunningBalanceRow } from "@/lib/types";
+import { categoryIcons, statusIcons } from "@/components/iconMaps";
+import { formatCurrency, formatDate, getBillLateFeeAmount, getBillTotalAmount } from "@/lib/utils";
+
+type BillRowProps = {
+  bill: Bill;
+  linkedDebtAccount?: DebtAccount;
+  runningBalance: RunningBalanceRow;
+  includePaidInTotals: boolean;
+  isSelected: boolean;
+  onToggleSelect: (billId: string, next: boolean) => void;
+  isGroupedChild?: boolean;
+  onEdit: (bill: Bill) => void;
+  onDelete: (billId: string) => void;
+  onRecordPayment: (billIds: string[]) => void;
+};
+
+const statusStyles: Record<Bill["status"], string> = {
+  Upcoming: "border-blue-300 bg-blue-50 text-blue-700",
+  "Past Due": "border-rose-300 bg-rose-50 text-rose-700",
+  Paid: "border-emerald-300 bg-emerald-50 text-emerald-700",
+};
+
+export function BillRow({
+  bill,
+  linkedDebtAccount,
+  runningBalance,
+  includePaidInTotals,
+  isSelected,
+  onToggleSelect,
+  isGroupedChild = false,
+  onEdit,
+  onDelete,
+  onRecordPayment,
+}: BillRowProps) {
+  const [isMenuMounted, setIsMenuMounted] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDetailsExpanded, setIsDetailsExpanded] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number }>({
+    top: 0,
+    left: 0,
+  });
+  const menuRootRef = useRef<HTMLDivElement | null>(null);
+  const triggerButtonRef = useRef<HTMLButtonElement | null>(null);
+  const menuPanelRef = useRef<HTMLDivElement | null>(null);
+  const closeTimerRef = useRef<number | null>(null);
+  const isPastDue = bill.status === "Past Due";
+  const isPaid = bill.status === "Paid";
+  const ignoredFromTotals = isPaid && !includePaidInTotals;
+  const lateFeeAmount = getBillLateFeeAmount(bill);
+  const billTotalAmount = getBillTotalAmount(bill);
+  const hasLateFee = lateFeeAmount > 0;
+  const isDebtDerived = bill.sourceType === "debt-derived";
+  const hasDuplicateWarning = Boolean(bill.duplicateWarning);
+  const debtPaymentStatusLabel =
+    bill.debtPaymentStatus && bill.debtPaymentStatus !== "upcoming"
+      ? bill.debtPaymentStatus.replaceAll("_", " ")
+      : null;
+  const hasPaymentDetails =
+    (isPaid || Boolean(debtPaymentStatusLabel)) &&
+    (Boolean(bill.paidDate) ||
+      typeof bill.paidAmount === "number" ||
+      Boolean(bill.paymentMethod) ||
+      Boolean(bill.paymentNote) ||
+      Boolean(debtPaymentStatusLabel));
+  const hasDetails = isDebtDerived || hasLateFee || hasPaymentDetails || hasDuplicateWarning;
+  const CategoryIcon = categoryIcons[bill.category];
+  const StatusIcon = statusIcons[bill.status];
+
+  const clearCloseTimer = useCallback(() => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }, []);
+
+  const closeMenu = useCallback(() => {
+    setIsMenuOpen(false);
+    clearCloseTimer();
+    closeTimerRef.current = window.setTimeout(() => {
+      setIsMenuMounted(false);
+      closeTimerRef.current = null;
+    }, 160);
+  }, [clearCloseTimer]);
+
+  const clampMenuToViewport = useCallback((nextTop: number, nextLeft: number) => {
+    const viewportPadding = 8;
+    const menuWidth = 176;
+    const menuHeight = menuPanelRef.current?.offsetHeight ?? 176;
+    const clampedLeft = Math.min(
+      Math.max(viewportPadding, nextLeft),
+      window.innerWidth - menuWidth - viewportPadding,
+    );
+    const clampedTop = Math.min(
+      Math.max(viewportPadding, nextTop),
+      window.innerHeight - menuHeight - viewportPadding,
+    );
+
+    return { top: clampedTop, left: clampedLeft };
+  }, []);
+
+  const openMenu = useCallback(() => {
+    if (triggerButtonRef.current) {
+      const rect = triggerButtonRef.current.getBoundingClientRect();
+      const popoverWidth = 176;
+      const spacing = 12;
+      const estimatedHeight = bill.status !== "Paid" ? 176 : 138;
+      const rightCandidate = rect.right + spacing;
+      const hasSpaceOnRight = rightCandidate + popoverWidth <= window.innerWidth - 8;
+      const rawLeft = hasSpaceOnRight
+        ? rightCandidate
+        : Math.max(8, rect.left - popoverWidth - spacing);
+      const rawTop = rect.top + rect.height / 2 - estimatedHeight / 2;
+
+      setMenuPosition(clampMenuToViewport(rawTop, rawLeft));
+    }
+
+    clearCloseTimer();
+    setIsMenuMounted(true);
+    requestAnimationFrame(() => {
+      setIsMenuOpen(true);
+      requestAnimationFrame(() => {
+        setMenuPosition((previous) =>
+          clampMenuToViewport(previous.top, previous.left),
+        );
+      });
+    });
+  }, [bill.status, clampMenuToViewport, clearCloseTimer]);
+
+  const toggleMenu = useCallback(() => {
+    if (isMenuMounted && isMenuOpen) {
+      closeMenu();
+      return;
+    }
+
+    openMenu();
+  }, [closeMenu, isMenuMounted, isMenuOpen, openMenu]);
+
+  useEffect(() => {
+    if (!isMenuMounted) {
+      return;
+    }
+
+    function handleOutsideClick(event: MouseEvent) {
+      const target = event.target as Node;
+      const clickedTrigger = triggerButtonRef.current?.contains(target);
+      const clickedMenu = menuPanelRef.current?.contains(target);
+      if (!clickedTrigger && !clickedMenu) {
+        closeMenu();
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        closeMenu();
+      }
+    }
+
+    function handleWindowResize() {
+      closeMenu();
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+    window.addEventListener("resize", handleWindowResize);
+    window.addEventListener("scroll", handleWindowResize, true);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("resize", handleWindowResize);
+      window.removeEventListener("scroll", handleWindowResize, true);
+    };
+  }, [closeMenu, isMenuMounted]);
+
+  useEffect(() => {
+    return () => clearCloseTimer();
+  }, [clearCloseTimer]);
+
+  return (
+    <Fragment>
+      <tr
+        className={`transition-colors hover:bg-slate-100/70 ${
+          isGroupedChild
+            ? "bg-slate-50/85"
+            : isPastDue
+            ? "bg-rose-50/38"
+            : isPaid
+              ? "bg-emerald-50/28"
+              : "bg-white/95"
+        }`}
+      >
+        <td className="px-4 py-4 align-middle">
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={(event) => onToggleSelect(bill.id, event.target.checked)}
+            className="h-4 w-4 rounded border-slate-400 text-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            aria-label={`Select ${bill.name}`}
+          />
+        </td>
+        <td className="px-4 py-4 align-middle">
+          <p className="font-medium text-slate-900">
+            {isGroupedChild ? (
+              <span className="mr-2 inline-block text-slate-400">↳</span>
+            ) : null}
+            {bill.name}
+          </p>
+          {bill.notes ? (
+            <p className="mt-1 max-w-[16rem] text-xs leading-relaxed text-slate-600">
+              {bill.notes}
+            </p>
+          ) : null}
+          {isDebtDerived && linkedDebtAccount ? (
+            <span className="mt-1 inline-flex items-center rounded-full border border-indigo-300 bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700">
+              {linkedDebtAccount.debtType}
+            </span>
+          ) : null}
+          {hasLateFee ? (
+            <span className="mt-1 inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+              Fee applied
+            </span>
+          ) : null}
+          {hasDuplicateWarning ? (
+            <span className="mt-1 inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+              Possible duplicate
+            </span>
+          ) : null}
+          {hasDetails ? (
+            <button
+              type="button"
+              onClick={() => setIsDetailsExpanded((previous) => !previous)}
+              className="mt-1 inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-700 transition hover:bg-blue-100"
+              aria-expanded={isDetailsExpanded}
+              aria-label={`${isDetailsExpanded ? "Hide" : "Show"} details for ${bill.name}`}
+            >
+              {isDetailsExpanded ? (
+                <ChevronUp className="h-3 w-3" />
+              ) : (
+                <ChevronDown className="h-3 w-3" />
+              )}
+              {isDetailsExpanded ? "Hide details" : "Show details"}
+            </button>
+          ) : null}
+        </td>
+      <td className="px-4 py-4 align-middle text-sm text-slate-700">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="rounded-md border border-blue-200 bg-blue-50 p-1 text-blue-700">
+            <CategoryIcon className="h-3.5 w-3.5" />
+          </span>
+          {bill.category}
+        </span>
+      </td>
+      <td className="px-4 py-4 align-middle">
+        <span
+          className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-1 text-xs font-semibold leading-none ${statusStyles[bill.status]}`}
+        >
+          <StatusIcon className="h-3.5 w-3.5 shrink-0" />
+          <span>{bill.status}</span>
+        </span>
+      </td>
+      <td className="px-4 py-4 align-middle text-sm text-slate-700">
+        {formatDate(bill.dueDate)}
+      </td>
+        <td className="px-4 py-4 align-middle text-right text-sm font-medium text-slate-800">
+          {formatCurrency(billTotalAmount)}
+        </td>
+      <td className="px-4 py-4 align-middle text-right text-sm font-medium text-slate-800">
+        {formatCurrency(runningBalance.runningTotal)}
+      </td>
+      <td
+        className={`px-4 py-4 align-middle text-right text-sm font-semibold ${
+          runningBalance.remainingBalance < 0 ? "text-rose-700" : "text-slate-900"
+        }`}
+      >
+        {formatCurrency(runningBalance.remainingBalance)}
+        {ignoredFromTotals ? (
+          <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-500">
+            Paid excluded
+          </p>
+        ) : null}
+      </td>
+        <td className="px-4 py-4 align-middle">
+          <div ref={menuRootRef} className="relative flex justify-end">
+          <button
+            ref={triggerButtonRef}
+            type="button"
+            onClick={toggleMenu}
+            className="dashboard-control inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200"
+            aria-expanded={isMenuOpen}
+            aria-haspopup="menu"
+            aria-label={`Open actions for ${bill.name}`}
+          >
+            <MoreHorizontal className="h-3.5 w-3.5" />
+            Actions
+          </button>
+
+          {isMenuMounted
+            ? createPortal(
+                <div
+                  ref={menuPanelRef}
+                  className={`fixed z-[80] w-44 origin-top-left rounded-xl border border-slate-300 bg-white p-2 shadow-[0_24px_45px_-25px_rgba(15,23,42,0.75)] transition duration-150 ${
+                    isMenuOpen
+                      ? "translate-y-0 scale-100 opacity-100"
+                      : "-translate-y-1 scale-95 opacity-0"
+                  }`}
+                  style={{
+                    top: `${menuPosition.top}px`,
+                    left: `${menuPosition.left}px`,
+                    maxHeight: "calc(100vh - 16px)",
+                  }}
+                  role="menu"
+                >
+                  <div className="mb-1.5 flex items-center justify-between px-1">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">
+                      Bill Actions
+                    </p>
+                    <button
+                      type="button"
+                      onClick={closeMenu}
+                      className="dashboard-close-button dashboard-close-button-sm"
+                      aria-label="Close actions menu"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onRecordPayment([bill.id]);
+                        closeMenu();
+                      }}
+                      className="inline-flex w-full items-center gap-1.5 rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                      role="menuitem"
+                    >
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      {bill.status === "Paid" ? "Update Payment" : "Mark Paid"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onEdit(bill);
+                        closeMenu();
+                      }}
+                      className="inline-flex w-full items-center gap-1.5 rounded-md border border-slate-300 bg-slate-100 px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200"
+                      role="menuitem"
+                    >
+                      <PencilLine className="h-3.5 w-3.5" />
+                      {isDebtDerived ? "Open in Debt" : "Edit"}
+                    </button>
+                    {!isDebtDerived ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onDelete(bill.id);
+                          closeMenu();
+                        }}
+                        className="inline-flex w-full items-center gap-1.5 rounded-md border border-rose-300 bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                        role="menuitem"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Delete
+                      </button>
+                    ) : null}
+                  </div>
+                </div>,
+                document.body,
+              )
+            : null}
+          </div>
+        </td>
+      </tr>
+
+      {hasDetails && isDetailsExpanded ? (
+        <tr className="dashboard-animate-in bg-slate-50/70">
+          <td className="border-t border-slate-200/70 px-4 pb-4 pt-3 align-top" colSpan={9}>
+            <section className="space-y-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-700">
+                Details
+              </p>
+
+              {isDebtDerived ? (
+                <div className="rounded-xl border border-blue-200/70 bg-white/90 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-800">
+                    Debt Details
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-2 text-[11px] font-semibold">
+                    {linkedDebtAccount ? (
+                      <>
+                        <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-slate-700">
+                          {linkedDebtAccount.providerName}
+                        </span>
+                        <span className="rounded-full border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-indigo-700">
+                          {linkedDebtAccount.debtType}
+                        </span>
+                      </>
+                    ) : null}
+                    <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-blue-700">
+                      Operational row only
+                    </span>
+                  </div>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-700">
+                    This bill row is a bounded operational payment row generated from the Debt section. Edit account truth, lifecycle state, and payment assumptions in Debt.
+                  </p>
+                  {bill.sourceDebtRouteTarget ? (
+                    <p className="mt-2 text-xs leading-relaxed text-slate-500">
+                      Bills only records operational payment activity here and hands those events back to Debt for lifecycle interpretation.
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+
+              {hasDuplicateWarning ? (
+                <div className="rounded-xl border border-amber-200/70 bg-white/90 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">
+                    Duplicate Warning
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-700">
+                    This debt-linked row closely matches {bill.duplicateCandidateBillIds?.length === 1 ? "a manual Debt bill" : `${bill.duplicateCandidateBillIds?.length ?? 0} manual Debt bills`} already in Bills. Review before keeping both rows active.
+                  </p>
+                </div>
+              ) : null}
+
+              {hasLateFee ? (
+                <div className="space-y-2 rounded-xl border border-amber-200/70 bg-white/90 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">
+                    Fee Breakdown
+                  </p>
+                  <div className="hidden items-center gap-3 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1.15fr)]">
+                    <article className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                        Base Bill
+                      </p>
+                      <p className="mt-0.5 text-sm font-semibold text-slate-800">
+                        {formatCurrency(bill.amount)}
+                      </p>
+                    </article>
+                    <span className="text-sm font-semibold text-slate-300">+</span>
+                    <article className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-700">
+                        Applied Late Fee
+                      </p>
+                      <p className="mt-0.5 text-sm font-semibold text-amber-800">
+                        {formatCurrency(lateFeeAmount)}
+                      </p>
+                    </article>
+                    <span className="text-sm font-semibold text-slate-300">=</span>
+                    <article className="min-w-0 rounded-lg border border-blue-200/85 bg-blue-50/75 px-3 py-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-blue-700">
+                        Total Obligation
+                      </p>
+                      <p className="mt-0.5 text-base font-semibold text-blue-950">
+                        {formatCurrency(billTotalAmount)}
+                      </p>
+                    </article>
+                  </div>
+
+                  <div className="grid gap-1.5 sm:hidden">
+                    <article className="rounded-lg border border-slate-200/80 bg-white/92 px-3 py-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                        Base Bill
+                      </p>
+                      <p className="mt-0.5 text-sm font-semibold text-slate-800">
+                        {formatCurrency(bill.amount)}
+                      </p>
+                    </article>
+                    <article className="rounded-lg border border-amber-200/90 bg-amber-50/70 px-3 py-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-700">
+                        Applied Late Fee
+                      </p>
+                      <p className="mt-0.5 text-sm font-semibold text-amber-800">
+                        {formatCurrency(lateFeeAmount)}
+                      </p>
+                    </article>
+                    <article className="rounded-lg border border-blue-200/90 bg-blue-50/80 px-3 py-2.5">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-blue-700">
+                        Total Obligation
+                      </p>
+                      <p className="mt-0.5 text-base font-semibold text-blue-950">
+                        {formatCurrency(billTotalAmount)}
+                      </p>
+                    </article>
+                  </div>
+                </div>
+              ) : null}
+
+              {hasPaymentDetails ? (
+                <div className="rounded-xl border border-emerald-200/70 bg-white/90 px-4 py-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                    Payment Details
+                  </p>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                    {debtPaymentStatusLabel ? (
+                      <article className="rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-2">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                          Debt Payment Status
+                        </p>
+                        <p className="mt-0.5 text-sm font-semibold capitalize text-slate-800">
+                          {debtPaymentStatusLabel}
+                        </p>
+                      </article>
+                    ) : null}
+                    {bill.paidDate ? (
+                      <article className="rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-2">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                          Paid On
+                        </p>
+                        <p className="mt-0.5 text-sm font-semibold text-slate-800">
+                          {formatDate(bill.paidDate)}
+                        </p>
+                      </article>
+                    ) : null}
+                    {typeof bill.paidAmount === "number" ? (
+                      <article className="rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-2">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                          Amount Paid
+                        </p>
+                        <p className="mt-0.5 text-sm font-semibold text-slate-800">
+                          {formatCurrency(bill.paidAmount)}
+                        </p>
+                      </article>
+                    ) : null}
+                    {bill.paymentMethod ? (
+                      <article className="rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-2">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                          Method
+                        </p>
+                        <p className="mt-0.5 text-sm font-semibold text-slate-800">
+                          {bill.paymentMethod}
+                        </p>
+                      </article>
+                    ) : null}
+                    {bill.paymentNote ? (
+                      <article className="rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-2">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                          Note
+                        </p>
+                        <p className="mt-0.5 text-sm leading-relaxed text-slate-700">
+                          {bill.paymentNote}
+                        </p>
+                      </article>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
+            </section>
+          </td>
+        </tr>
+      ) : null}
+    </Fragment>
+  );
+}

@@ -1,0 +1,93 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/reporting/code review/debt-v2-2-integration/source/components/ReportingSection.tsx	2026-04-14 23:26:27
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/components/ReportingSection.tsx	2026-04-15 09:02:55
+@@ -185,34 +185,34 @@
+ 
+ function buildPriorityAction(snapshot: ReportingSnapshot): string {
+   if (snapshot.numberOfPastDueBills > 0) {
+-    return `${snapshot.numberOfPastDueBills} past-due bill${snapshot.numberOfPastDueBills === 1 ? "" : "s"} should be cleared before anything else in this window.`;
++    return `${snapshot.numberOfPastDueBills} past-due bill${snapshot.numberOfPastDueBills === 1 ? "" : "s"} are active in this window.`;
+   }
+ 
+   if (snapshot.totalLateFees > 0 && snapshot.biggestLateFeeCategory) {
+-    return `Late-fee pressure is already active in ${snapshot.biggestLateFeeCategory}, so that category is the cleanest place to reduce avoidable loss first.`;
++    return `Late-fee pressure is currently concentrated in ${snapshot.biggestLateFeeCategory}.`;
+   }
+ 
+   if (snapshot.topCategory) {
+-    return `${snapshot.topCategory} is carrying most of the current period pressure, so it is the first category worth reviewing for concentration risk.`;
++    return `${snapshot.topCategory} is carrying the largest share of current-period bill pressure.`;
+   }
+ 
+-  return "The current reporting window does not show a single dominant pressure source yet.";
++  return "The current reporting window does not show one dominant pressure source yet.";
+ }
+ 
+ function buildPriorityLabel(snapshot: ReportingSnapshot): string {
+   if (snapshot.numberOfPastDueBills > 0) {
+-    return "Immediate priority: reduce past-due pressure";
++    return "Past-due pressure is active";
+   }
+ 
+   if (snapshot.totalLateFees > 0) {
+-    return "Priority: reduce fee leakage";
++    return "Late-fee pressure is active";
+   }
+ 
+   if (snapshot.topCategory) {
+-    return `Priority: review ${snapshot.topCategory} concentration`;
++    return `${snapshot.topCategory} concentration is elevated`;
+   }
+ 
+-  return "Priority: monitor this period";
++  return "This period is relatively stable";
+ }
+ 
+ export function ReportingSection({
+@@ -339,7 +339,7 @@
+             Reporting
+           </h2>
+           <p className="mt-1 text-sm text-slate-600">
+-            Decision-oriented read on obligations, trend movement, and pressure inside the current {snapshot.periodLabel.toLowerCase()} window.
++            Neutral read on obligations, trend movement, and pressure inside the current {snapshot.periodLabel.toLowerCase()} window.
+           </p>
+         </div>
+ 
+@@ -347,7 +347,7 @@
+           <button
+             type="button"
+             onClick={() =>
+-              downloadTextFile(`${fileStem}.csv`, buildReportingCsv(snapshot), "text/csv")
++              downloadTextFile(`${fileStem}.csv`, buildReportingCsv(snapshot, debtSnapshot), "text/csv")
+             }
+             className="dashboard-control dashboard-hover-lift inline-flex items-center gap-1 rounded-lg border border-blue-600 bg-gradient-to-r from-blue-600 to-indigo-600 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:from-blue-500 hover:to-indigo-500"
+           >
+@@ -357,7 +357,7 @@
+           <button
+             type="button"
+             onClick={() =>
+-              downloadTextFile(`${fileStem}.json`, buildReportingJson(snapshot), "application/json")
++              downloadTextFile(`${fileStem}.json`, buildReportingJson(snapshot, debtSnapshot), "application/json")
+             }
+             className="dashboard-control inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+           >
+@@ -669,7 +669,7 @@
+             Key Insights
+           </h3>
+           <div className="dashboard-empty-state mt-3 rounded-2xl px-4 py-3 text-sm text-slate-700">
+-            <p className="font-semibold text-slate-900">Priority action</p>
++            <p className="font-semibold text-slate-900">Pressure summary</p>
+             <p className="mt-1 text-slate-600">{priorityAction}</p>
+           </div>
+ 
+@@ -771,6 +771,11 @@
+                 </span>
+               ) : null}
+             </div>
++            {debtSnapshot.limitedConfidenceCount > 0 || debtSnapshot.sourceConflictCount > 0 ? (
++              <p className="mt-3 text-xs leading-relaxed text-slate-600">
++                Debt confidence is degraded in part of this snapshot, so the debt layer here stays descriptive rather than assertive.
++              </p>
++            ) : null}
+           </article>
+ 
+           <article className="dashboard-shell-inner rounded-2xl p-4">

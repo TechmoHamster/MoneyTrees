@@ -1,0 +1,6 @@
+Debt follow-up summary
+- Bills bridge gaps were narrowed with duplicate warnings, broader operational debt payment statuses, and explicit event handoff back into Debt lifecycle.
+- Overview routing now points into Debt more specifically without adding local debt interpretation.
+- Reporting now stays neutral, uses payment posted dates for debt payment-event analysis, and exports Debt snapshot data.
+- Atlas now consistently downgrades language across non-Exact debt trust states.
+- No inline advisor panel work was performed in this pass.

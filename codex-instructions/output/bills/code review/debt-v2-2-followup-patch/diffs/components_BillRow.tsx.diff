@@ -1,0 +1,80 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/bills/code review/debt-v2-2-integration/source/components/BillRow.tsx	2026-04-14 23:26:27
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/components/BillRow.tsx	2026-04-15 09:05:09
+@@ -64,13 +64,19 @@
+   const billTotalAmount = getBillTotalAmount(bill);
+   const hasLateFee = lateFeeAmount > 0;
+   const isDebtDerived = bill.sourceType === "debt-derived";
++  const hasDuplicateWarning = Boolean(bill.duplicateWarning);
++  const debtPaymentStatusLabel =
++    bill.debtPaymentStatus && bill.debtPaymentStatus !== "upcoming"
++      ? bill.debtPaymentStatus.replaceAll("_", " ")
++      : null;
+   const hasPaymentDetails =
+-    isPaid &&
++    (isPaid || Boolean(debtPaymentStatusLabel)) &&
+     (Boolean(bill.paidDate) ||
+       typeof bill.paidAmount === "number" ||
+       Boolean(bill.paymentMethod) ||
+-      Boolean(bill.paymentNote));
+-  const hasDetails = isDebtDerived || hasLateFee || hasPaymentDetails;
++      Boolean(bill.paymentNote) ||
++      Boolean(debtPaymentStatusLabel));
++  const hasDetails = isDebtDerived || hasLateFee || hasPaymentDetails || hasDuplicateWarning;
+   const CategoryIcon = categoryIcons[bill.category];
+   const StatusIcon = statusIcons[bill.status];
+ 
+@@ -226,6 +232,11 @@
+           {hasLateFee ? (
+             <span className="mt-1 inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+               Fee applied
++            </span>
++          ) : null}
++          {hasDuplicateWarning ? (
++            <span className="mt-1 inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
++              Possible duplicate
+             </span>
+           ) : null}
+           {hasDetails ? (
+@@ -406,9 +417,25 @@
+                   <p className="mt-3 text-sm leading-relaxed text-slate-700">
+                     This bill row is a bounded operational payment row generated from the Debt section. Edit account truth, lifecycle state, and payment assumptions in Debt.
+                   </p>
++                  {bill.sourceDebtRouteTarget ? (
++                    <p className="mt-2 text-xs leading-relaxed text-slate-500">
++                      Bills only records operational payment activity here and hands those events back to Debt for lifecycle interpretation.
++                    </p>
++                  ) : null}
+                 </div>
+               ) : null}
+ 
++              {hasDuplicateWarning ? (
++                <div className="rounded-xl border border-amber-200/70 bg-white/90 px-4 py-3">
++                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">
++                    Duplicate Warning
++                  </p>
++                  <p className="mt-2 text-sm leading-relaxed text-slate-700">
++                    This debt-linked row closely matches {bill.duplicateCandidateBillIds?.length === 1 ? "a manual Debt bill" : `${bill.duplicateCandidateBillIds?.length ?? 0} manual Debt bills`} already in Bills. Review before keeping both rows active.
++                  </p>
++                </div>
++              ) : null}
++
+               {hasLateFee ? (
+                 <div className="space-y-2 rounded-xl border border-amber-200/70 bg-white/90 px-4 py-3">
+                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">
+@@ -478,6 +505,16 @@
+                     Payment Details
+                   </p>
+                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
++                    {debtPaymentStatusLabel ? (
++                      <article className="rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-2">
++                        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
++                          Debt Payment Status
++                        </p>
++                        <p className="mt-0.5 text-sm font-semibold capitalize text-slate-800">
++                          {debtPaymentStatusLabel}
++                        </p>
++                      </article>
++                    ) : null}
+                     {bill.paidDate ? (
+                       <article className="rounded-lg border border-slate-200/80 bg-slate-50 px-3 py-2">
+                         <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">

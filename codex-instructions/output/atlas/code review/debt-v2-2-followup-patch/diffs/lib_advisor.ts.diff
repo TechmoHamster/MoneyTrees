@@ -1,0 +1,64 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/atlas/code review/debt-v2-2-integration/source/lib/advisor.ts	2026-04-14 23:26:27
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/advisor.ts	2026-04-15 09:17:46
+@@ -1892,11 +1892,35 @@
+       `Debt marks ${debtSnapshot.lifecycleAlertCount} account${debtSnapshot.lifecycleAlertCount === 1 ? "" : "s"} with active lifecycle pressure.`,
+     );
+   }
++  const staleCount = debtSnapshot.accountFacts.filter((fact) => fact.isStale || fact.trustState === "Stale").length;
++  if (staleCount > 0) {
++    signals.push(
++      `Debt marks ${staleCount} account${staleCount === 1 ? "" : "s"} as stale, so recent standing or term detail may need confirmation.`,
++    );
++  }
+   if (debtSnapshot.limitedConfidenceAccountCount > 0) {
+     signals.push(
+-      `Debt shows ${debtSnapshot.limitedConfidenceAccountCount} account${debtSnapshot.limitedConfidenceAccountCount === 1 ? "" : "s"} with limited trust.`,
++      `Debt shows ${debtSnapshot.limitedConfidenceAccountCount} account${debtSnapshot.limitedConfidenceAccountCount === 1 ? "" : "s"} with limited trust${staleCount > 0 ? " beyond the stale-state accounts already flagged" : ""}.`,
++    );
++  }
++  const estimatedCount = debtSnapshot.accountFacts.filter((fact) => fact.trustState === "Estimated").length;
++  if (estimatedCount > 0) {
++    signals.push(
++      `Debt marks ${estimatedCount} account${estimatedCount === 1 ? "" : "s"} as estimated, so those debt details stay directional only.`,
+     );
+   }
++  const customCount = debtSnapshot.accountFacts.filter((fact) => fact.trustState === "Custom").length;
++  if (customCount > 0) {
++    signals.push(
++      `Debt marks ${customCount} account${customCount === 1 ? "" : "s"} as custom because payment behavior or terms were manually adjusted.`,
++    );
++  }
++  const manualCount = debtSnapshot.accountFacts.filter((fact) => fact.trustState === "Manual").length;
++  if (manualCount > 0) {
++    signals.push(
++      `Debt marks ${manualCount} account${manualCount === 1 ? "" : "s"} as manual, so downstream debt language stays descriptive.`,
++    );
++  }
+   const sourceConflictCount = debtSnapshot.accountFacts.filter((fact) => fact.sourceConflict).length;
+   if (sourceConflictCount > 0) {
+     signals.push(
+@@ -1916,6 +1940,15 @@
+   }
+   if (debtSnapshot.limitedConfidenceAccountCount > 0) {
+     return `Debt marks ${debtSnapshot.limitedConfidenceAccountCount} account${debtSnapshot.limitedConfidenceAccountCount === 1 ? "" : "s"} as limited, so debt caveats stay conservative in this run.`;
++  }
++  const degradedCount = debtSnapshot.accountFacts.filter((fact) =>
++    fact.trustState === "Estimated" ||
++    fact.trustState === "Custom" ||
++    fact.trustState === "Manual" ||
++    fact.trustState === "Stale",
++  ).length;
++  if (degradedCount > 0) {
++    return `Debt marks ${degradedCount} account${degradedCount === 1 ? "" : "s"} with non-exact trust, so debt language stays factual and avoids over-precision.`;
+   }
+   return undefined;
+ }
+@@ -2554,7 +2587,7 @@
+     );
+   const debtOwnedSignals = buildDebtOwnedSignals(source.debtSnapshot);
+   const debtLimitationSummary = buildDebtLimitationSummary(source.debtSnapshot);
+-  const explainability = `This run ranks overdue status, due-date proximity, applied late fees, balance pressure, category concentration, reporting deltas, and the ${STRATEGY_LABEL[preference.strategy]} strategy. Debt-owned lifecycle, cash-window, cure, trust, and continuity facts stay owned by Debt and are carried forward without recalculation. ${dataQuality.summary}`;
++  const explainability = `This run evaluates overdue status, due-date proximity, applied late fees, balance pressure, category concentration, reporting deltas, and the ${STRATEGY_LABEL[preference.strategy]} strategy. Debt-owned lifecycle, cash-window, cure, trust, and continuity facts stay owned by Debt and are carried forward without recalculation. ${dataQuality.summary}`;
+ 
+   return {
+     summary: buildAdvisorResponseSummary(rankedItems, scenarios),

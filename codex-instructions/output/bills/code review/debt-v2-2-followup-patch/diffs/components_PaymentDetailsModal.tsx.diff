@@ -1,0 +1,80 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/bills/code review/debt-v2-2-integration/source/components/PaymentDetailsModal.tsx	2026-04-15 00:24:37
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/components/PaymentDetailsModal.tsx	2026-04-15 01:55:36
+@@ -1,14 +1,18 @@
+ import { CalendarCheck2, X } from "lucide-react";
++import type { DebtBillsPaymentStatus } from "@/lib/types";
+ 
+ type PaymentDetailsModalProps = {
+   isOpen: boolean;
+   targetCount: number;
++  supportsDebtPaymentStatuses?: boolean;
++  debtPaymentStatus: DebtBillsPaymentStatus;
+   paidDate: string;
+   paidAmount: string;
+   paymentMethod: string;
+   paymentNote: string;
+   error: string;
+   isSaving: boolean;
++  onDebtPaymentStatusChange: (value: DebtBillsPaymentStatus) => void;
+   onPaidDateChange: (value: string) => void;
+   onPaidAmountChange: (value: string) => void;
+   onPaymentMethodChange: (value: string) => void;
+@@ -20,12 +24,15 @@
+ export function PaymentDetailsModal({
+   isOpen,
+   targetCount,
++  supportsDebtPaymentStatuses = false,
++  debtPaymentStatus,
+   paidDate,
+   paidAmount,
+   paymentMethod,
+   paymentNote,
+   error,
+   isSaving,
++  onDebtPaymentStatusChange,
+   onPaidDateChange,
+   onPaidAmountChange,
+   onPaymentMethodChange,
+@@ -61,9 +68,32 @@
+         </div>
+ 
+         <div className="grid gap-3 md:grid-cols-2">
++          {supportsDebtPaymentStatuses ? (
++            <label className="space-y-1.5">
++              <span className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-600">
++                Debt Payment Status
++              </span>
++              <select
++                value={debtPaymentStatus}
++                onChange={(event) =>
++                  onDebtPaymentStatusChange(event.target.value as DebtBillsPaymentStatus)
++                }
++                className="dashboard-control h-11 w-full rounded-xl px-3 text-sm"
++              >
++                <option value="paid">Completed</option>
++                <option value="partially_paid">Partial Payment</option>
++                <option value="pending">Pending</option>
++                <option value="failed">Failed</option>
++                <option value="reversed">Reversed</option>
++                <option value="skipped_approved">Skipped Approved</option>
++                <option value="canceled">Canceled</option>
++              </select>
++            </label>
++          ) : null}
++
+           <label className="space-y-1.5">
+             <span className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-600">
+-              Date Paid
++              {supportsDebtPaymentStatuses ? "Event Date" : "Date Paid"}
+             </span>
+             <input
+               type="date"
+@@ -75,7 +105,7 @@
+ 
+           <label className="space-y-1.5">
+             <span className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-600">
+-              Amount Paid (Optional)
++              {supportsDebtPaymentStatuses ? "Amount (Optional)" : "Amount Paid (Optional)"}
+             </span>
+             <input
+               type="number"

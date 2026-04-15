@@ -1,0 +1,17 @@
+Bills Debt v2.2 Follow-up Patch Review Package
+
+Files
+- source/components/BillRow.tsx
+- source/components/FinanceDashboard.tsx
+- source/components/PaymentDetailsModal.tsx
+- source/lib/debt.ts
+- source/lib/types.ts
+- source/lib/debt.test.ts
+- diffs/components_BillRow.tsx.diff
+- diffs/components_FinanceDashboard.tsx.diff
+- diffs/components_PaymentDetailsModal.tsx.diff
+- diffs/lib_debt.ts.diff
+- diffs/lib_types.ts.diff
+- diffs/lib_debt.test.ts.diff
+- NOTES.txt
+- VALIDATION.txt

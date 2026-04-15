@@ -1,0 +1,18 @@
+Debt v2.2 Follow-up Patch Summary Package
+
+Files
+- source/components/DebtOverviewSnapshotSection.tsx
+- source/components/BillRow.tsx
+- source/components/FinanceDashboard.tsx
+- source/components/PaymentDetailsModal.tsx
+- source/components/ReportingSection.tsx
+- source/components/DebtSection.tsx
+- source/lib/advisor.ts
+- source/lib/advisor.test.ts
+- source/lib/debt.ts
+- source/lib/debt.test.ts
+- source/lib/types.ts
+- source/lib/utils.ts
+- diffs/
+- NOTES.txt
+- VALIDATION.txt

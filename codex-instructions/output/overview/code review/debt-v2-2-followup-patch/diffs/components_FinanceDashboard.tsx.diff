@@ -1,0 +1,193 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/overview/code review/debt-v2-2-integration/source/components/FinanceDashboard.tsx	2026-04-14 23:26:27
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/components/FinanceDashboard.tsx	2026-04-15 09:14:18
+@@ -63,6 +63,7 @@
+   DashboardState,
+   BillInput,
+   BillStatus,
++  DebtBillsPaymentStatus,
+   DebtAccount,
+   ReportingRange,
+   SortBy,
+@@ -113,6 +114,12 @@
+ type CategoryDrilldownOrigin = {
+   view: DashboardView;
+   sectionId: string;
++};
++
++type DebtSectionIntent = {
++  view?: "accounts" | "activity" | "reports";
++  accountId?: string;
++  accountFilter?: "behind" | "review";
+ };
+ 
+ function mapAdvisorContextToDashboardView(context: AdvisorContext): DashboardView {
+@@ -235,6 +242,8 @@
+   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+   const [editingBillId, setEditingBillId] = useState<string | null>(null);
+   const [paymentTargetBillIds, setPaymentTargetBillIds] = useState<string[]>([]);
++  const [paymentDebtStatus, setPaymentDebtStatus] =
++    useState<DebtBillsPaymentStatus>("paid");
+   const [paymentDate, setPaymentDate] = useState(getTodayDateString());
+   const [paymentAmount, setPaymentAmount] = useState("");
+   const [paymentMethod, setPaymentMethod] = useState("");
+@@ -265,6 +274,7 @@
+   const [categoryDrilldownOrigin, setCategoryDrilldownOrigin] =
+     useState<CategoryDrilldownOrigin | null>(null);
+   const [focusedDebtAccountId, setFocusedDebtAccountId] = useState<string | null>(null);
++  const [debtSectionIntent, setDebtSectionIntent] = useState<DebtSectionIntent | null>(null);
+ 
+   const materialDashboardPayload = useMemo(
+     () => ({
+@@ -915,6 +925,11 @@
+     const existing =
+       billIds.length === 1 ? ledgerBills.find((bill) => bill.id === billIds[0]) : undefined;
+     setPaymentTargetBillIds(billIds);
++    setPaymentDebtStatus(
++      existing?.debtPaymentStatus && existing.debtPaymentStatus !== "upcoming"
++        ? existing.debtPaymentStatus
++        : "paid",
++    );
+     setPaymentDate(existing?.paidDate ?? getTodayDateString());
+     setPaymentAmount(
+       typeof existing?.paidAmount === "number" ? String(existing.paidAmount) : "",
+@@ -926,6 +941,7 @@
+ 
+   function closePaymentDetailsModal() {
+     setPaymentTargetBillIds([]);
++    setPaymentDebtStatus("paid");
+     setPaymentError("");
+   }
+ 
+@@ -950,6 +966,10 @@
+       return;
+     }
+ 
++    const targetsDebtDerived = paymentTargetBillIds.some((billId) =>
++      ledgerBills.some((bill) => bill.id === billId && bill.sourceType === "debt-derived"),
++    );
++
+     if (!paymentDate) {
+       setPaymentError("Date paid is required.");
+       return;
+@@ -962,23 +982,48 @@
+       (!Number.isFinite(normalizedPaidAmount) || normalizedPaidAmount <= 0)
+     ) {
+       setPaymentError("Amount paid must be greater than zero.");
++      return;
++    }
++
++    if (
++      targetsDebtDerived &&
++      paymentDebtStatus === "partially_paid" &&
++      (!Number.isFinite(normalizedPaidAmount) || normalizedPaidAmount <= 0)
++    ) {
++      setPaymentError("Partial debt payments need an amount.");
+       return;
+     }
+ 
+     setIsSavingPayment(true);
++    const todayDate = getTodayDateString();
+     upsertBillRecords(
+       paymentTargetBillIds,
+-      (bill) => ({
+-        ...bill,
+-        status: "Paid",
+-        paidDate: paymentDate,
+-        paidAmount:
+-          paymentAmount.trim().length > 0 ? normalizedPaidAmount : undefined,
+-        paymentMethod:
+-          paymentMethod.trim().length > 0 ? paymentMethod.trim() : undefined,
+-        paymentNote:
+-          paymentNote.trim().length > 0 ? paymentNote.trim() : undefined,
+-      }),
++      (bill) => {
++        const isDebtDerived = bill.sourceType === "debt-derived";
++        const nextStatus: BillStatus =
++          isDebtDerived && paymentDebtStatus !== "paid"
++            ? bill.dueDate < todayDate
++              ? "Past Due"
++              : "Upcoming"
++            : "Paid";
++
++        return {
++          ...bill,
++          status: nextStatus,
++          debtPaymentStatus: isDebtDerived ? paymentDebtStatus : bill.debtPaymentStatus,
++          debtPaymentStatusUpdatedAt: isDebtDerived ? paymentDate : bill.debtPaymentStatusUpdatedAt,
++          paidDate:
++            isDebtDerived && paymentDebtStatus !== "paid" && paymentDebtStatus !== "partially_paid"
++              ? undefined
++              : paymentDate,
++          paidAmount:
++            paymentAmount.trim().length > 0 ? normalizedPaidAmount : undefined,
++          paymentMethod:
++            paymentMethod.trim().length > 0 ? paymentMethod.trim() : undefined,
++          paymentNote:
++            paymentNote.trim().length > 0 ? paymentNote.trim() : undefined,
++        };
++      },
+       { allowDerivedCreation: true },
+     );
+ 
+@@ -1156,8 +1201,14 @@
+     }, 60);
+   }
+ 
+-  function openDebtSection(accountId?: string) {
+-    setFocusedDebtAccountId(accountId ?? null);
++  function openDebtSection(intent?: string | DebtSectionIntent) {
++    if (typeof intent === "string") {
++      setFocusedDebtAccountId(intent);
++      setDebtSectionIntent({ accountId: intent, view: "accounts" });
++    } else {
++      setFocusedDebtAccountId(intent?.accountId ?? null);
++      setDebtSectionIntent(intent ?? null);
++    }
+     setActiveDashboardView("debt");
+     scrollToId("debt-section");
+   }
+@@ -1932,10 +1983,14 @@
+             <DebtOverviewSnapshotSection
+               snapshot={debtOverviewSnapshot}
+               onOpenDebt={() => openDebtSection()}
+-              onOpenAccountsBehind={() => openDebtSection()}
++              onOpenAccountsBehind={() =>
++                openDebtSection({ view: "accounts", accountFilter: "behind" })
++              }
+               onOpenNextDebtPayment={(accountId) => openDebtSection(accountId)}
+-              onOpenDebtCash={() => openDebtSection()}
+-              onOpenNeedsReview={() => openDebtSection()}
++              onOpenDebtCash={() => openDebtSection({ view: "reports" })}
++              onOpenNeedsReview={() =>
++                openDebtSection({ view: "accounts", accountFilter: "review" })
++              }
+             />
+           ) : null}
+ 
+@@ -2058,6 +2113,8 @@
+             summary={debtSummary}
+             downstreamSnapshot={debtDownstreamSnapshot}
+             focusedAccountId={focusedDebtAccountId ?? undefined}
++            initialView={debtSectionIntent?.view}
++            initialAccountFilter={debtSectionIntent?.accountFilter}
+             onSaveAccount={handleSaveDebtAccount}
+             onDeleteAccount={handleDeleteDebtAccount}
+           />
+@@ -2087,12 +2144,17 @@
+       <PaymentDetailsModal
+         isOpen={paymentTargetBillIds.length > 0}
+         targetCount={paymentTargetBillIds.length}
++        supportsDebtPaymentStatuses={paymentTargetBillIds.some((billId) =>
++          ledgerBills.some((bill) => bill.id === billId && bill.sourceType === "debt-derived"),
++        )}
++        debtPaymentStatus={paymentDebtStatus}
+         paidDate={paymentDate}
+         paidAmount={paymentAmount}
+         paymentMethod={paymentMethod}
+         paymentNote={paymentNote}
+         error={paymentError}
+         isSaving={isSavingPayment}
++        onDebtPaymentStatusChange={setPaymentDebtStatus}
+         onPaidDateChange={setPaymentDate}
+         onPaidAmountChange={setPaymentAmount}
+         onPaymentMethodChange={setPaymentMethod}

@@ -18,12 +18,14 @@ Readable source files
 Diffs
 - diffs/lib_debt.ts.diff
 - diffs/lib_types.ts.diff
-- diffs/components_BillRow.tsx.diff
-- diffs/components_BillsTable.tsx.diff
 - diffs/lib_debt.test.ts.diff
+- diffs/components_FinanceDashboard.tsx.diff
+- diffs/components_BillsTable.tsx.diff
+- diffs/components_BillRow.tsx.diff
+- diffs/components_PaymentDetailsModal.tsx.diff
 
 Verification
 - PROOF-VERIFICATION.md
 
 Notes
-- FinanceDashboard.tsx and PaymentDetailsModal.tsx are included because they contain the actual Bills-side structural-lock and payment-capture behavior referenced in the proof audit.
+- These diffs are generated from the current repository snapshot because the review package previously contained zero-byte placeholders.

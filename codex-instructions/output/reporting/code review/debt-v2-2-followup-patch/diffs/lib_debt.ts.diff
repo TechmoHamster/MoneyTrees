@@ -1,0 +1,193 @@
+--- /Users/zdjpro/Websites/Fiance Dashboard Coms/MoneyTrees/codex-instructions/output/reporting/code review/debt-v2-2-integration/source/lib/debt.ts	2026-04-14 23:26:27
++++ /Users/zdjpro/Websites/Fiance Dashboard/finance-dashboard/lib/debt.ts	2026-04-15 01:54:46
+@@ -642,16 +642,60 @@
+       const dueAmount = getBillTotalAmount(bill);
+       const paidAmount =
+         typeof bill.paidAmount === "number" ? normalizeAmount(bill.paidAmount) : 0;
++      const eventDate = bill.debtPaymentStatusUpdatedAt ?? bill.paidDate ?? bill.dueDate;
+ 
+-      if (bill.status === "Paid" || paidAmount > 0) {
++      if (bill.debtPaymentStatus === "pending") {
++        events.push({
++          id: `${account.id}-${bill.id}-pending`,
++          eventType: "payment_pending",
++          effectiveDate: eventDate,
++          recordedDate: eventDate,
++          source: "Bills",
++          sourceQuality: "system_derived",
++          reversible: true,
++          relatedBillId: bill.id,
++          amount: paidAmount > 0 ? paidAmount : dueAmount,
++          note: "Bills is holding this debt-linked payment as pending.",
++        });
++      }
++
++      if (
++        bill.debtPaymentStatus === "failed" ||
++        bill.debtPaymentStatus === "reversed" ||
++        bill.debtPaymentStatus === "canceled"
++      ) {
++        events.push({
++          id: `${account.id}-${bill.id}-${bill.debtPaymentStatus}`,
++          eventType:
++            bill.debtPaymentStatus === "reversed" ? "payment_reversed" : "payment_failed",
++          effectiveDate: eventDate,
++          recordedDate: eventDate,
++          paymentPostedDate:
++            bill.debtPaymentStatus === "reversed" ? bill.paidDate ?? undefined : undefined,
++          source: "Bills",
++          sourceQuality: "system_derived",
++          reversible: true,
++          relatedBillId: bill.id,
++          amount: paidAmount > 0 ? paidAmount : dueAmount,
++          note:
++            bill.debtPaymentStatus === "reversed"
++              ? "Bills records this debt-linked payment as reversed."
++              : bill.debtPaymentStatus === "canceled"
++                ? "Bills records this debt-linked payment as canceled before completion."
++                : "Bills records this debt-linked payment as failed.",
++        });
++      }
++
++      if (bill.status === "Paid" || bill.debtPaymentStatus === "paid" || paidAmount > 0) {
+         events.push({
+           id: `${account.id}-${bill.id}-${paidAmount > 0 && paidAmount < dueAmount ? "partial" : "paid"}`,
+           eventType:
+             paidAmount > 0 && paidAmount < dueAmount
+               ? "partial_payment_posted"
+               : "payment_posted",
+-          effectiveDate: bill.paidDate ?? bill.dueDate,
+-          recordedDate: bill.paidDate ?? bill.dueDate,
++          effectiveDate: eventDate,
++          recordedDate: eventDate,
++          paymentPostedDate: bill.paidDate ?? eventDate,
+           source: "Bills",
+           sourceQuality: "system_derived",
+           reversible: true,
+@@ -1943,12 +1987,72 @@
+     bill.status === "Paid" ||
+     Boolean(bill.paidDate) ||
+     typeof bill.paidAmount === "number" ||
++    Boolean(bill.debtPaymentStatus && bill.debtPaymentStatus !== "upcoming") ||
+     Boolean(bill.paymentMethod) ||
+     Boolean(bill.paymentNote) ||
+     getBillLateFeeAmount(bill) > 0
+   );
+ }
+ 
++function normalizeDebtDuplicateText(value: string | undefined): string {
++  return (value ?? "")
++    .toLowerCase()
++    .replaceAll(/[^a-z0-9]+/g, " ")
++    .trim();
++}
++
++function billLooksLikeDuplicateManualDebtRow(debtBill: Bill, manualBill: Bill): boolean {
++  if (manualBill.sourceType === "debt-derived" || manualBill.category !== "Debt") {
++    return false;
++  }
++
++  const manualAmount = normalizeAmount(getBillTotalAmount(manualBill));
++  const debtAmount = normalizeAmount(getBillTotalAmount(debtBill));
++  if (Math.abs(manualAmount - debtAmount) > 1) {
++    return false;
++  }
++
++  const dueDate = getDateOnly(debtBill.dueDate);
++  const manualDueDate = getDateOnly(manualBill.dueDate);
++  if (!dueDate || !manualDueDate || Math.abs(getDifferenceInDays(dueDate, manualDueDate)) > 7) {
++    return false;
++  }
++
++  const debtName = normalizeDebtDuplicateText(
++    `${debtBill.sourceDebtProviderName ?? ""} ${debtBill.sourceDebtDisplayName ?? debtBill.name}`,
++  );
++  const manualName = normalizeDebtDuplicateText(manualBill.name);
++  if (!debtName || !manualName) {
++    return false;
++  }
++
++  return debtName.includes(manualName) || manualName.includes(debtName);
++}
++
++function buildDuplicateDebtWarningMap(
++  manualBills: Bill[],
++  debtBills: Bill[],
++): Map<string, string[]> {
++  const duplicateMap = new Map<string, string[]>();
++
++  for (const debtBill of debtBills) {
++    const matchingManualIds = manualBills
++      .filter((manualBill) => billLooksLikeDuplicateManualDebtRow(debtBill, manualBill))
++      .map((manualBill) => manualBill.id);
++
++    if (matchingManualIds.length === 0) {
++      continue;
++    }
++
++    duplicateMap.set(debtBill.id, matchingManualIds);
++    for (const manualId of matchingManualIds) {
++      duplicateMap.set(manualId, [...(duplicateMap.get(manualId) ?? []), debtBill.id]);
++    }
++  }
++
++  return duplicateMap;
++}
++
+ function buildProjectedDebtBills(account: DebtAccount, knownAccountIds?: Set<string>): Bill[] {
+   if (!shouldProjectDebtAccount(account, knownAccountIds)) {
+     return [];
+@@ -2120,7 +2224,17 @@
+         : bill;
+     });
+ 
+-  return [...manualBills, ...mergedProjected, ...preservedHistory];
++  const mergedBills = [...manualBills, ...mergedProjected, ...preservedHistory];
++  const duplicateWarnings = buildDuplicateDebtWarningMap(
++    mergedBills.filter((bill) => bill.sourceType !== "debt-derived"),
++    mergedBills.filter((bill) => bill.sourceType === "debt-derived"),
++  );
++
++  return mergedBills.map((bill) => ({
++    ...bill,
++    duplicateWarning: duplicateWarnings.has(bill.id),
++    duplicateCandidateBillIds: duplicateWarnings.get(bill.id),
++  }));
+ }
+ 
+ export function getDebtSchedule(account: DebtAccount, bills: Bill[]): DebtScheduleItem[] {
+@@ -2667,6 +2781,10 @@
+   item: DebtScheduleItem,
+   matchingBill?: Bill,
+ ): DebtBillsPaymentStatus {
++  if (matchingBill?.debtPaymentStatus) {
++    return matchingBill.debtPaymentStatus;
++  }
++
+   if (matchingBill?.status === "Paid" || item.status === "Paid") {
+     return "paid";
+   }
+@@ -2981,7 +3099,14 @@
+   const eventSummary = snapshot.accountFacts.reduce<DebtReportingEventSummary>(
+     (summary, fact) => {
+       fact.eventTimeline.forEach((event) => {
+-        if (!isDateInWindow(event.effectiveDate, start, end)) {
++        const eventWindowDate =
++          event.eventType === "payment_posted" ||
++          event.eventType === "partial_payment_posted" ||
++          event.eventType === "payment_failed" ||
++          event.eventType === "payment_reversed"
++            ? event.paymentPostedDate ?? event.recordedDate ?? event.effectiveDate
++            : event.effectiveDate;
++        if (!isDateInWindow(eventWindowDate, start, end)) {
+           return;
+         }
+ 
+@@ -3076,6 +3201,6 @@
+     snapshotContextNote:
+       "Debt snapshot fields reflect current debt state only. They are not trended unless Debt history exists for the selected window.",
+     eventContextNote:
+-      "Debt event counts use Debt lifecycle effective dates inside the selected reporting window.",
++      "Debt payment-event counts use payment posted dates when available; lifecycle transitions continue using Debt effective dates inside the selected reporting window.",
+   };
+ }

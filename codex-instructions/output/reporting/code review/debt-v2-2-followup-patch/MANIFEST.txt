@@ -1,0 +1,15 @@
+Reporting Debt v2.2 Follow-up Patch Review Package
+
+Files
+- source/components/ReportingSection.tsx
+- source/lib/utils.ts
+- source/lib/debt.ts
+- source/lib/types.ts
+- source/lib/debt.test.ts
+- diffs/components_ReportingSection.tsx.diff
+- diffs/lib_utils.ts.diff
+- diffs/lib_debt.ts.diff
+- diffs/lib_types.ts.diff
+- diffs/lib_debt.test.ts.diff
+- NOTES.txt
+- VALIDATION.txt

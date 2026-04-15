@@ -1,0 +1,8 @@
+Reporting follow-up proof
+- Removed remaining recommendation-style language from the Reporting surface.
+- Export builders now accept and export Debt analytical snapshot data alongside the core reporting snapshot.
+- Debt payment-event analysis now uses payment posted dates when available instead of relying only on lifecycle effective dates.
+- Debt analytical tone softens when limited-confidence or source-conflict signals are active.
+- No local debt ranking or prescription engine was added to Reporting.
+Screenshot note
+- Reporting copy and export behavior changed, but no screenshots were generated in this packaging pass.

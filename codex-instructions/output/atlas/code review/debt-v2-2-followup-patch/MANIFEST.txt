@@ -1,0 +1,9 @@
+Atlas Debt v2.2 Follow-up Patch Review Package
+
+Files
+- source/lib/advisor.ts
+- source/lib/advisor.test.ts
+- diffs/lib_advisor.ts.diff
+- diffs/lib_advisor.test.ts.diff
+- NOTES.txt
+- VALIDATION.txt

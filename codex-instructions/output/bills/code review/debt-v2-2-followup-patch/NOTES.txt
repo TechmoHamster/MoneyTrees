@@ -1,0 +1,10 @@
+Bills follow-up proof
+- Added quiet duplicate warnings when a debt-derived row closely overlaps a manual Debt row.
+- Expanded Bills-side debt payment-status support for pending, failed, reversed, skipped approved, and canceled operational states.
+- Made Debt handoff explicit by recording debt payment status updates back into Debt-derived lifecycle events.
+- Structural edits remain blocked for debt-derived rows.
+- Duplicate warning behavior is quiet and factual; it does not auto-merge or auto-delete rows.
+Open gap
+- Bills still does not own debt lifecycle interpretation. It only records operational events and routes detail back to Debt.
+Screenshot note
+- UI changed in Bill rows and the payment modal, but no screenshots were generated in this packaging pass.

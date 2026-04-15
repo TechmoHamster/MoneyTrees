@@ -1,0 +1,8 @@
+Atlas follow-up proof
+- Completed non-Exact trust-state tone downgrade coverage for Estimated, Custom, Manual, and Stale debt facts.
+- Removed remaining ranking-flavored explainability wording in Atlas debt carry-forward copy.
+- No scoring or Debt-owned severity recalculation was introduced.
+- No promo/deferred-interest assumptions were added.
+- No continuity flattening was added.
+Screenshot note
+- No UI screenshots were generated because this pass only touched Atlas provider logic and tests.
