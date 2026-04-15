@@ -1,0 +1,368 @@
+# Debt-Bills Integration Spec v2.2
+
+To: Codex / Director Review
+From: Bills Team
+Date: 2026-04-14
+Subject: Debt-Bills Integration Spec v2.2
+
+## Purpose
+
+Implement Debt-derived Bills rows so Debt can send bounded near-term payment obligations into the Bills workspace without Bills becoming a debt-management surface.
+
+Core boundary:
+
+- Debt owns lifecycle meaning.
+- Bills records payment reality.
+- Bills stays table-first, operational, compact, and traceable.
+
+## Source Contract
+
+This spec is based on the Debt Team memo:
+
+`team-memos/bills/FROM_debt_TO_bills_2026-04-14_debt-v2-2-row-contract.txt`
+
+## 1. Product Boundary
+
+Bills may:
+- display Debt-derived obligations
+- show due date and due amount
+- show linked Debt account reference
+- record payment activity
+- capture paid amount
+- capture paid date
+- capture payment method
+- capture payment note
+- capture failed / reversed / returned-payment fee events
+- route the user back to Debt for account-level review
+
+Bills must not:
+- edit debt account structure
+- recalculate payoff math
+- change lifecycle standing
+- calculate cure amount
+- calculate delinquency
+- modify arrangement overlays
+- modify term versions
+- modify continuity chains
+- alter Debt-owned schedules
+- generate additional debt schedule rows locally
+
+## 2. Near-Term Window Rule
+
+Debt will only send bounded near-term obligations to Bills.
+
+Default window:
+- today through the next 60 calendar days
+
+Bills should only render Debt-derived rows provided by Debt.
+Bills should not generate additional debt schedule rows.
+
+Included row types:
+- unpaid scheduled debt obligations
+- unpaid upcoming minimum payments
+- unpaid BNPL / financed purchase installments
+- unpaid loan installments
+- unpaid credit-card required payments when Debt has enough data
+- cure-related operational obligations only when Debt emits them as distinct obligation rows
+
+Excluded row types:
+- paid rows
+- historical rows
+- full long-term schedules beyond 60 days
+- lifecycle-only events
+- payoff scenarios
+- projected optional extra payments
+- advisory action suggestions
+
+## 3. Required Data Shape
+
+Add or support a Debt-derived Bills row model.
+
+Required identifiers:
+
+```ts
+type DebtDerivedBillsRow = {
+  id: string
+  source: "debt"
+  sourceGenerated: true
+  sourceDebtAccountId: string
+  sourceDebtOccurrenceId: string
+  sourceDebtScheduleId?: string
+  sourceDebtEventId?: string
+  sourceDebtType: DebtType
+  sourceDebtDisplayName: string
+
+  dueDate: string
+  dueAmount: number
+  currency: string
+  paymentStatus: DebtBillsPaymentStatus
+  obligationKind: DebtBillsObligationKind
+  isDebtDerived: true
+  isStructuralEditLocked: true
+
+  accountNickname?: string
+  providerName?: string
+  debtTypeLabel?: string
+  standingState?: DebtStandingState
+  arrangementOverlayLabels?: string[]
+  trustState?: DebtTrustState
+  sourceQuality?: DebtSourceQuality
+  routeTarget: DebtBillsRouteTarget
+
+  paidAmount?: number
+  paidDate?: string
+  paymentMethod?: string
+  paymentNote?: string
+  paymentEventId?: string
+  paymentPostedDate?: string
+  paymentRecordedDate?: string
+
+  feeAmount?: number
+  feeType?: "late_fee" | "returned_payment_fee" | "other_fee"
+  feeEventId?: string
+
+  duplicateWarning?: boolean
+  duplicateCandidateBillIds?: string[]
+  sourceConflict?: boolean
+  conflictReason?: string
+}
+```
+
+If the existing Bill model is extended instead of adding a separate type, preserve the same field semantics.
+
+## 4. Required Enums
+
+```ts
+type DebtBillsPaymentStatus =
+  | "upcoming"
+  | "pending"
+  | "partially_paid"
+  | "paid"
+  | "failed"
+  | "reversed"
+  | "skipped_approved"
+  | "canceled"
+
+type DebtBillsObligationKind =
+  | "scheduled_installment"
+  | "minimum_payment"
+  | "bnpl_installment"
+  | "financed_purchase_installment"
+  | "cure_payment"
+  | "arrangement_payment"
+  | "returned_payment_fee"
+  | "late_fee"
+
+type DebtBillsRouteTarget =
+  | "debt_account_detail"
+  | "debt_schedule_detail"
+  | "debt_activity_event"
+  | "bills_row_detail"
+```
+
+Bills may display friendly labels, but must preserve stable Debt-owned values.
+
+## 5. Allowed Bills Actions
+
+Debt-derived rows may allow:
+- mark paid
+- mark partial payment
+- mark payment pending
+- mark payment failed
+- mark payment reversed
+- add paid amount
+- add paid date
+- add payment method
+- add payment note
+- add operational fee event
+- inspect linked Debt account
+- route to Debt detail
+
+These actions must be presented as operational payment actions, not debt-management actions.
+
+## 6. Blocked Structural Actions
+
+Bills must block editing of:
+- sourceDebtAccountId
+- sourceDebtOccurrenceId
+- debt type
+- debt account balance
+- APR
+- term length
+- minimum-payment rule
+- lifecycle standing
+- arrangement overlay
+- payoff assumption
+- source-quality label
+- continuity chain
+- schedule-generation rules
+- due amount generated by Debt unless Debt explicitly allows override
+- due date generated by Debt unless Debt explicitly allows override
+
+Blocked edit copy may use:
+- "Managed by Debt"
+- "Edit account in Debt"
+- "Debt controls this schedule"
+
+## 7. Payment Event Handoff Back to Debt
+
+When Bills captures payment activity on a Debt-derived row, emit an operational event back to Debt.
+
+Required event shape:
+
+```ts
+type DebtBillsPaymentEvent = {
+  eventId: string
+  source: "bills"
+  sourceDebtAccountId: string
+  sourceDebtOccurrenceId: string
+  billsRowId: string
+  eventType: DebtBillsPaymentEventType
+  amount?: number
+  paymentDate?: string
+  postedDate?: string
+  recordedDate: string
+  paymentMethod?: string
+  note?: string
+  feeAmount?: number
+  feeType?: string
+}
+
+type DebtBillsPaymentEventType =
+  | "payment_pending"
+  | "payment_posted"
+  | "partial_payment_posted"
+  | "payment_failed"
+  | "payment_reversed"
+  | "late_fee_applied"
+  | "returned_payment_fee_applied"
+```
+
+Debt determines:
+- whether the obligation is satisfied
+- remaining cure amount
+- lifecycle standing impact
+- delinquency impact
+- arrangement impact
+- event timeline updates
+
+Bills must not infer those outcomes.
+
+## 8. Partial Payment Rule
+
+Bills may record partial payments against one Debt-derived row.
+
+Recommended behavior:
+- keep one operational row
+- update `paymentStatus` to `partially_paid`
+- store cumulative `paidAmount`
+- emit one payment event per actual payment action
+- show remaining amount only if Debt provides or confirms it
+
+Bills should not split partial payments into multiple obligation rows unless Debt explicitly sends multiple rows.
+
+## 9. Failed / Reversed Payment Rule
+
+If payment fails or reverses:
+- update `paymentStatus` to `failed` or `reversed`
+- preserve event history
+- emit the failed/reversed event back to Debt
+- do not mark the obligation satisfied
+
+Debt handles satisfaction reversal and lifecycle recalculation.
+
+## 10. Returned Payment Fees
+
+Returned-payment fees should be represented as operational fee events by default.
+
+Default behavior:
+- use `feeType = returned_payment_fee`
+- attach the fee to the original `sourceDebtOccurrenceId` when related
+- do not create a standalone row unless Debt emits one
+
+Late fees follow the same default pattern unless Debt emits a separate fee obligation.
+
+## 11. Duplicate Detection
+
+Bills must not silently merge, delete, or suppress Debt-derived rows.
+
+Phase 1 behavior:
+- flag `duplicateWarning = true` when a manual Bills row appears to match a Debt-derived row
+- matching should consider account/provider label, due date within 0–2 days, amount tolerance, and category/debt tag where available
+- surface a quiet warning to the user
+- let the user resolve manually
+
+Do not mutate canonical rows automatically.
+
+## 12. UX Requirements
+
+Debt-derived rows should be clear but quiet.
+
+Recommended labels:
+- "Linked to Debt"
+- "Managed by Debt"
+- "Edit account in Debt"
+- "Payment status tracked here"
+
+Avoid:
+- "Debt recommends"
+- "Priority debt"
+- "Pay this first"
+
+Bills must remain operational.
+Atlas owns recommendations.
+Debt owns lifecycle meaning.
+
+## 13. Empty / Edge Behavior
+
+No near-term Debt obligations:
+- show no Debt-derived rows
+- optional compact copy: "No Debt-linked bills in this window."
+
+Debt account missing schedule data:
+- do not emit a Bills row unless amount and due date are known enough for operational use
+
+Limited confidence:
+- Bills may display a compact "Limited" or "Needs review" marker only if Debt sends it
+- Bills must not reinterpret confidence
+
+## 14. Suggested Files to Inspect / Update
+
+Likely files:
+- `lib/types.ts`
+- `lib/utils.ts`
+- `lib/dashboard-state.ts`
+- `components/BillsTable.tsx`
+- `components/BillRow.tsx`
+- `components/PaymentDetailsModal.tsx`
+- `components/BillForm.tsx`
+- `components/FinanceDashboard.tsx`
+
+Implementation should keep debt-linked behavior centralized where possible.
+Avoid scattering Debt-derived rules across multiple UI components without shared helpers/types.
+
+## 15. Acceptance Criteria
+
+Implementation is acceptable when:
+- Debt-derived rows can be represented in Bills
+- source fields are preserved
+- structural edits are blocked
+- operational payment actions remain available
+- partial / failed / reversed statuses are supported
+- payment events can be emitted back to Debt
+- returned-payment and late-fee events are represented operationally
+- duplicate warnings are visible but non-destructive
+- Bills does not calculate lifecycle meaning
+- Bills remains table-first and compact
+
+## 16. Final Instruction
+
+Build the integration as a clean operational bridge.
+
+Do not build a debt dashboard inside Bills.
+Do not add recommendation logic.
+Do not make Bills responsible for Debt lifecycle outcomes.
+
+Debt generates obligations.
+Bills records payment reality.
+Atlas recommends what to do.
