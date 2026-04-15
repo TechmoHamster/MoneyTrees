@@ -1,13 +1,16 @@
 # Debt Codex Output Index
 
 ## Latest Result
-- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-14_debt-v2-2-review-follow-up-complete.txt
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-14_debt-v2-2-cross-team-integration-summary.md
 - Date: 2026-04-14
-- Topic: Debt V2 2 Review Follow Up Complete
+- Topic: Debt V2 2 Cross Team Integration Summary
 
 ---
 
 ## Previous Results
+- File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-14_debt-v2-2-review-follow-up-complete.txt
+  - Date: 2026-04-14
+  - Topic: Debt V2 2 Review Follow Up Complete
 - File: codex-instructions/output/debt/FROM_CODEX_TO_debt_2026-04-14_debt-v2-2-type-specific-intake-and-lifecycle-engine.txt
   - Date: 2026-04-14
   - Topic: Debt V2 2 Type Specific Intake And Lifecycle Engine
