@@ -1,0 +1,324 @@
+DEBT ACCOUNT IDENTITY SYSTEM — IMPLEMENTATION BRIEF
+MoneyTrees
+From: Debt Team
+To: Codex
+Date: 2026-04-15
+Purpose: Add a standardized identity system for debt accounts using provider logos and user-selected icons, while preserving a consistent, orderly UI.
+
+==================================================
+1. DOCUMENT PURPOSE
+==================================================
+
+This brief defines the Debt section implementation for account identity visuals.
+
+The feature goal is simple:
+- when a user adds a debt account, they should be able to identify it visually
+- that identity may come from:
+  - a provider logo
+  - a selected icon
+- the result must feel orderly, consistent, and premium
+
+This is not a recommendation feature.
+This is not a logic-layer change.
+This is not a debt math update.
+
+This is a UI + identity enhancement for debt accounts.
+
+==================================================
+2. PRIMARY PRODUCT GOAL
+==================================================
+
+The system should let the user visually identify debt objects in a way that feels:
+- clean
+- consistent
+- user-friendly
+- fast to scan
+- optional, not required
+
+Examples:
+- Chase Sapphire card → provider logo or card icon
+- Afterpay plan → Afterpay logo or shopping/pay-later icon
+- Auto loan → lender logo or car icon
+- Student loan → servicer logo or graduation-cap icon
+
+The main product outcome is:
+Debt accounts become easier to scan and distinguish without making the interface noisy.
+
+==================================================
+3. SCOPE
+==================================================
+
+This implementation should apply to the Debt section first.
+
+Required surfaces:
+- Add Debt flow
+- Accounts list
+- Account detail header
+- Add Debt review step
+- any debt-owned account summary/list rows where identity improves scan speed
+
+Do NOT expand this implementation broadly into other sections unless the existing code path already renders debt-owned account identity.
+
+Specifically:
+- do not let this project turn into a Bills redesign
+- do not let this turn into an Overview redesign
+- do not let this become cross-product visual sprawl
+
+The goal is to implement the identity system correctly inside Debt first.
+
+==================================================
+4. IDENTITY MODES
+==================================================
+
+Each debt account should support a small identity payload.
+
+Required identity modes:
+- provider_logo
+- custom_icon
+- none
+
+Optional future-ready mode (do not prioritize unless trivial in current stack):
+- custom_image
+
+Preferred product behavior:
+- if a provider/lender/issuer/BNPL vendor is recognized, offer provider_logo
+- the user may instead choose a custom icon
+- if the user skips identity selection, use a sensible default icon by debt type
+
+==================================================
+5. REQUIRED DATA MODEL
+==================================================
+
+Add identity fields to the Debt account model.
+
+Required fields:
+- identity_mode
+- provider_key
+- icon_key
+- accent_color
+- display_label (optional nickname override if helpful)
+
+If custom_image support is already easy in the existing stack, also support:
+- custom_image_asset_id
+
+Rules:
+- identity fields must be optional
+- accounts must still work if identity is missing
+- identity must not affect debt math, trust, lifecycle, or downstream semantics
+
+==================================================
+6. PROVIDER LOGO APPROACH
+==================================================
+
+Use a curated provider logo registry.
+
+Do NOT rely on runtime hotlinked web URLs.
+Do NOT fetch logos from arbitrary third-party URLs during normal app rendering.
+
+Preferred implementation:
+- local or bundled logo registry
+- static SVG assets where possible
+- deterministic provider lookup by provider_key
+
+Recommended sources/patterns:
+- Iconify for icon picker coverage
+- Simple Icons for common provider/brand SVG coverage
+- optional future provider enrichment adapter if the app later adds a verified logo lookup service
+
+For this implementation pass:
+- prioritize local reliability over dynamic enrichment
+- if provider match is unknown, fall back to icon mode cleanly
+
+==================================================
+7. ICON PICKER APPROACH
+==================================================
+
+Add a searchable icon picker similar in spirit to Notion-style page identity.
+
+Requirements:
+- searchable icon picker
+- sensible defaults by debt type
+- user can override the default
+
+Suggested default icons:
+- credit card → credit-card
+- auto loan → car
+- mortgage → home
+- student loan → graduation-cap
+- other loan → banknote or landmark
+- BNPL → shopping-bag
+- financed purchase → receipt or package
+- line of credit → wallet or circle-dollar-sign
+
+The exact icon set may vary, but the product behavior must remain the same.
+
+==================================================
+8. IDENTITY FRAME STANDARD (HARD REQUIREMENT)
+==================================================
+
+This is mandatory.
+
+All logos, icons, and images must render inside a standardized fixed-size identity frame.
+
+The visual scales inside the frame.
+The frame does NOT scale around the asset.
+
+Required rules:
+- fixed square container by context
+- same border radius and padding rules everywhere
+- provider logos use object-contain behavior
+- icons are centered and visually normalized
+- fallback icon appears if logo fails or provider is unknown
+- no uneven row heights caused by identity assets
+- no free-size logos or icons
+
+Recommended size system:
+- compact/table contexts: 24x24
+- account list rows: 32x32
+- detail headers / larger account identity surfaces: 40x40
+
+This should be implemented as a reusable component.
+
+Recommended component concept:
+- DebtAccountIdentityFrame
+  - size: sm | md | lg
+  - mode: provider_logo | custom_icon | none | custom_image(optional)
+  - fixed square frame
+  - consistent background / border / radius / padding
+  - deterministic fallback behavior
+
+This fixed-size identity frame is required to keep the UI consistent and orderly.
+
+==================================================
+9. ADD DEBT UX REQUIREMENTS
+==================================================
+
+Add identity selection into the Add Debt flow in a way that stays lightweight.
+
+Recommended placement:
+- add an Account Identity step or panel after basic account identity fields are known
+- or add a compact Account Identity panel within the guided flow once issuer/lender/provider is entered
+
+Required UX behavior:
+- auto-suggest provider logo when provider/lender/issuer matches a known registry item
+- allow switch to icon mode
+- show live preview of the selected identity inside the standardized identity frame
+- do not make identity required to save the debt account
+- do not let identity selection become a bloated wizard step
+
+The flow should feel quick and optional.
+
+==================================================
+10. EDIT / MAINTENANCE REQUIREMENTS
+==================================================
+
+The user must be able to change account identity later.
+
+Required edit locations:
+- account detail/settings area
+- any debt-owned edit flow for the account
+
+Required behavior:
+- user can switch between provider logo and icon
+- user can change icon selection
+- user can change accent color if that is supported
+- if provider registry improves later, the user may adopt a provider logo later without recreating the account
+
+==================================================
+11. VISUAL / DESIGN RULES
+==================================================
+
+This system should make the Debt section feel more refined, not louder.
+
+Good behavior:
+- identity improves scan speed
+- identity helps the user distinguish accounts quickly
+- rows remain aligned
+- cards remain calm
+- identity frame sizes remain consistent
+
+Bad behavior:
+- logos of random shapes making rows look uneven
+- tiny icons next to oversized logos
+- inconsistent padding
+- decorative overuse
+- loud brand treatment that dominates the account row
+
+Identity is a support layer, not a hero layer.
+
+==================================================
+12. BOUNDARY RULES
+==================================================
+
+This project must remain inside the correct ownership boundary.
+
+Rules:
+- do not alter debt math
+- do not alter trust-state logic
+- do not alter lifecycle engine behavior
+- do not add Atlas behavior
+- do not add Reporting logic
+- do not let this project redesign Bills
+
+Bills is table-first and operational, so this identity work must not force Bills into a visually noisy redesign. The Bills section must remain a clean, trustworthy workspace first. If any Bills surface incidentally shows debt identity, it must remain compact and operational. fileciteturn1file0
+
+Atlas is the interpretation/recommendation layer, so this feature must remain purely visual/account-identity oriented and must not introduce hidden meaning or recommendation semantics. fileciteturn1file1
+
+Reporting remains analytical only and is not part of this identity brief. fileciteturn1file2
+
+Overview remains visibility-first and should not inherit hidden meaning from identity styling. fileciteturn1file3
+
+==================================================
+13. ACCEPTANCE CRITERIA
+==================================================
+
+The implementation is successful when:
+
+1. A debt account can use a provider logo when a known provider match exists.
+2. A debt account can use a user-selected icon instead of a provider logo.
+3. If no identity is selected, a sensible default icon by debt type appears.
+4. All identity visuals render inside a fixed-size standardized frame.
+5. Identity frame sizing stays consistent by context.
+6. Rows and cards remain visually aligned regardless of logo/icon shape.
+7. Add Debt allows identity selection without making it required.
+8. The user can edit identity later from the debt account detail/settings area.
+9. The implementation does not change debt calculations or lifecycle logic.
+10. The implementation does not create cross-section UI sprawl.
+11. Provider logo lookup is deterministic and does not depend on fragile runtime third-party hotlinks.
+12. Validation, lint, and build all pass.
+
+==================================================
+14. REVIEW PACKAGE REQUIREMENTS
+==================================================
+
+Return a full review package in:
+- codex-instructions/output/debt/code review/debt-account-identity-system/
+
+Required contents:
+- updated source files
+- MANIFEST.txt
+- VALIDATION.txt
+- brief implementation notes explaining:
+  - identity model changes
+  - provider logo registry approach
+  - icon picker approach
+  - identity frame behavior
+  - any intentionally deferred items
+
+If custom_image support is deferred, state that plainly.
+
+==================================================
+15. FINAL IMPLEMENTATION DIRECTION
+==================================================
+
+Build a clean Debt account identity system with:
+- provider logo support
+- icon-picker support
+- standardized identity frame rendering
+- editability after account creation
+- optional, non-blocking UX
+- no logic-layer drift
+
+Core rule:
+Make debt accounts easier to recognize.
+Do not make the UI messier.
