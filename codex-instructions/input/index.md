@@ -1,14 +1,18 @@
 # Codex Input Index
 
 ## Latest Instruction
-- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-14_debt-v2-2-cross-team-integration-rev-a.md
+- File: codex-instructions/input/bills/TO_CODEX_FROM_bills_2026-04-14_debt-v2-2-proof-request.txt
 - Date: 2026-04-14
-- Team: Debt
-- Topic: Debt V2 2 Cross Team Integration Rev A
+- Team: Bills
+- Topic: Debt V2 2 Proof Request
 
 ---
 
 ## Previous Instructions
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-14_debt-v2-2-cross-team-integration-rev-a.md
+  - Date: 2026-04-14
+  - Team: Debt
+  - Topic: Debt V2 2 Cross Team Integration Rev A
 - File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-14_debt-v2-2-review-follow-up.txt
   - Date: 2026-04-14
   - Team: Debt
