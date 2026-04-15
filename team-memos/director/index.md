@@ -1,13 +1,16 @@
 # Director Memos Index
 
 ## Latest Memo
-- File: team-memos/director/FROM_atlas_TO_director_2026-04-14_debt-v2-2-review.txt
-- Date: 2026-04-14
-- Topic: Debt V2 2 Review
+- File: team-memos/director/FROM_reporting_TO_director_2026-04-15_codex-review-debt-v2-2.txt
+- Date: 2026-04-15
+- Topic: Codex Review Debt V2 2
 
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/director/FROM_atlas_TO_director_2026-04-14_debt-v2-2-review.txt
+  - Date: 2026-04-14
+  - Topic: Debt V2 2 Review
 - File: team-memos/director/FROM_debt_TO_director_2026-04-11_launch-approval-basis.txt
   - Date: 2026-04-11
   - Topic: Launch Approval Basis
