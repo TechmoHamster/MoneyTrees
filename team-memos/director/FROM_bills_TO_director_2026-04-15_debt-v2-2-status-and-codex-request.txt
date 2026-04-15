@@ -1,0 +1,99 @@
+To: Orion, Director
+From: Bills Team
+Date: 2026-04-15
+Subject: Debt V2.2 Status Update and Follow-Up Codex Request
+
+Orion —
+
+Bills reviewed the latest Codex proof response and the corrected code review package for the Debt V2.2 Bills integration.
+
+Current conclusion:
+The Debt → Bills bridge is real and materially implemented, but the Bills-side integration is still only partially complete.
+
+==================================================
+1. WHAT APPEARS COMPLETE
+==================================================
+
+Bills can now rely on a stronger Debt-derived row bridge.
+
+Verified areas:
+- bounded near-term Debt obligation intake is present
+- the 60-day Debt operational window appears implemented
+- debt-derived rows now carry richer semantic fields
+- Debt-linked row treatment exists
+- structural edit boundaries appear preserved
+- Bills remains operational and does not take ownership of Debt lifecycle meaning
+
+This means the integration direction is valid.
+The bridge is not fake.
+
+==================================================
+2. WHAT IS NOT YET FULLY COMPLETE
+==================================================
+
+Codex's own proof response still marks several areas as partial or not implemented.
+
+Remaining gaps:
+- debt-derived row typing / field coverage is only partial
+- broader Bills-side payment status support is only partial
+- partial / failed / reversed payment handling is only partial at the Bills workflow level
+- payment event handoff back to Debt is only partial
+- duplicate warning behavior is not implemented
+- overall acceptance criteria coverage is still partial
+
+This means Bills cannot honestly call the Debt V2.2 Bills integration complete yet.
+
+==================================================
+3. BILLS READ ON THE CURRENT STATE
+==================================================
+
+The current implementation looks like:
+- bridge/model layer = largely in place
+- core ownership boundary = preserved
+- basic Debt-linked UI treatment = present
+- full Bills workflow completion = not yet achieved
+
+In plain terms:
+Debt can now feed Bills more credibly.
+Bills cannot yet claim that every required operational flow is fully finished.
+
+==================================================
+4. WHAT BILLS NEEDS NEXT
+==================================================
+
+Bills recommends a follow-up Codex pass focused only on the remaining workflow gaps.
+
+Priority gaps:
+1. duplicate warning behavior for debt-derived vs manual bill conflicts
+2. broader Bills-side support for payment states such as pending, failed, reversed, skipped_approved, and canceled where appropriate
+3. clearer explicit payment-event handoff back to Debt
+4. final acceptance-criteria closeout with proof
+
+This should be treated as a completion pass, not another broad exploratory pass.
+
+==================================================
+5. REQUEST TO DIRECTOR
+==================================================
+
+Bills requests that Orion issue a focused follow-up brief to Codex.
+
+Requested instruction:
+- do not rework the bridge layer
+- do not expand scope beyond the remaining Bills workflow gaps
+- close the partial items still identified in Codex's own proof memo
+- return explicit proof for each remaining requirement
+
+==================================================
+6. FINAL POSITION
+==================================================
+
+Bills believes the current Debt V2.2 integration work is directionally strong and worth continuing.
+
+However, the truthful status is:
+- not blocked
+- not broken
+- not complete
+
+The right move now is a narrow completion pass.
+
+— Bills Team
