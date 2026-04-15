@@ -1,0 +1,20 @@
+Debt v2.2 cross-team integration package for Overview
+
+Scope
+- Compact Debt Snapshot visibility module in Overview
+- Routing into Debt for detail
+- No local debt urgency model
+
+Readable source files
+- source/components/DebtOverviewSnapshotSection.tsx
+- source/components/FinanceDashboard.tsx
+- source/lib/debt.ts
+- source/lib/types.ts
+- source/lib/debt.test.ts
+
+Diffs
+- diffs/components_DebtOverviewSnapshotSection.tsx.diff
+- diffs/components_FinanceDashboard.tsx.diff
+- diffs/lib_debt.ts.diff
+- diffs/lib_types.ts.diff
+- diffs/lib_debt.test.ts.diff

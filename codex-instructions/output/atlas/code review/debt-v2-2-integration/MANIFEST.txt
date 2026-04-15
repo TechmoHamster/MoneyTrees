@@ -1,0 +1,21 @@
+Debt v2.2 cross-team integration package for Atlas
+
+Scope
+- Atlas consumption of Debt-owned snapshot facts
+- Atlas trust/explainability carry-forward only
+- No debt severity, standing, cure, trust, or continuity recalculation
+
+Readable source files
+- source/lib/advisor.ts
+- source/lib/advisor.test.ts
+- source/lib/types.ts
+- source/lib/debt.ts
+
+Diffs
+- diffs/lib_advisor.ts.diff
+- diffs/lib_advisor.test.ts.diff
+- diffs/lib_types.ts.diff
+- diffs/lib_debt.ts.diff
+
+Notes
+- Atlas package includes lib/debt.ts and lib/types.ts because those define the upstream contract Atlas consumes.

@@ -30,3 +30,7 @@ No ownership drift was introduced. Bills remains operational. Debt remains owner
 - `npm run test` passed
 - `99` tests passed
 - `npm run build` passed
+
+## Code review package
+- `code review/debt-v2-2-integration/`
+- Includes readable source files, focused diffs, manifest, validation, and boundary notes for the Bills portion of this integration brief.

@@ -1,0 +1,4 @@
+Boundary notes
+- Atlas now consumes Debt-owned facts through AdvisorFacts.source.debtSnapshot.
+- Atlas trust output carries Debt caveats forward.
+- Atlas does not recompute standing, cure, trust, or continuity.

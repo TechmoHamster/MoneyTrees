@@ -1,0 +1,4 @@
+Boundary notes
+- Overview only shows compact debt visibility.
+- Detail routing moves into Debt.
+- Trust indicators remain factual and compact.

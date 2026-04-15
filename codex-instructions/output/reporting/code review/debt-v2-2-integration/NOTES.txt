@@ -1,0 +1,4 @@
+Boundary notes
+- Reporting uses Debt as analytical input only.
+- Snapshot fields are current-state only.
+- Event counts use Debt lifecycle effective dates.

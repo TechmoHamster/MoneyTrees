@@ -1,0 +1,5 @@
+Validation
+- npm run lint passed
+- npm run test passed
+- 99 tests passed
+- npm run build passed

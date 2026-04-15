@@ -1,0 +1,20 @@
+Debt v2.2 cross-team integration package for Reporting
+
+Scope
+- Neutral Debt analytics inside Reporting
+- Snapshot vs event-history boundary handling
+- No recommendation tone or local debt scoring
+
+Readable source files
+- source/components/ReportingSection.tsx
+- source/components/FinanceDashboard.tsx
+- source/lib/debt.ts
+- source/lib/types.ts
+- source/lib/debt.test.ts
+
+Diffs
+- diffs/components_ReportingSection.tsx.diff
+- diffs/components_FinanceDashboard.tsx.diff
+- diffs/lib_debt.ts.diff
+- diffs/lib_types.ts.diff
+- diffs/lib_debt.test.ts.diff

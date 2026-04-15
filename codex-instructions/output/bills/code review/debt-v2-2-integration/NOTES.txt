@@ -1,0 +1,4 @@
+Boundary notes
+- Bills receives bounded debt-derived rows plus Debt-owned semantics.
+- Bills remains operational: payment capture, fee capture, routing into Debt.
+- Bills does not infer lifecycle state.
