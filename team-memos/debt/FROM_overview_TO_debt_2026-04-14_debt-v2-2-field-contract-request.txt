@@ -1,0 +1,196 @@
+To: Debt Team
+From: Overview Team
+Date: 2026-04-14
+Subject: Debt V2.2 Overview Integration — Field Contract Request
+
+MoneyTrees
+Team: Debt
+Source Team: Overview
+Status: Field contract needed before Overview implementation brief to Codex
+
+==================================================
+1. PURPOSE
+==================================================
+
+Overview reviewed the Debt V2.2 integration memo and agrees with the direction.
+
+Before Overview writes an implementation instruction memo for Codex, we need a clear field contract from Debt so Overview can consume Debt facts without creating local logic, thresholds, or reinterpretation.
+
+Overview will not begin implementation planning beyond high-level placement until the technical labels and field meanings are confirmed.
+
+==================================================
+2. OVERVIEW INTENDED USE
+==================================================
+
+Overview intends to surface a small set of high-level Debt facts in a compact dashboard treatment.
+
+Overview will use Debt outputs for:
+- quick-glance visibility
+- high-level summary cards
+- compact debt snapshot information
+- routing users into Debt for details
+
+Overview will not:
+- calculate debt math
+- calculate delinquency
+- calculate cure status
+- calculate cash-window totals
+- infer urgency
+- rank debt accounts
+- reinterpret Debt states
+- duplicate Debt detail views
+
+Core rule:
+Overview displays Debt facts. Debt defines Debt. Atlas interprets Debt.
+
+==================================================
+3. PROPOSED OVERVIEW METRICS
+==================================================
+
+Overview is currently considering the following Debt V2.2 metrics for display:
+
+1. Total Debt
+- Desired meaning: total outstanding debt balance across active debt accounts
+- Display type: currency
+- Likely placement: Debt Snapshot / high-level summary surface
+
+2. Active Debt Account Count
+- Desired meaning: count of active/open debt accounts
+- Display type: integer
+- Likely placement: supporting label or secondary metric
+
+3. Accounts Behind
+- Desired meaning: count of debt accounts that are late, delinquent, or otherwise behind according to Debt-owned standing logic
+- Display type: integer
+- Likely placement: Debt Snapshot / attention signal
+
+4. Next Debt Payment
+- Desired meaning: next required debt payment surfaced by Debt
+- Display type: amount + due date + optional account reference
+- Likely placement: Debt Snapshot
+
+5. Debt Cash Needed Soon
+- Desired meaning: Debt-owned required cash amount due within a supported future window
+- Display type: currency + window label
+- Likely placement: Debt Snapshot / short-term cash context
+
+6. Accounts Requiring Review
+- Desired meaning: count of accounts Debt has flagged for user review
+- Display type: integer
+- Likely placement: optional Debt Snapshot item or warning label
+
+7. Data Quality / Source Flags
+- Desired meaning: counts or labels for stale, limited-confidence, or source-conflicted Debt records
+- Display type: compact badge/count
+- Likely placement: supporting context only
+
+==================================================
+4. FIELD CONTRACT REQUEST
+==================================================
+
+For each metric Debt expects Overview to consume, please provide:
+
+- exact field name
+- data type
+- allowed values / enum values if applicable
+- null or empty behavior
+- whether the value is raw, derived, or computed
+- update timing / freshness behavior
+- whether the field is safe for Overview display without interpretation
+- recommended user-facing label if Debt has one
+- recommended route target for detail inspection
+
+==================================================
+5. SPECIFIC QUESTIONS
+==================================================
+
+A) Total Debt
+1. What is the exact field name?
+2. Does it include only active/open accounts?
+3. Does it include closed-with-balance accounts?
+4. Are collections/settlement accounts included?
+5. Are disputed or limited-confidence balances included?
+
+B) Accounts Behind
+1. What is the exact field name?
+2. Which Debt standing states count as behind?
+3. Does this include delinquent, missed, collections, settlement, or default states?
+4. Is the count fully computed by Debt?
+5. Should Overview show the count only, or also expose the included state labels?
+
+C) Next Debt Payment
+1. What is the exact field name or object shape?
+2. Does Debt provide amount, date, account ID, account label, and schedule ID?
+3. What happens if multiple payments share the same next date?
+4. What happens if there are no scheduled debt payments?
+5. Should Overview route to the Debt account, Debt schedule, or related Bills row?
+
+D) Debt Cash Needed Soon
+1. What is the exact field name?
+2. What windows are supported? 14 / 30 / 60 days?
+3. Which window does Debt recommend Overview use by default?
+4. What qualifies as required debt cash?
+5. Are partial payments, cure amounts, failed/reversed payments, or arrangements included?
+6. Is this fully calculated by Debt?
+7. What label should Overview use so it does not imply local urgency logic?
+
+E) Accounts Requiring Review
+1. What is the exact field name?
+2. What conditions trigger review-required status?
+3. Is this deterministic or judgment-based?
+4. What supporting reason labels are available?
+5. Where should the user be routed from this signal?
+
+F) Data Quality / Source Flags
+1. What fields expose limited-confidence, stale, or source-conflicted Debt data?
+2. Are these counts, booleans, enums, or per-account flags?
+3. What wording should Overview preserve?
+4. Should these be shown only when non-zero?
+
+==================================================
+6. ROUTING CONTRACT REQUEST
+==================================================
+
+Please confirm recommended route targets for each display metric:
+
+- Total Debt -> Debt Briefing Hub or Debt Accounts?
+- Accounts Behind -> Debt Accounts filtered by standing?
+- Next Debt Payment -> Debt account, Debt schedule, or Bills row?
+- Debt Cash Needed Soon -> Debt cash-window view, Debt schedule, or Debt Briefing Hub?
+- Accounts Requiring Review -> Debt Accounts or Debt Activity?
+- Source / confidence issues -> Debt Activity, Debt Settings, or account detail?
+
+Overview needs these route targets before writing Codex implementation instructions.
+
+==================================================
+7. EMPTY / LIMITED DATA BEHAVIOR
+==================================================
+
+Please define how Overview should display Debt unavailable states:
+
+- no Debt accounts added
+- Debt section not configured
+- Debt data stale
+- Debt data limited-confidence
+- Debt source conflict present
+- Debt values partially unavailable
+
+Overview will keep these states compact and factual.
+
+==================================================
+8. RESPONSE REQUEST
+==================================================
+
+Please send a response memo back to Overview with:
+
+1. confirmed field names
+2. object shapes where needed
+3. user-facing labels
+4. null/empty rules
+5. route targets
+6. any fields Debt does NOT want Overview to surface
+7. any recommended default display set for Overview
+
+Once Overview receives that field contract, we will draft a Codex instruction memo for implementation.
+
+— Overview Team
