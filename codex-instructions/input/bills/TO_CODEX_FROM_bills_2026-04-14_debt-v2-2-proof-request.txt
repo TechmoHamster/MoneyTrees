@@ -1,0 +1,150 @@
+To: Codex
+From: Bills Team
+Date: 2026-04-14
+Subject: Proof Request — Debt V2.2 Bills Integration Completion Verification
+
+Codex —
+
+We reviewed your output file:
+- codex-instructions/output/bills/FROM_CODEX_TO_bills_2026-04-14_debt-v2-2-integration-review.md
+
+Your summary indicates that the Debt → Bills bridge work is complete at the model / semantic layer.
+
+However, your output is still too high-level for Bills to verify that all required implementation work is actually complete.
+
+This memo requests explicit proof and verification.
+
+==================================================
+1. WHAT WE NEED FROM YOU
+==================================================
+
+Please provide concrete verification for each of the following:
+
+1. What exactly was implemented
+2. What exactly was not implemented
+3. Which requirements were completed at the data/model layer only
+4. Which requirements were completed at the UI layer
+5. Which requirements remain pending for Bills UI / interaction work
+
+Do not answer at a summary level only.
+Be specific.
+
+==================================================
+2. REQUIRED PROOF AREAS
+==================================================
+
+For each area below, tell us whether it is:
+- complete
+- partial
+- not implemented
+
+And provide proof.
+
+### A. Debt-derived row typing / field support
+Show proof that Bills now supports the required Debt-derived row fields, including where they were added.
+
+Examples include:
+- source
+- sourceGenerated
+- sourceDebtAccountId
+- sourceDebtOccurrenceId
+- sourceDebtType
+- sourceDebtDisplayName
+- routeTarget
+- paymentStatus
+- obligationKind
+- trust/source metadata
+- conflict markers
+
+### B. Near-term window enforcement
+Show proof that only bounded near-term Debt obligations are being passed into Bills.
+Explain where the 60-day window is enforced.
+
+### C. Structural edit lock behavior
+Show proof of whether Bills now blocks structural editing for Debt-derived rows.
+If this is not implemented in the UI yet, say so explicitly.
+
+### D. Debt-linked UI treatment
+Show proof of whether Bills UI now includes any of the following:
+- Debt-linked row badges
+- Managed by Debt copy
+- route to Debt detail
+- quiet linked-row visuals
+
+If not implemented, say so explicitly.
+
+### E. Payment status support
+Show proof of support status for:
+- upcoming
+- pending
+- partially_paid
+- paid
+- failed
+- reversed
+- skipped_approved
+- canceled
+
+Clarify whether support is:
+- type/model only
+- transformation only
+- fully surfaced in Bills UI
+
+### F. Partial / failed / reversed payment handling
+Show proof of whether Bills currently supports these states operationally in UI, modal, save logic, or row rendering.
+If only data structures exist, say that.
+
+### G. Payment event handoff back to Debt
+Show proof of whether Bills currently emits operational payment events back to Debt.
+If not yet wired, say that explicitly.
+
+### H. Duplicate warning behavior
+Show proof of whether duplicate warning detection or display exists yet.
+If only planned, say that.
+
+### I. Acceptance criteria coverage
+Review the original Bills integration spec and mark each acceptance criterion as:
+- met
+- partially met
+- not met
+
+==================================================
+3. REQUIRED OUTPUT FORMAT
+==================================================
+
+Please return a verification memo with these sections:
+
+1. Files changed
+2. Requirement-by-requirement status table
+3. Proof snippets or references by file
+4. UI completed vs UI pending
+5. Data/model completed vs pending
+6. Event handoff completed vs pending
+7. Final gap list
+
+==================================================
+4. IMPORTANT RULE
+==================================================
+
+Do not imply full completion if some work only exists in:
+- types
+- semantic mapping
+- tests
+- helper logic
+
+We need a truthful distinction between:
+- backend/model readiness
+- Bills UI readiness
+- full integration completion
+
+==================================================
+5. FINAL REQUEST
+==================================================
+
+Bills needs a reviewable, auditable verification pass.
+
+Please provide proof strong enough that we can determine whether:
+- the feature is actually complete
+- only the bridge layer is complete
+- or a second Codex pass is still required for Bills UI / workflow work
+
+— Bills Team
