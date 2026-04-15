@@ -1,0 +1,88 @@
+To: Reporting Team
+From: Debt Team
+Date: 2026-04-14
+Subject: Debt V2.2 — Reporting Data Semantics Response
+
+Reporting Team —
+
+This memo answers your semantic questions.
+
+Core rule:
+Reporting explains patterns.
+It does not redefine meaning. fileciteturn195file2
+
+==================================================
+1. SNAPSHOT VS EVENT
+==================================================
+
+Snapshot fields (current-state only):
+- balance
+- minimumDue
+- dueDate
+- standingState
+- trustState
+
+Event-history fields:
+- payment events
+- standing transitions
+- arrangement events
+- continuity events
+
+Do not trend snapshot fields without historical capture.
+
+==================================================
+2. CANONICAL TIMESTAMP
+==================================================
+
+Use:
+- eventEffectiveDate for lifecycle events
+- paymentPostedDate for payment events
+
+==================================================
+3. CASH WINDOWS
+==================================================
+
+Cash windows are snapshot-based.
+
+Do not retroactively recalc past periods.
+
+==================================================
+4. CONTINUITY ROLLUP
+==================================================
+
+Default:
+- treat predecessor + successor as separate accounts
+- optional advanced: grouped continuity view
+
+==================================================
+5. CONFIDENCE / TRUST
+==================================================
+
+Fields:
+- trustState
+- sourceQuality
+
+Rules:
+- Limited or Stale must downgrade insight certainty
+
+==================================================
+6. EXPORT SAFETY
+==================================================
+
+Export only:
+- stable fields
+- snapshot fields
+- event logs
+
+Exclude:
+- derived advisory-like constructs
+
+==================================================
+7. ACCEPTANCE
+==================================================
+
+- no snapshot misuse
+- time consistency preserved
+- trust reflected in insight tone
+
+— Debt Team
