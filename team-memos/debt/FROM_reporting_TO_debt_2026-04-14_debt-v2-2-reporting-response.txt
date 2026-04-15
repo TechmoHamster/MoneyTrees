@@ -1,0 +1,261 @@
+To: Debt Team
+From: Reporting Team
+Date: 2026-04-14
+Subject: Debt V2.2 Approved — Reporting Response
+
+Debt Team —
+
+Reporting has reviewed the Debt V2.2 approved next-steps memo and is aligned on boundary, ownership, and intended integration approach.
+
+Debt remains the owner of debt truth, debt math, lifecycle state, schedules, and debt-specific outputs.
+Reporting will consume Debt outputs as shared/system truth and use them for analysis only.
+
+==================================================
+1. DEBT V2.2 OUTPUTS REPORTING PLANS TO CONSUME
+==================================================
+
+Reporting plans to consume the following Debt output groups:
+
+A. Core account facts
+- debt type
+- current balance
+- original balance where available
+- APR / active rate where available
+- credit limit where relevant
+- scheduled payment / minimum due
+- next due date
+- account status
+- standing state
+- arrangement overlay state
+
+B. Lifecycle / payment behavior facts
+- standing-state transitions
+- arrangement start/end events
+- hardship / deferment / forbearance counts
+- late / delinquent / cured transitions
+- failed payment counts
+- reversed payment counts
+- partial payment counts
+- cure amount changes
+- days-past-due changes
+- collections / charge-off / settlement state changes
+
+C. Term / projection facts
+- APR changes
+- promo expiration events
+- capitalization events
+- payment recast events
+- term extension / shortening events
+- payoff projection confidence where available
+- projected remaining interest where reliable
+
+D. Continuity facts
+- transfer events
+- refinance events
+- consolidation events
+- servicer transfer events
+- predecessor / successor account links
+- continuity conflict flags
+
+E. Trust / data-quality facts
+- source-quality labels
+- stale data flags
+- limited confidence flags
+- source conflict flags
+- verification-needed flags
+- missing-data flags
+
+F. Debt cash-window facts
+- 14-day debt cash requirement
+- 30-day debt cash requirement
+- 60-day debt cash requirement
+- minimum needed to stay current
+- amount needed to cure
+- past-due amount
+
+==================================================
+2. DEBT-SPECIFIC KPIS REPORTING WILL ADD OR PREPARE
+==================================================
+
+Reporting plans to add or prepare debt-focused KPI surfaces such as:
+- total debt balance
+- debt balance delta vs comparison window
+- debt cash required in selected window
+- past-due debt amount
+- accounts in delinquent standing states
+- failed / reversed payment count
+- amount needed to cure
+- stale / limited-confidence debt account count
+- source-conflict / verification-needed count
+- largest debt-type concentration
+
+KPI rule:
+Debt KPIs will remain analytical, neutral, and non-advisory.
+They will describe state and change, not recommend action.
+
+==================================================
+3. DEBT TREND MODULES REPORTING WILL ADD OR PREPARE
+==================================================
+
+Reporting plans to add or prepare trend / analytical modules for:
+
+A. Debt balance trend
+- total balance over time
+- balance delta vs prior period
+- balance movement by debt type
+
+B. Debt type distribution / concentration
+- share by debt type
+- concentration shifts over time
+
+C. Payment behavior trend
+- completed payments
+- partial payments
+- failed payments
+- reversed payments
+- cure events
+
+D. Late / delinquent trend
+- late count over time
+- delinquent count over time
+- cured count over time
+- days-past-due trend where historical support exists
+
+E. Arrangement overlay trend
+- hardship count
+- deferment count
+- forbearance count
+- settlement-active count
+- dispute-active count
+
+F. Interest / fee trend
+- interest charged where historical support exists
+- late-fee / returned-payment-fee trend where available
+- capitalization event visibility
+- projected remaining interest trend only where Debt marks it reliable
+
+G. Promo / deferred-interest analysis
+- promo expirations during selected period
+- promo balances near expiration
+- deferred-interest exposure where Debt supplies it
+
+H. Cash-pressure trend
+- debt cash required by window
+- 14 / 30 / 60 day requirement comparison
+- amount needed to cure trend
+- past-due amount trend
+
+I. Continuity analysis
+- transfer / refinance / consolidation events
+- continuity chain visibility
+- conflict visibility where continuity does not reconcile
+
+J. Trust / data-quality analysis
+- stale-account count
+- limited-confidence count
+- verification-needed count
+- source-conflict count
+- missing-key-data count
+
+==================================================
+4. SNAPSHOT VS EVENT-HISTORY HANDLING
+==================================================
+
+Reporting will explicitly separate:
+- snapshot facts
+- event-history facts
+
+Working rule:
+- snapshot fields will be labeled as current-state or point-in-time facts when historical series is not available
+- event-history fields will only be counted/trended inside the selected period when an actual event timestamp exists in-range
+- Reporting will not present current-state-only values as if they are period trends
+- Reporting will distinguish “current balance” style reads from “balance changed by X during this period” reads
+
+If a Debt output is only available as a current snapshot:
+- Reporting may show it as current-state context
+- Reporting will not fake a trend line or period delta from it
+
+==================================================
+5. STALE / LIMITED / SOURCE-CONFLICT DATA DISPLAY
+==================================================
+
+Reporting will treat trust and data-quality states as analytical context, not recommendation triggers.
+
+Planned handling:
+- expose stale / limited / conflict counts as neutral KPI or support metrics where useful
+- show trust/data-quality modules or notes when those signals materially affect interpretation
+- label affected outputs clearly rather than hiding the limitation
+- avoid strong analytical claims when Debt marks the underlying data as stale, limited-confidence, or conflicting
+- preserve Debt-owned labels in drill-down and export paths
+
+Copy style example:
+- Three debt accounts were marked verification-needed in this window, which limits confidence in some debt reporting outputs.
+
+==================================================
+6. DRILL-DOWN BEHAVIOR
+==================================================
+
+Reporting drill-down should route into Debt-owned record detail without taking ownership of the record.
+
+Planned drill-down targets include:
+- account detail
+- lifecycle events
+- payment events
+- failed / reversed payment events
+- arrangement overlays
+- continuity chain facts
+- trust / source-quality facts
+
+Rule:
+Reporting summarizes and routes.
+Debt owns the underlying detail view and record truth.
+
+==================================================
+7. EXPORT BEHAVIOR
+==================================================
+
+Reporting exports should include Debt reporting fields only when those fields are part of the active reporting context.
+
+Planned export rules:
+- preserve selected reporting range
+- preserve comparison range where relevant
+- preserve Debt-owned field names where exposed
+- preserve source / confidence / trust labels where relevant to the visible reporting view
+- avoid mixing snapshot-only and event-history fields without labeling the distinction
+- include only visible / selected debt-reporting context rather than dumping raw Debt internals by default
+
+==================================================
+8. BLOCKERS / DATA-CONTRACT QUESTIONS
+==================================================
+
+Current questions for Debt / shared contract clarification:
+
+1. Which Debt outputs are guaranteed historical series versus current-state-only snapshots?
+2. Which timestamp should Reporting treat as canonical for lifecycle/event trending when multiple timestamps exist?
+3. Which projected-interest / payoff-confidence fields are safe for period-over-period analytical comparison versus current-state display only?
+4. Which Debt trust labels should be treated as user-visible by default versus drill-down only?
+5. For continuity events, what is the preferred analytical contract for predecessor/successor rollups without double counting?
+6. Are debt cash-window outputs intended to be point-in-time snapshots, recalculated range outputs, or both?
+7. Which Debt-owned labels are stable enough to expose directly in exports without future rename risk?
+
+==================================================
+9. FINAL POSITION
+==================================================
+
+Reporting is aligned to use Debt V2.2 to improve:
+- trend visibility
+- comparative analysis
+- concentration reads
+- trust-aware analytical context
+
+Reporting will not:
+- recreate Debt logic
+- create debt recommendations
+- create local scoring or priority logic
+- reinterpret Debt-owned severity, standing, or lifecycle meaning
+
+Working rule remains:
+Observed change -> comparison baseline -> analytical meaning.
+Stop there.
+
+— Reporting Team
