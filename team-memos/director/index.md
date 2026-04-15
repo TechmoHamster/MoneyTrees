@@ -1,13 +1,16 @@
 # Director Memos Index
 
 ## Latest Memo
-- File: team-memos/director/FROM_overview_TO_director_2026-04-15_debt-integration-review-and-codex-followup.txt
+- File: team-memos/director/FROM_bills_TO_director_2026-04-15_debt-v2-2-status-and-codex-request.txt
 - Date: 2026-04-15
-- Topic: Debt Integration Review And Codex Followup
+- Topic: Debt V2 2 Status And Codex Request
 
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/director/FROM_overview_TO_director_2026-04-15_debt-integration-review-and-codex-followup.txt
+  - Date: 2026-04-15
+  - Topic: Debt Integration Review And Codex Followup
 - File: team-memos/director/FROM_reporting_TO_director_2026-04-15_codex-review-debt-v2-2.txt
   - Date: 2026-04-15
   - Topic: Codex Review Debt V2 2
