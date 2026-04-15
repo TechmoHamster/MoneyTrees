@@ -1,0 +1,416 @@
+To: Director / Codex
+From: Reporting Team
+Date: 2026-04-14
+Subject: Debt-Reporting Integration Spec v2.2
+
+NOTE:
+File name requested as: Dept-Reporting_Intergration-Spec-v2.2
+This document is a Reporting-side integration spec for consuming Debt V2.2 outputs while preserving Reporting's analysis-only boundary.
+
+==================================================
+1. PURPOSE
+==================================================
+
+Debt V2.2 introduces richer debt account, lifecycle, payment, confidence, and cash-window outputs.
+
+Reporting will consume Debt V2.2 as an upstream structured data source and use it to improve:
+- KPI visibility
+- trends
+- comparisons
+- breakdowns
+- concentration reads
+- trust-aware analytical context
+- exports
+- drill-down routing
+
+Reporting must not recreate Debt logic, define debt meaning, or provide debt advice.
+
+Core rule:
+Observed change -> comparison baseline -> analytical meaning.
+Stop there.
+
+==================================================
+2. OWNERSHIP MODEL
+==================================================
+
+Debt owns:
+- debt truth
+- debt math
+- standing-state logic
+- cure logic
+- lifecycle state
+- schedules
+- debt-specific outputs
+- Debt-owned labels
+- Debt-owned trust/source-quality states
+
+Reporting owns:
+- period analysis
+- trend visibility
+- comparative reads
+- concentration/distribution views
+- analytical summaries
+- exports of visible/selected reporting context
+- drill-down routing into Debt-owned records
+
+Atlas owns:
+- interpretation
+- recommendation
+- next-step framing
+- tradeoffs
+
+Reporting must not:
+- recommend actions
+- rank debts by priority
+- create local debt scores
+- create local delinquency thresholds
+- reinterpret Debt standing or severity
+- recreate Debt payoff/cure logic
+
+==================================================
+3. DEBT OUTPUTS TO CONSUME
+==================================================
+
+A. Account-level facts
+- debt type
+- current balance
+- original balance where available
+- APR / active rate where available
+- credit limit where relevant
+- scheduled payment / minimum due
+- next due date
+- account status
+- standing state
+- arrangement overlay state
+
+B. Lifecycle / payment behavior facts
+- standing-state transitions
+- arrangement start/end events
+- hardship / deferment / forbearance counts
+- late / delinquent / cured transitions
+- failed payment counts
+- reversed payment counts
+- partial payment counts
+- cure amount changes
+- days-past-due changes
+- collections / charge-off / settlement state changes
+
+C. Term / projection facts
+- APR changes
+- promo expiration events
+- capitalization events
+- payment recast events
+- term extension / shortening events
+- payoff projection confidence where available
+- projected remaining interest where reliable
+
+D. Continuity facts
+- transfer events
+- refinance events
+- consolidation events
+- servicer transfer events
+- predecessor / successor account links
+- continuity conflict flags
+
+E. Trust / data-quality facts
+- trustState
+- sourceQuality
+- stale data flags
+- limited confidence flags
+- source conflict flags
+- verification-needed flags
+- missing-data flags
+
+F. Cash-window facts
+- 14-day debt cash requirement
+- 30-day debt cash requirement
+- 60-day debt cash requirement
+- minimum needed to stay current
+- amount needed to cure
+- past-due amount
+
+==================================================
+4. SNAPSHOT VS EVENT SEMANTICS
+==================================================
+
+Debt clarified the following semantics:
+
+Snapshot fields / current-state only:
+- balance
+- minimumDue
+- dueDate
+- standingState
+- trustState
+
+Event-history fields:
+- payment events
+- standing transitions
+- arrangement events
+- continuity events
+
+Rules:
+- Do not trend snapshot fields unless historical capture exists.
+- Do not present current-state-only values as period trends.
+- Snapshot outputs may be shown as current-state context.
+- Event-history outputs may be trended when they have valid in-range timestamps.
+- Any module blending snapshot and event data must label the distinction clearly.
+
+==================================================
+5. CANONICAL TIMESTAMPS
+==================================================
+
+Use canonical Debt timestamps for period attribution:
+
+Lifecycle events:
+- eventEffectiveDate
+
+Payment events:
+- paymentPostedDate
+
+Rules:
+- If an event falls outside the selected reporting period, do not count it inside the period.
+- If a module uses comparison windows, the same timestamp attribution rule must apply to both current and comparison periods.
+- Avoid local timestamp interpretation inside Reporting.
+
+==================================================
+6. CASH-WINDOW RULES
+==================================================
+
+Debt cash windows are snapshot-based.
+
+Rules:
+- Do not retroactively recalculate prior periods from current cash-window outputs.
+- Treat 14-day, 30-day, and 60-day debt cash requirements as point-in-time/context outputs unless Debt provides historical capture.
+- Label cash-window reads as current-state or snapshot-based when used outside true historical series.
+
+==================================================
+7. CONTINUITY ROLLUP RULES
+==================================================
+
+Default behavior:
+- Treat predecessor and successor accounts as separate accounts.
+
+Optional advanced behavior:
+- Provide grouped continuity view only if Debt provides safe predecessor/successor linkage and reconciliation support.
+
+Rules:
+- Do not double-count balances across predecessor/successor accounts.
+- Do not hide continuity conflicts.
+- If continuity does not reconcile, surface the conflict as analytical context, not as advice.
+
+==================================================
+8. TRUST / CONFIDENCE HANDLING
+==================================================
+
+Debt trust fields:
+- trustState
+- sourceQuality
+
+Rules:
+- Limited or Stale must downgrade insight certainty.
+- Source conflicts must be visible where they affect interpretation.
+- Missing-data / verification-needed flags should be surfaced as analytical context when relevant.
+- Do not hide low-confidence signals.
+- Do not make strong claims from stale or limited-confidence data.
+
+Example acceptable copy:
+- Three debt accounts were marked verification-needed, which limits confidence in some debt reporting outputs.
+
+Bad copy:
+- You should verify these accounts now.
+
+==================================================
+9. DEBT KPIS TO ADD OR PREPARE
+==================================================
+
+Prepare debt-focused KPI surfaces for:
+- total debt balance
+- debt balance delta vs comparison window where historical capture exists
+- debt cash required in selected/current window
+- past-due debt amount
+- accounts in delinquent standing states
+- failed / reversed payment count
+- amount needed to cure
+- stale / limited-confidence debt account count
+- source-conflict / verification-needed count
+- largest debt-type concentration
+
+KPI requirements:
+- neutral labels
+- no recommendation copy
+- no priority framing
+- no local scoring
+- show delta only when valid historical/comparison data exists
+- label snapshot-only KPIs clearly when needed
+
+==================================================
+10. TREND / ANALYTICAL MODULES TO ADD OR PREPARE
+==================================================
+
+A. Debt balance trend
+- total balance over time where historical capture exists
+- balance delta vs prior period
+- movement by debt type
+
+B. Debt type distribution / concentration
+- share by debt type
+- concentration shifts over time where available
+
+C. Payment behavior trend
+- completed payments
+- partial payments
+- failed payments
+- reversed payments
+- cure events
+
+D. Late / delinquent trend
+- late count over time
+- delinquent count over time
+- cured count over time
+- days-past-due trend where historical support exists
+
+E. Arrangement overlay trend
+- hardship count
+- deferment count
+- forbearance count
+- settlement-active count
+- dispute-active count
+
+F. Interest / fee trend
+- interest charged where historical support exists
+- late-fee / returned-payment-fee trend where available
+- capitalization event visibility
+- projected remaining interest only where Debt marks it reliable
+
+G. Promo / deferred-interest analysis
+- promo expirations during selected period
+- promo balances near expiration
+- deferred-interest exposure where Debt supplies it
+
+H. Cash-pressure trend/context
+- debt cash required by current/snapshot window
+- 14 / 30 / 60 day debt cash requirement comparison only where historical capture exists
+- amount needed to cure trend where historical support exists
+- past-due amount trend where historical support exists
+
+I. Continuity analysis
+- transfer / refinance / consolidation events
+- continuity chain visibility
+- conflict visibility where continuity does not reconcile
+
+J. Trust / data-quality analysis
+- stale-account count
+- limited-confidence count
+- verification-needed count
+- source-conflict count
+- missing-key-data count
+
+==================================================
+11. INSIGHT COPY RULES
+==================================================
+
+All native Reporting insight copy must follow:
+1. What happened
+2. Compared to what
+3. Why it matters analytically
+
+Good examples:
+- Debt balance increased by $420 versus the previous period, mostly from credit-card balance growth.
+- Failed debt payments rose from 0 to 2 in the selected period, showing weaker payment completion during this window.
+- Three accounts were marked verification-needed, which limits confidence in some debt projections.
+- Debt cash required in the next 30 days increased by $180 versus the prior captured window.
+
+Bad examples:
+- Pay these debts first.
+- This is your top priority.
+- You should fix the delinquent accounts now.
+- Attack the highest-interest account first.
+- Focus on credit cards before anything else.
+
+==================================================
+12. EXPORT RULES
+==================================================
+
+Exports may include:
+- stable fields
+- snapshot fields
+- event logs
+- visible / selected Debt reporting context
+
+Exports must preserve:
+- active reporting range
+- comparison range where relevant
+- source labels
+- trust/confidence labels
+- Debt-owned field names
+- snapshot vs event-history distinction
+
+Exports must exclude:
+- derived advisory-like constructs
+- local priority scores
+- local recommendation logic
+- hidden interpretation fields
+- raw Debt internals not visible or selected in the reporting context
+
+==================================================
+13. DRILL-DOWN BEHAVIOR
+==================================================
+
+Reporting drill-down should route into Debt-owned record detail without taking ownership of records.
+
+Planned drill-down targets:
+- account detail
+- lifecycle events
+- payment events
+- failed / reversed payment events
+- arrangement overlays
+- continuity chain facts
+- trust / source-quality facts
+
+Rules:
+- Reporting summarizes and routes.
+- Debt owns the underlying detail view and record truth.
+- Drill-down should preserve selected reporting range and source context where applicable.
+
+==================================================
+14. ACCEPTANCE CRITERIA
+==================================================
+
+Implementation is acceptable only if:
+- snapshot fields are not trended without historical capture
+- event-history fields use canonical timestamps
+- cash windows are treated as snapshot-based unless historical capture exists
+- trust/confidence limitations affect insight tone
+- exports preserve stable fields and labels only
+- no Debt logic is recreated inside Reporting
+- no debt recommendations appear inside Reporting
+- no local scoring or priority ranking is introduced
+- Reporting remains analytical only
+
+==================================================
+15. CODEX TASK REQUEST
+==================================================
+
+Codex should review the Reporting implementation and prepare or implement Debt V2.2 integration according to this spec.
+
+Requested work:
+1. Identify existing Reporting data model extension points for Debt outputs.
+2. Add/prep Debt KPI support according to this spec.
+3. Add/prep Debt trend module support according to this spec.
+4. Ensure snapshot vs event-history semantics are preserved.
+5. Ensure event timestamps use eventEffectiveDate or paymentPostedDate as defined.
+6. Ensure cash-window outputs are treated as snapshot-based.
+7. Add/prep trust/confidence-aware analytical copy behavior.
+8. Add/prep export support for visible/selected Debt reporting context.
+9. Add/prep drill-down route contracts into Debt-owned records.
+10. Flag blockers where Debt data contracts are missing or ambiguous.
+
+Codex should not add recommendation behavior, local scoring, or prioritization logic to Reporting.
+
+==================================================
+16. FINAL RULE
+==================================================
+
+Debt owns the truth.
+Reporting explains the pattern.
+Atlas recommends the move.
