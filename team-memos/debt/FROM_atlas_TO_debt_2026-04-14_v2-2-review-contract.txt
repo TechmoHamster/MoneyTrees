@@ -1,0 +1,267 @@
+To: Debt Team
+From: Atlas Team
+Date: 2026-04-14
+Subject: Debt V2.2 Review Memo and Proposed Debt → Atlas Context Contract
+
+Debt Team —
+
+Atlas has reviewed the Debt V2.2 integration memo and is aligned with the ownership boundary you outlined.
+
+Debt V2.2 materially improves the quality of upstream debt truth available to Atlas.
+Atlas agrees that the next step is not broad advisory expansion, but a controlled integration pass built on a clear Debt → Atlas contract.
+
+==================================================
+1. ATLAS REVIEW SUMMARY
+==================================================
+
+Atlas agrees with the core model:
+
+- Debt owns debt truth
+- Debt owns debt math
+- Debt owns lifecycle state
+- Debt owns cure logic
+- Debt owns source-quality labels
+- Atlas consumes Debt facts
+- Atlas explains Debt facts
+- Atlas recommends from shared truth without recreating Debt logic
+
+Atlas also agrees with the central rule:
+
+Atlas must not become a second Debt engine.
+
+Debt V2.2 appears strong enough to support richer Atlas interpretation, provided the Debt outputs Atlas consumes are clearly defined, traceable, and caveat-preserving.
+
+==================================================
+2. DEBT FACTS ATLAS INTENDS TO CONSUME
+==================================================
+
+Atlas proposes to consume the following Debt V2.2 factual outputs when present and clearly defined:
+
+A) Debt state / standing facts
+- current balance
+- active account count
+- late / delinquent account count
+- standing state
+- days past due
+- next escalation date
+- amount needed to cure
+- closed-with-balance state
+- collections / settlement state
+
+B) Payment / timing / cash-window facts
+- required debt cash in 14 / 30 / 60 days
+- required payment amount
+- next required payment timing
+- active arrangement overlays
+- failed or reversed payment count
+- due clustering signals if Debt emits them explicitly
+
+C) Lifecycle / continuity facts
+- lifecycle event history or event timeline summary
+- continuity chains
+- term-version / continuity context when relevant to explanation
+
+D) Credit / promo / cost facts
+- promo expiration facts
+- deferred-interest facts
+- utilization facts where Debt explicitly exposes them
+- credit-card minimum-payment support state
+- payoff projection limitation state
+
+E) Trust / source-quality facts
+- source-quality labels
+- limited / estimated / manual / source-conflicted state
+- projection limitation notes
+- conflicting-source indicators
+
+Atlas intends to treat the above as shared system facts, not local Atlas calculations.
+
+==================================================
+3. DEBT FACTS ATLAS WILL NOT RECREATE
+==================================================
+
+Atlas will not independently calculate or redefine:
+
+- debt standing state
+- cure amount
+- lifecycle status
+- arrangement status
+- source-quality interpretation
+- continuity logic
+- payment requirement status
+- promo/deferred-interest state classification
+- debt risk labels if Debt already emits the underlying factual state
+- debt severity through hidden Debt-only scoring
+
+If Debt provides the fact, Atlas will consume that fact directly.
+
+==================================================
+4. HOW ATLAS WILL USE DEBT FACTS
+==================================================
+
+Atlas will use Debt facts for the following allowed purposes:
+
+- plain-language explanation
+- recommendation framing
+- tradeoff framing
+- confidence adjustment
+- scenario caveat handling
+- cross-section reasoning when Debt facts intersect with Bills, Overview, and Reporting
+
+Examples of proper Atlas use:
+- explain that an account is behind because Debt marks it as past due
+- explain that a projection is limited because Debt marks it as estimated or missing supporting fields
+- explain that an arrangement overlay changes how a debt should be interpreted
+- explain that required debt cash is concentrated in the next 14 or 30 days
+- recommend review or action based on shared truth without claiming Debt itself is advising
+
+Atlas will not use Debt outputs as hidden priority multipliers or silent severity scores.
+
+==================================================
+5. ATLAS CONFIDENCE / TRUST HANDLING
+==================================================
+
+Atlas proposes the following trust handling rules for Debt-derived interpretation:
+
+If Debt marks an output as:
+- limited
+- estimated
+- manual
+- source-conflicted
+
+then Atlas must:
+- downgrade confidence
+- preserve the caveat in explanation
+- avoid precise-sounding payoff or timing claims
+- avoid strong certainty language
+- avoid presenting estimated debt facts as confirmed truth
+
+Atlas should be able to say things like:
+- "Debt marks this projection as limited because key schedule inputs are missing."
+- "Debt shows a source conflict here, so Atlas is treating this as lower-confidence guidance."
+- "This debt appears behind, but Debt also flags the input quality as estimated."
+
+Atlas should not suppress Debt caveats.
+
+==================================================
+6. ATLAS LANGUAGE RULES FOR DEBT
+==================================================
+
+Atlas will follow these language rules when using Debt facts:
+
+Allowed:
+- "Debt shows..."
+- "Debt marks..."
+- "Debt reports..."
+- "Based on Debt's current standing state..."
+- "Debt indicates this account is behind by X."
+- "Debt marks this output as limited / estimated / source-conflicted."
+
+Not allowed:
+- "Debt recommends..."
+- "Debt decided..."
+- "Debt scored this..."
+- "Debt knows this is your best move..."
+- "This is guaranteed..."
+
+Debt provides facts.
+Atlas provides interpretation.
+
+==================================================
+7. ATLAS CONCERNS / AMBIGUITIES TO RESOLVE
+==================================================
+
+Atlas would like clear field-level definitions or examples for the following before broad integration:
+
+1. Standing state
+- exact allowed values
+- distinction between standing state vs payment requirement state
+- how arrangement overlays modify interpretation
+
+2. Amount needed to cure
+- exact scope of cure math
+- whether cure always means current + fees + missed required amounts
+- how cure behaves when source quality is limited
+
+3. Next escalation date
+- what event qualifies as escalation
+- whether this is collections-facing, delinquency-stage-facing, or broader lifecycle-facing
+
+4. Event timeline summary
+- whether Atlas receives normalized event types or only display-ready summaries
+- expected granularity
+
+5. Source-quality labels
+- exact allowed labels
+- whether labels are mutually exclusive or stacked
+- which labels should force stronger confidence downgrades
+
+6. Continuity facts
+- what continuity chain means in a user-facing interpretation context
+- when Atlas should mention continuity vs suppress it as internal detail
+
+7. Promo / deferred-interest facts
+- exact shape for expiration exposure
+- whether Atlas receives balance-at-risk, date-at-risk, or both
+
+==================================================
+8. PROPOSED DEBT → ATLAS CONTEXT CONTRACT
+==================================================
+
+Atlas proposes that Debt and Atlas align on a formal context contract with these rules:
+
+Rule 1:
+Debt emits normalized factual outputs only.
+
+Rule 2:
+Debt outputs include explicit caveats when confidence or source quality is limited.
+
+Rule 3:
+Atlas consumes Debt outputs exactly as emitted and does not recompute equivalent debt logic locally.
+
+Rule 4:
+Atlas may explain, compare, and recommend from Debt truth, but recommendation intensity must remain grounded in shared truth and visible caveats.
+
+Rule 5:
+Any Debt field used in Atlas recommendation logic must have:
+- a stable name
+- stable meaning
+- stable allowed-state definition
+- clear caveat behavior
+
+Rule 6:
+If a Debt output is ambiguous, Atlas should treat it as interpretation-limited until clarified.
+
+==================================================
+9. RECOMMENDED NEXT STEP
+==================================================
+
+Atlas recommends the following next sequence:
+
+1. Debt confirms or refines the proposed field list and ambiguity questions.
+2. Debt and Atlas align on a formal downstream context contract.
+3. Atlas prepares a scoped Codex brief to:
+   - consume approved Debt V2.2 facts
+   - add confidence downgrade handling
+   - preserve Debt caveats in Atlas language
+   - add tests proving Atlas does not duplicate Debt logic
+
+Atlas does not recommend broad implementation work before the contract is understood.
+
+==================================================
+10. FINAL POSITION
+==================================================
+
+Atlas agrees that Debt V2.2 provides stronger raw truth.
+
+Atlas is prepared to turn that truth into better user-facing interpretation.
+
+But Atlas should do so only through:
+- explicit field consumption
+- preserved caveats
+- disciplined confidence handling
+- zero duplication of Debt-owned logic
+
+This contract-first approach is the safest way to improve Atlas quality without creating ownership drift.
+
+— Atlas Team
