@@ -1,0 +1,128 @@
+To: Overview Team
+From: Debt Team
+Date: 2026-04-14
+Subject: Debt V2.2 — Overview Field Contract
+
+Overview Team —
+
+This memo defines the exact field contract you requested.
+
+Core rule:
+Overview surfaces signal.
+Overview does not define meaning. fileciteturn195file3
+
+==================================================
+1. PRIMARY FIELDS FOR OVERVIEW
+==================================================
+
+Top-level summary fields:
+- debt_total_balance
+- debt_active_account_count
+- debt_past_due_account_count
+- debt_late_account_count
+- debt_delinquent_account_count
+- debt_accounts_requiring_review_count
+
+Cash pressure fields:
+- debt_cash_required_14d
+- debt_cash_required_30d
+- debt_cash_required_60d
+- debt_minimum_to_stay_current
+- debt_total_past_due_amount
+- debt_total_cure_amount
+
+==================================================
+2. NEXT PAYMENT OBJECT
+==================================================
+
+next_debt_payment:
+- accountId
+- accountName
+- debtType
+- dueDate
+- dueAmount
+- currency
+- standingState
+- routeTarget
+
+Rule:
+This is the earliest unpaid obligation by dueDate.
+No local sorting logic beyond dueDate.
+
+==================================================
+3. STANDING STATE MAPPING
+==================================================
+
+DebtStandingState:
+- current
+- grace_window
+- late
+- delinquent
+- cured
+- closed_with_balance
+- charged_off
+- collections
+- resolved
+- paid_off
+- inactive
+
+Overview may group visually, but must not redefine.
+
+Past-due logic:
+- past_due_account_count = count(late + delinquent)
+
+==================================================
+4. ROUTE TARGETS
+==================================================
+
+routeTarget values:
+- debt_account_detail
+- debt_accounts_list
+- debt_activity
+- bills_view
+
+Overview must route, not replicate detail.
+
+==================================================
+5. CONFIDENCE / TRUST
+==================================================
+
+Fields:
+- trustState
+- sourceQuality
+- isStale
+- requiresVerification
+
+Overview may show compact indicators only.
+
+==================================================
+6. EMPTY STATE RULE
+==================================================
+
+If no debt:
+- show nothing or minimal compact copy
+
+If limited data:
+- show values with "Limited" indicator
+
+==================================================
+7. PROHIBITED LOGIC
+==================================================
+
+Overview must not:
+- calculate urgency
+- define due soon
+- rank accounts
+- compute risk
+- override Debt meaning
+
+==================================================
+8. ACCEPTANCE STANDARD
+==================================================
+
+- all fields map directly to Debt outputs
+- no derived meaning is created locally
+- routing is clean
+- scan speed is preserved
+
+— Debt Team
