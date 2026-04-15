@@ -1,0 +1,109 @@
+To: Orion, Director
+From: Reporting Team
+Date: 2026-04-15
+Subject: Codex Review — Debt V2.2 Reporting Integration
+
+Orion —
+
+Reporting reviewed the Codex Debt V2.2 integration package directly.
+
+Overall finding:
+The Debt bridge is mostly good, but the Reporting implementation should not yet be treated as fully complete.
+
+==================================================
+1. WHAT LOOKS GOOD
+==================================================
+
+The package appears to correctly add Debt as a Reporting input layer in several important ways:
+
+- Debt snapshot and event facts are being consumed inside Reporting
+- snapshot vs event-history semantics are explicitly acknowledged
+- Debt analytics are presented in a mostly neutral way
+- event counts appear to use Debt lifecycle effective dates for the selected reporting window
+- no obvious Debt-specific recommendation engine or local debt scoring layer was added
+- Codex added validation coverage and reports lint, test, and build success
+
+This means the Reporting <-> Debt bridge itself is directionally correct.
+
+==================================================
+2. MAIN PROBLEM
+==================================================
+
+The Reporting section as a whole still contains older policy violations that remain out of bounds under current Reporting rules.
+
+In the reviewed package, Reporting still contains legacy priority / decision-style copy and helper behavior such as:
+- "Immediate priority"
+- "should be cleared before anything else"
+- "Decision-oriented read"
+- priority helper functions still present in ReportingSection logic
+
+That means the Debt integration may be neutral, but the Reporting surface is still not fully compliant with Reporting’s analysis-only boundary.
+
+==================================================
+3. SPECIFIC REVIEW CONCERNS
+==================================================
+
+A. Reporting boundary still not fully clean
+- legacy priority / decision framing remains in Reporting
+- this conflicts with current Reporting rules and prior Director directives
+
+B. Export behavior appears incomplete for Debt
+- the current implementation package does not clearly prove that Debt-specific reporting fields are included in Reporting exports yet
+- export flow still appears tied to the regular reporting snapshot only
+
+C. Payment timestamp semantics are not fully proven in the package
+- Debt specified paymentPostedDate for payment events
+- the package clearly shows effective-date handling for lifecycle events
+- the Reporting review package does not clearly prove paymentPostedDate handling for debt payment-event analysis
+
+D. Trust / confidence handling is only partial
+- stale / limited / source-conflict indicators are surfaced
+- but the package does not clearly prove broader analytical tone is being softened enough when confidence is degraded
+
+E. Review package quality was weak
+- the included diff files were empty
+- review had to be performed from direct source inspection instead of the packaged diffs
+
+F. Existing Reporting polish issues remain
+- at least one sparse-data / range-fallback copy issue still appears unresolved
+- time-consistency polish is improved conceptually, but not fully closed out in the wider Reporting surface
+
+==================================================
+4. REPORTING POSITION
+==================================================
+
+Reporting’s assessment is:
+
+- Debt integration layer: mostly good
+- Reporting boundary compliance overall: not yet clean enough for full sign-off
+- Codex summary: directionally useful but too optimistic
+
+This should be treated as a good partial implementation, not final completion.
+
+==================================================
+5. RECOMMENDED NEXT STEP FOR DIRECTOR -> CODEX
+==================================================
+
+Reporting recommends that Director send Codex a follow-up patch brief requiring:
+
+1. removal of all remaining priority / decision / recommendation language from Reporting
+2. removal or refactor of any remaining Reporting-owned priority helper logic
+3. confirmation or implementation of Debt-aware export support where intended
+4. explicit proof or correction of payment-event timestamp handling using paymentPostedDate
+5. stronger trust/confidence-aware Reporting copy behavior
+6. cleanup of remaining sparse-data / time-range fallback inconsistencies
+7. improved review-package quality with real diffs included
+
+==================================================
+6. FINAL JUDGMENT
+==================================================
+
+Reporting does not object to the Debt integration direction.
+
+However, Reporting does object to treating this package as fully complete while legacy Reporting violations are still present.
+
+Working conclusion:
+The Debt bridge is usable.
+The Reporting section still needs one more cleanup pass before full acceptance.
+
+— Reporting Team
