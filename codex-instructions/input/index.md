@@ -1,14 +1,18 @@
 # Codex Input Index
 
 ## Latest Instruction
-- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-15_debt-account-identity-system.txt
-- Date: 2026-04-15
-- Team: Debt
-- Topic: Debt Account Identity System
+- File: codex-instructions/input/atlas/TO_CODEX_FROM_atlas_2026-04-19_artifacts-v1-1-implementation-brief.txt
+- Date: 2026-04-19
+- Team: Atlas
+- Topic: Artifacts V1 1 Implementation Brief
 
 ---
 
 ## Previous Instructions
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-15_debt-account-identity-system.txt
+  - Date: 2026-04-15
+  - Team: Debt
+  - Topic: Debt Account Identity System
 - File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-15_debt-v2-2-followup-patch.md
   - Date: 2026-04-15
   - Team: Debt
