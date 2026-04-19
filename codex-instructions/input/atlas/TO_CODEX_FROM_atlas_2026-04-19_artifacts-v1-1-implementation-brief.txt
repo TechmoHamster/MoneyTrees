@@ -1,0 +1,89 @@
+TO: Codex
+FROM: Atlas Team
+DATE: 2026-04-19
+SUBJECT: Atlas v1.1 Artifacts Implementation Brief
+
+Codex —
+
+Use Atlas Financial Playbook v7 as the approved narrative baseline.
+Use Atlas Artifacts v1.1 as the implementation-ready source of truth for this pass.
+
+OBJECTIVE
+Implement the Atlas rule system from the v1.1 artifacts so Atlas behavior is driven by explicit gates, caps, blockers, field requirements, and scenario-validated outputs.
+
+PRIMARY SOURCE ARTIFACTS
+- Atlas_Trust_State_Definitions_v1_1.txt
+- Atlas_Recommendation_Blocker_Table_v1_1.txt
+- Atlas_Minimum_Required_Field_Matrix_v1_1.txt
+- Atlas_Recommendation_Authorization_Matrix_v1_1.txt
+- Atlas_Scenario_to_Expected_Output_Matrix_v1_1.txt
+- Atlas_Level_4_Blockers_v1_1.txt
+
+IMPLEMENTATION REQUIREMENTS
+1. Treat the v1.1 artifacts as controlling implementation guidance for this pass.
+2. Preserve this universal rule exactly:
+   "Apply gates in precedence order; within a gate, use the most restrictive valid rule."
+3. Implement rule precedence in this order:
+   - Scope gate
+   - Trust gate
+   - Field completeness gate
+   - Cash danger gate
+   - Follow-through gate
+   - Positive authorization gate
+4. Do NOT treat baseline trust mapping as additive logic.
+   - Caps and blockers override baseline trust mapping.
+   - Final allowed recommendation level must be the most restrictive valid outcome across all gates.
+5. Implement trust-state handling exactly as defined in the trust artifact.
+   - If multiple trust states apply, use the most restrictive one.
+6. Implement recommendation blockers exactly as defined in the blocker artifact.
+   - Include embedded follow-through definitions.
+   - Include the tightened estimated-truth precision blocker behavior.
+7. Implement minimum required field logic exactly as defined in the field matrix.
+   - If required fields are missing, downgrade recommendation level.
+8. Implement Level 3 and Level 4 authorization exactly as defined in the authorization matrix.
+   - Level 4 must be earned, not assumed.
+9. Implement dedicated Level 4 blockers exactly as defined in the Level 4 blocker artifact.
+10. Use the scenario matrix as QA/validation expectations for this pass.
+
+HARD CONSTRAINTS
+- No hidden scoring.
+- No alternate local severity engine.
+- No trust override behavior.
+- No debt truth redefinition.
+- No recommendation path that bypasses gates.
+- No Level 4 output when any valid blocker or cap forbids it.
+- No fake precision language when truth/caps block stronger output.
+
+EXPECTED OUTPUT OF THIS CODEX PASS
+1. A first implementation pass that wires Atlas recommendation-level logic to the v1.1 artifacts.
+2. Test coverage for scenario outcomes, especially:
+   - Scenario F Branch A
+   - Scenario F Branch B
+   - Scenario I
+   - Scenario J
+   - Scenario K
+3. Clear proof that:
+   - caps/blockers override trust baseline
+   - the final level is determined after all gates run
+   - follow-through caps can lower recommendation strength
+   - below-floor exception logic only works when all exception conditions pass
+   - Level 4 blockers are enforced cleanly
+4. A return memo summarizing:
+   - files changed
+   - logic implemented
+   - tests added
+   - any ambiguity or blocker found in the artifacts
+
+DO NOT DO IN THIS PASS
+- Do not redesign Atlas.
+- Do not expand scope beyond the artifacts.
+- Do not introduce income-timing logic unless already explicitly present in tracked truth.
+- Do not invent new recommendation tiers.
+- Do not collapse multiple gates into vague heuristic behavior.
+
+SUCCESS CRITERIA
+This pass is successful if Atlas behavior is visibly driven by the artifact framework and the implementation can be reviewed directly against the v1.1 documents without interpretation drift.
+
+Return the normal Codex memo plus code review package when complete.
+
+— Atlas Team
