@@ -1,0 +1,278 @@
+# MoneyTrees Repo Communication Guide
+
+This repository is the shared communication and handoff space for the MoneyTrees teams.
+
+Its purpose is to keep team communication, Codex handoff work, and memo discovery organized, traceable, and easy to access without depending on GitHub search.
+
+---
+
+## What this repo is for
+
+This repo has two main jobs:
+
+1. **Team communication**
+2. **Codex handoff work**
+
+---
+
+## 1) Team communication
+
+All teams communicate with each other through this repo.
+
+Team memos go in:
+
+```text
+team-memos/
+```
+
+That folder contains sub-folders for each active team.
+
+Current structure:
+
+```text
+team-memos/
+├── atlas/
+├── overview/
+├── director/
+├── bills/
+├── reporting/
+└── debt/
+```
+
+If a team needs to send a memo, update, directive, status note, or handoff to another team, the file should be placed in the correct **recipient team** folder under `team-memos/`.
+
+Example:
+
+```text
+team-memos/director/FROM_reporting_TO_director_2026-04-09_status-update.txt
+```
+
+### Team expansion rule
+
+This structure is intended to scale.
+
+If a new team is added later:
+- create a new folder under `team-memos/[team]/`
+- create that team’s local `index.md`
+- add the team to the memo index automation script
+- update this README so the active-team list stays accurate
+
+---
+
+## Memo naming format
+
+Use:
+
+```text
+FROM_[sender]_TO_[recipient]_YYYY-MM-DD_[short-topic].txt
+```
+
+Examples:
+
+```text
+FROM_director_TO_atlas_2026-04-09_operating-rules.txt
+FROM_reporting_TO_director_2026-04-09_status-update.txt
+FROM_bills_TO_overview_2026-04-09_dependency-note.txt
+FROM_debt_TO_director_2026-04-11_debt-feature-proposal.txt
+```
+
+If a file is revised on the same day and same topic, append a revision tag:
+
+```text
+FROM_atlas_TO_director_2026-04-09_operating-rules-rev-b.txt
+```
+
+Rules:
+- use lowercase team names
+- use `YYYY-MM-DD` format
+- keep topic labels short and specific
+- do not use vague names like `notes.txt` or `update.txt`
+
+Special case:
+- `TO_all` is supported by the automation and currently means:
+  - `atlas`
+  - `overview`
+  - `bills`
+  - `reporting`
+  - `director`
+  - `debt`
+
+---
+
+## Team index file requirement
+
+Each team folder under `team-memos/` must maintain its own local `index.md` file.
+
+Current required index files:
+
+```text
+team-memos/atlas/index.md
+team-memos/overview/index.md
+team-memos/bills/index.md
+team-memos/reporting/index.md
+team-memos/director/index.md
+team-memos/debt/index.md
+```
+
+Each team’s `index.md` acts as that team’s memo lookup file.
+
+Its purpose is to let that team quickly open its own folder, see the latest memo(s) sent to it, and jump directly to the correct file without relying on GitHub search.
+
+---
+
+## Team index automation
+
+Team indexes are now maintained automatically.
+
+This repo uses:
+- GitHub Actions for workflow execution
+- `scripts/update_indexes.py` for index generation logic
+
+The current workflow file is:
+
+```text
+.github/workflows/update-indexes.yml
+```
+
+The current index generator is:
+
+```text
+scripts/update_indexes.py
+```
+
+### How it works
+
+When a new memo file is pushed to the repo:
+1. GitHub Actions detects the memo change
+2. the index updater script scans all memo files
+3. each team’s `index.md` is rebuilt from the memo set
+4. updated index files are committed back to the repo automatically
+
+This means teams should treat `index.md` files as **system-managed outputs**, not hand-maintained working files.
+
+### Current behavior standard
+
+- indexes are inbound-focused
+- each team index shows the latest memo received by that team
+- if applicable, it also shows previous inbound memos
+- index file paths are repo-relative
+
+---
+
+## What each index should contain
+
+At minimum, each team index should clearly show the latest memo by including:
+- file path
+- date
+- topic
+
+Recommended example:
+
+```md
+# Bills Memos Index
+
+## Latest Memo
+- File: team-memos/director/FROM_director_TO_bills_2026-04-09_cleanup-directive.txt
+- Date: 2026-04-09
+- Topic: Cleanup Directive
+```
+
+Recommended practice:
+- keep the newest memo at the top
+- optionally include a short history section below it
+- let automation maintain structure and ordering
+- treat the index as part of the communication system, not an optional extra
+
+---
+
+## 2) Codex handoff work
+
+This repo is also used to pass instructions, briefs, specs, and related working files to Codex.
+
+Those files go in:
+
+```text
+codex-instructions/
+```
+
+Structure:
+
+```text
+codex-instructions/
+├── input/
+│   ├── atlas/
+│   ├── reporting/
+│   ├── overview/
+│   └── bills/
+└── output/
+    ├── atlas/
+    ├── reporting/
+    ├── overview/
+    └── bills/
+```
+
+### How it works
+
+- teams place source files for Codex in:
+  - `codex-instructions/input/[team]/`
+- Codex reads from the input folder
+- Codex writes result files to:
+  - `codex-instructions/output/[team]/`
+
+The director is **not** currently included in the `codex-instructions` folder structure unless that workflow changes later.
+
+---
+
+## Codex file naming format
+
+For files sent to Codex:
+
+```text
+TO_CODEX_FROM_[team]_YYYY-MM-DD_[short-topic].txt
+```
+
+Examples:
+
+```text
+TO_CODEX_FROM_atlas_2026-04-09_advisor-operating-rules.txt
+TO_CODEX_FROM_bills_2026-04-09_cleanup-brief.txt
+```
+
+For files returned by Codex:
+
+```text
+FROM_CODEX_TO_[team]_YYYY-MM-DD_[short-topic].txt
+```
+
+Examples:
+
+```text
+FROM_CODEX_TO_overview_2026-04-09_revised-operating-rules.txt
+FROM_CODEX_TO_reporting_2026-04-09_section-audit.txt
+```
+
+---
+
+## Repo rules
+
+- keep naming consistent
+- use clear dates in `YYYY-MM-DD` format
+- keep topic labels short and specific
+- do not use vague file names
+- prefer creating new dated files over overwriting older ones
+- treat the repo as the written source of truth for memos and Codex handoffs
+- place memos in the correct recipient team folder
+- rely on the automation to keep team indexes in sync
+- do not rely on GitHub search alone to find the latest memo
+
+---
+
+## Quick summary
+
+- `team-memos/` = team-to-team communication
+- each team folder under `team-memos/` keeps its own `index.md`
+- indexes are maintained automatically by GitHub Actions + `scripts/update_indexes.py`
+- each team uses its own `index.md` to find the latest memo sent to it
+- new teams should get a new folder, new index, and an automation update
+- `codex-instructions/input/[team]/` = files going to Codex
+- `codex-instructions/output/[team]/` = files returned by Codex
