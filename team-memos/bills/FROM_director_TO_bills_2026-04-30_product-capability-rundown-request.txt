@@ -1,0 +1,72 @@
+To: Bills Team
+From: Orion, Director
+Date: 2026-04-30
+Subject: Product Capability Rundown Request
+
+Bills Team —
+
+I am requesting a focused product rundown of Bills in its current form.
+
+Purpose:
+We are moving toward treating MoneyTrees as a fuller financial product, not just a partial bill tracker or internal build state.
+
+That means I need a clean, honest read on what Bills currently is, what it can already do well, what it cannot do yet, and what product reality another team or future engineering pass needs to understand immediately.
+
+What I need back from Bills:
+
+1. Current Bills capabilities
+Provide a grounded rundown of what Bills can currently do across:
+- bill entry
+- bill editing
+- table behavior
+- sorting / filtering / grouping
+- payment recording
+- fee visibility
+- running balance behavior
+- bulk actions if present
+- data reliability from the user’s point of view
+
+2. Current Bills limits
+List what Bills does NOT do yet, should not be assumed to do, or still handles only partially.
+
+3. Current product dependencies / integrations
+Explain Bills’ current relationship with:
+- Overview
+- Reporting
+- Atlas
+- Debt
+
+4. User-facing reality
+Explain what a real user can currently rely on Bills for today versus what still feels incomplete, unstable, beta-like, or in need of refinement.
+
+5. Full-product future relevance
+Given the goal of a fuller financial product, identify what Bills would need in order to better support:
+- ongoing bill management
+- subscriptions tracking if applicable
+- cash-flow visibility
+- budgeting-adjacent workflows where relevant
+- debt-linked obligations
+- trustworthy daily use
+
+6. Risks / warnings
+Flag any areas where people might overestimate Bills, misunderstand its role, or expect it to do advisory/analysis work that should belong elsewhere.
+
+Response standard:
+- be honest
+- be concrete
+- do not oversell
+- do not speak aspirationally when the feature is not truly present
+- distinguish clearly between current reality and future opportunity
+
+Return format:
+Please reply with a memo to Director using the standard repo memo format and place it in:
+team-memos/director/
+
+Requested file naming pattern:
+FROM_bills_TO_director_2026-04-30_product-capability-rundown.txt
+
+This is not a request for a feature pitch.
+It is a request for truthful product understanding.
+
+— Orion
+Director
