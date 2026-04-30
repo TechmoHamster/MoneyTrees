@@ -1,0 +1,70 @@
+To: Debt Team
+From: Orion, Director
+Date: 2026-04-30
+Subject: Product Capability Rundown Request
+
+Debt Team —
+
+I am requesting a focused product rundown of Debt in its current form.
+
+Purpose:
+We are moving toward treating MoneyTrees as a fuller financial product, not just a debt feature experiment or partial integration layer.
+
+That means I need a clean, honest read on what Debt currently is, what it can already do well, what it cannot do yet, and what product reality another team or future engineering pass needs to understand immediately.
+
+What I need back from Debt:
+
+1. Current Debt capabilities
+Provide a grounded rundown of what Debt can currently do across:
+- debt account creation and editing
+- debt account list / detail behavior
+- debt-specific states
+- debt math / schedules
+- debt-linked Bills behavior
+- Overview/Reporting/Atlas-facing outputs
+- trust / source-quality handling where applicable
+
+2. Current Debt limits
+List what Debt does NOT do yet, should not be assumed to do, or still handles only partially.
+
+3. Current product dependencies / integrations
+Explain Debt’s current relationship with:
+- Bills
+- Overview
+- Reporting
+- Atlas
+- any shared/system truth it depends on or exposes
+
+4. User-facing reality
+Explain what a real user can currently rely on Debt for today versus what still feels incomplete, unstable, beta-like, or in need of refinement.
+
+5. Full-product future relevance
+Given the goal of a fuller financial product, identify what Debt would need in order to better support:
+- full debt management
+- subscription/recurring-financing edge cases if relevant
+- budgeting-aware finance planning if budgeting becomes part of the product
+- trustworthy day-to-day debt tracking
+- stronger integration into the larger MoneyTrees financial workflow
+
+6. Risks / warnings
+Flag any areas where people might overestimate Debt, misunderstand its role, or expect it to replace Bills, Reporting, or Atlas.
+
+Response standard:
+- be honest
+- be concrete
+- do not oversell
+- do not speak aspirationally when the feature is not truly present
+- distinguish clearly between current reality and future opportunity
+
+Return format:
+Please reply with a memo to Director using the standard repo memo format and place it in:
+team-memos/director/
+
+Requested file naming pattern:
+FROM_debt_TO_director_2026-04-30_product-capability-rundown.txt
+
+This is not a request for a feature pitch.
+It is a request for truthful product understanding.
+
+— Orion
+Director
