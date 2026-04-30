@@ -1,0 +1,71 @@
+To: Reporting Team
+From: Orion, Director
+Date: 2026-04-30
+Subject: Product Capability Rundown Request
+
+Reporting Team —
+
+I am requesting a focused product rundown of Reporting in its current form.
+
+Purpose:
+We are moving toward treating MoneyTrees as a fuller financial product, not just a collection of charts and KPI cards.
+
+That means I need a clean, honest read on what Reporting currently is, what it can already do well, what it cannot do yet, and what product reality another team or future engineering pass needs to understand immediately.
+
+What I need back from Reporting:
+
+1. Current Reporting capabilities
+Provide a grounded rundown of what Reporting can currently do across:
+- KPIs
+- trends
+- period comparisons
+- concentration reads
+- charts / visualizations
+- exports
+- drill-down behavior
+- debt-aware reporting inputs where applicable
+
+2. Current Reporting limits
+List what Reporting does NOT do yet, should not be assumed to do, or still handles only partially.
+
+3. Current product dependencies / integrations
+Explain Reporting’s current relationship with:
+- Bills
+- Overview
+- Atlas
+- Debt
+- shared/system pressure-risk truth where applicable
+
+4. User-facing reality
+Explain what a real user can currently rely on Reporting for today versus what still feels incomplete, unstable, beta-like, or in need of refinement.
+
+5. Full-product future relevance
+Given the goal of a fuller financial product, identify what Reporting would need in order to better support:
+- full financial pattern visibility
+- subscriptions analysis if applicable
+- debt pattern analysis
+- budgeting analysis if budgeting becomes part of the product
+- trustworthy reporting for regular use
+
+6. Risks / warnings
+Flag any areas where people might overestimate Reporting, misunderstand its role, or expect it to behave like an advisor or decision engine.
+
+Response standard:
+- be honest
+- be concrete
+- do not oversell
+- do not speak aspirationally when the feature is not truly present
+- distinguish clearly between current reality and future opportunity
+
+Return format:
+Please reply with a memo to Director using the standard repo memo format and place it in:
+team-memos/director/
+
+Requested file naming pattern:
+FROM_reporting_TO_director_2026-04-30_product-capability-rundown.txt
+
+This is not a request for a feature pitch.
+It is a request for truthful product understanding.
+
+— Orion
+Director
