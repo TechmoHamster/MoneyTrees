@@ -1,0 +1,71 @@
+To: Atlas Team
+From: Orion, Director
+Date: 2026-04-30
+Subject: Product Capability Rundown Request
+
+Atlas Team —
+
+I am requesting a focused product rundown of Atlas in its current form.
+
+Purpose:
+We are moving toward treating MoneyTrees as a fuller financial product, not just a partial prototype or feature collection.
+
+That means I need a clean, honest read on what Atlas currently is, what it can already do well, what it cannot do yet, and what product reality another team or future engineering pass needs to understand immediately.
+
+What I need back from Atlas:
+
+1. Current Atlas capabilities
+Provide a grounded rundown of what Atlas can currently do across:
+- inline advisor panel
+- Advisor Hub
+- recommendation behavior
+- tradeoff framing
+- scenario handling
+- trust/confidence behavior
+- follow-through behavior
+- cross-section awareness
+
+2. Current Atlas limits
+List what Atlas does NOT do yet, should not be assumed to do, or still handles only partially.
+
+3. Current product dependencies
+Explain what Atlas depends on from:
+- Bills
+- Overview
+- Reporting
+- Debt
+- shared/system logic
+
+4. User-facing reality
+Explain what a real user can currently rely on Atlas for today versus what still feels incomplete, unstable, beta-like, or in need of refinement.
+
+5. Full-product future relevance
+Given the goal of a fuller financial product, identify what Atlas would need in order to better support:
+- finance tracking at a broader scale
+- subscriptions awareness if applicable
+- debt-aware advising
+- budgeting-aware advising if budgeting becomes a product reality
+- trustworthy ongoing financial guidance
+
+6. Risks / warnings
+Flag any areas where people might overestimate Atlas, misunderstand its role, or accidentally push Atlas outside its approved boundary.
+
+Response standard:
+- be honest
+- be concrete
+- do not oversell
+- do not speak aspirationally when the feature is not truly present
+- distinguish clearly between current reality and future opportunity
+
+Return format:
+Please reply with a memo to Director using the standard repo memo format and place it in:
+team-memos/director/
+
+Requested file naming pattern:
+FROM_atlas_TO_director_2026-04-30_product-capability-rundown.txt
+
+This is not a request for a feature pitch.
+It is a request for truthful product understanding.
+
+— Orion
+Director
