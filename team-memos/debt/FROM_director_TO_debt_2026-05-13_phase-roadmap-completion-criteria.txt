@@ -1,0 +1,55 @@
+DIRECTOR MEMO
+FROM: director
+TO: debt
+DATE: 2026-05-13
+TOPIC: Phase Roadmap Completion Criteria — Phases 1-5
+
+Debt owns account-level debt structure, debt-state visibility, and debt relationship clarity.
+
+PHASE 1
+- Build Debt Hub v1
+- Support cards, loans, BNPL, closed-but-owed accounts
+- Track statuses, minimums, APR, fees, missed payments, past-due amounts
+- Support unemployed/no-income workflows
+
+PHASE 1 COMPLETE WHEN
+- Users can clearly see debt account states
+- Users can identify dangerous or unknown accounts
+- Debt-linked payment history is visible
+
+PHASE 2
+- Integrate debt with all budgeting methods
+- Improve debt-first budgeting support
+- Improve payoff-plan support
+- Improve BNPL/installment handling
+
+PHASE 2 COMPLETE WHEN
+- Debt integrates cleanly with budgeting methods
+- Debt-first workflows are operationally usable
+
+PHASE 3
+- Support richer debt-state analysis
+- Expose structured debt metadata to Atlas
+- Preserve debt-state transitions over time
+
+PHASE 3 COMPLETE WHEN
+- Atlas can rely on debt truth safely
+- Debt-state history is inspectable
+
+PHASE 4
+- Support linked debt accounts
+- Support imported debt reconciliation
+- Improve cross-product debt visibility
+
+PHASE 4 COMPLETE WHEN
+- Imported debt data remains trustworthy
+- Debt remains understandable despite ecosystem expansion
+
+PHASE 5
+- Support automation-aware debt monitoring
+- Preserve auditability for automated changes
+- Support persistent debt history
+
+PHASE 5 COMPLETE WHEN
+- Automation remains explainable
+- Debt-state history remains trustworthy over time
