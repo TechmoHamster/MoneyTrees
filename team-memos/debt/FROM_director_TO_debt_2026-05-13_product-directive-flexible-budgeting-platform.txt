@@ -1,0 +1,207 @@
+DIRECTOR MEMO
+FROM: director
+TO: debt
+DATE: 2026-05-13
+TOPIC: New Product Directive — Flexible Budgeting Platform + Debt-First Readiness
+
+==================================================
+1. DIRECTIVE RESET
+==================================================
+
+MoneyTrees is no longer being framed around the user's former Notion template or a twice-per-month paycheck workflow.
+
+That prior workflow is historical context only. It should not be treated as the product blueprint.
+
+The new directive is broader:
+
+MoneyTrees must become a full-fledged personal finance product that can compete with leading budgeting and financial apps while adapting to different budgeting methods, income situations, and debt-pressure states.
+
+Core product position:
+MoneyTrees should adapt to how the user's money actually works.
+
+Immediate validation scenario:
+The user is currently unemployed and wants to start tracking financials now, specifically debts. The product must support users with no active paycheck, unstable income, cash runway concerns, and debt accounts that may be behind, near delinquency, closed, or still owed.
+
+==================================================
+2. DEBT HUB IS A PHASE 1 PRIORITY
+==================================================
+
+Debt is now a core wedge for MoneyTrees, not a later add-on.
+
+The Debt Hub should help users understand the current state of every debt account, especially when money is tight or income is unstable.
+
+The product should not treat debt only as a payoff goal. It must also track account standing, risk state, required payments, fees, and recovery options.
+
+==================================================
+3. DEBT HUB V1 SCOPE
+==================================================
+
+Debt Hub v1 should support:
+
+- credit cards
+- personal loans
+- BNPL / pay-in-four plans
+- closed accounts still owed
+- accounts with missed payments
+- accounts near delinquency
+- accounts in delinquency
+- accounts in hardship/payment arrangements
+- collections/charge-off status where applicable
+
+Required account-level fields:
+
+- creditor / issuer
+- account nickname
+- account type
+- current balance
+- credit limit where relevant
+- available credit where relevant
+- APR / interest rate
+- minimum payment
+- due date
+- past-due amount
+- cure amount where known
+- fees
+- account standing
+- missed payment count
+- last payment date
+- last payment amount
+- hardship/payment arrangement notes
+- autopay status
+- linked Bills records
+- linked payment history
+- user notes
+
+==================================================
+4. DEBT STATUS MODEL
+==================================================
+
+Debt must support clear account states.
+
+Initial status set:
+
+- current / good standing
+- due soon
+- payment due
+- missed payment
+- past due
+- delinquent
+- closed but owed
+- charged off
+- collections
+- hardship / arrangement
+- unknown / needs verification
+
+Debt may display status clearly.
+Debt should not invent hidden risk meaning without shared system logic.
+Atlas can interpret the status and recommend next moves.
+
+==================================================
+5. VISUAL EXPERIENCE DIRECTION
+==================================================
+
+The intended user experience includes a visual debt/card surface.
+
+For credit cards, the user should be able to:
+
+1. See the card/account as a tile.
+2. Click into the card.
+3. See a summary of balance, APR, due date, minimum, account status, missed payments, and notes.
+4. See linked bill/payment records.
+5. See whether the account is current, behind, delinquent, closed, or still owed.
+6. Understand what information is missing.
+
+This should feel like an account command center, not just a payoff calculator.
+
+==================================================
+6. UNEMPLOYED / NO ACTIVE INCOME REQUIREMENTS
+==================================================
+
+Debt Hub must work when the user has no active paycheck.
+
+For unemployed users, Debt should emphasize:
+
+- minimum required payments
+- past-due amounts
+- cure amounts
+- fees accumulating
+- account standing
+- due dates
+- payment arrangements
+- cash runway dependency
+- which debts are linked to active obligations
+- what is unknown or needs verification
+
+Debt should not assume the user has enough cash to execute a normal payoff plan.
+
+==================================================
+7. RELATIONSHIP TO OTHER TEAMS
+==================================================
+
+Bills:
+- owns obligation/payment record truth
+- debt-linked bill/payment rows must remain traceable
+
+Overview:
+- surfaces debt summary and current attention signals
+- should not redefine debt severity locally
+
+Reporting:
+- analyzes debt movement, fees, missed payments, payoff progress, and status changes over time
+- should not recommend actions
+
+Atlas:
+- interprets debt state
+- compares tradeoffs
+- recommends next moves when shared truth supports it
+- must explain confidence and missing data limits
+
+Debt:
+- owns account-level debt structure and status display
+- does not become a generic advisor
+
+==================================================
+8. COMPETITIVE TARGET
+==================================================
+
+Most budgeting apps include some form of debt payoff planning.
+MoneyTrees should go deeper.
+
+MoneyTrees should support debt recovery, not just debt optimization.
+
+Target differentiation:
+
+- account standing clarity
+- missed-payment tracking
+- cure amount support
+- delinquency/closure/collections state support
+- BNPL-native tracking
+- Bills-linked payment truth
+- Atlas-guided tradeoffs
+- usable experience for users with unstable or no income
+
+==================================================
+9. IMMEDIATE ACCEPTANCE STANDARD
+==================================================
+
+Debt Hub Phase 1 is successful when an unemployed user can open the app and answer:
+
+1. What debts do I have?
+2. What is the status of each debt?
+3. Which debts are current, missed, delinquent, closed, or unknown?
+4. What is the minimum due?
+5. What is past due?
+6. What is the cure amount if known?
+7. What fees or interest matter right now?
+8. What did I pay last and when?
+9. Which debts are tied to upcoming Bills records?
+10. What information is missing before Atlas can safely advise?
+
+==================================================
+10. FINAL DIRECTIVE
+==================================================
+
+Debt Hub is now central to MoneyTrees' Phase 1 polish.
+
+Build it as a practical debt-status and debt-recovery workspace first.
+Then layer payoff strategy and optimization on top once the account truth is clean.
