@@ -1,0 +1,45 @@
+DIRECTOR MEMO
+FROM: director
+TO: reporting
+DATE: 2026-05-13
+TOPIC: Phase Roadmap Completion Criteria — Phases 1-5
+
+Reporting remains the analysis layer.
+
+PHASE 1
+- Support debt, obligation, and runway reporting
+- Support unemployed/no-income analysis
+- Preserve comparison clarity
+
+PHASE 1 COMPLETE WHEN
+- Users can understand obligations, debt movement, fees, and runway changes
+
+PHASE 2
+- Support reporting across all budgeting methods
+- Improve category/envelope/cash-flow reporting
+
+PHASE 2 COMPLETE WHEN
+- Reporting adapts correctly to budgeting method context
+
+PHASE 3
+- Support richer analytical outputs for Atlas
+- Improve trend visibility and state-change analysis
+
+PHASE 3 COMPLETE WHEN
+- Atlas can rely on Reporting trends safely
+- State transitions remain inspectable
+
+PHASE 4
+- Expand reporting to broader financial ecosystem data
+- Support investments, net worth, and linked-account reporting
+
+PHASE 4 COMPLETE WHEN
+- Users can analyze broader financial patterns cleanly
+
+PHASE 5
+- Support automation-aware reporting and long-term analysis
+- Preserve auditability and historical consistency
+
+PHASE 5 COMPLETE WHEN
+- Long-term financial analysis remains trustworthy
+- Automated reporting changes remain explainable
