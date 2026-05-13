@@ -1,0 +1,180 @@
+DIRECTOR MEMO
+FROM: director
+TO: overview
+DATE: 2026-05-13
+TOPIC: New Product Directive — Flexible Budgeting Platform + Debt-First Readiness
+
+==================================================
+1. DIRECTIVE RESET
+==================================================
+
+MoneyTrees is no longer being framed around the user's former Notion template or a twice-per-month paycheck workflow.
+
+That prior workflow is historical context only. It should not be treated as the product blueprint.
+
+The new directive is broader:
+
+MoneyTrees must become a full-fledged personal finance product that can compete with leading budgeting and financial apps while adapting to different budgeting methods, income situations, and debt-pressure states.
+
+Core product position:
+MoneyTrees should adapt to how the user's money actually works.
+
+Immediate validation scenario:
+The user is currently unemployed and wants to start tracking financials now, specifically debts. The product must support users with no active paycheck, unstable income, cash runway concerns, and debt accounts that may be behind, near delinquency, closed, or still owed.
+
+==================================================
+2. OVERVIEW ROLE UNDER THE NEW DIRECTIVE
+==================================================
+
+Overview remains the command-center surface.
+
+Its job is to show the user's current financial state quickly and route them into the right workspace.
+
+Overview should not become:
+
+- a second Bills page
+- a second Debt Hub
+- a mini Reporting page
+- an Atlas clone
+- a hidden urgency engine
+
+Overview should surface signal through layout and clear factual summaries.
+Atlas handles interpretation and recommendations.
+
+==================================================
+3. REQUIRED OVERVIEW SIGNALS
+==================================================
+
+Overview should support the new product spine by showing:
+
+- selected budgeting method
+- selected income mode
+- current cash / available balance where known
+- cash runway when income mode requires it
+- unpaid obligations
+- past-due obligations
+- debt account summary
+- debt status summary
+- upcoming required payments
+- late fees / cost drag when meaningful
+- safe-to-spend or reserve status depending on method
+- routing into Bills, Debt, Budget, Reporting, and Atlas
+
+For unemployed/no-active-income users, Overview should emphasize:
+
+- current cash
+- known obligations
+- essentials coverage
+- debt minimums
+- past-due items
+- runway estimate
+- accounts needing verification
+- direct route into Debt Hub and Bills
+
+==================================================
+4. BUDGETING METHOD AWARENESS
+==================================================
+
+Overview must not assume one budgeting model.
+
+It should adapt to:
+
+- Simple tracking
+- Zero-based budgeting
+- Envelope budgeting
+- Cash-flow budgeting
+- Safe-to-spend budgeting
+- Category budgeting
+- Debt-first budgeting
+- Goal-first budgeting
+- Irregular-income budgeting
+- Survival / bare-minimum budgeting
+
+Overview can show the active method and the top signals relevant to that method.
+
+Examples:
+
+- Zero-based: assigned vs unassigned dollars
+- Envelope: envelope balances and overspent envelopes
+- Cash-flow: upcoming inflows/outflows and projected low points
+- Safe-to-spend: usable money after obligations/reserves
+- Debt-first: debt minimums, past-due amounts, account states
+- Survival mode: essentials, runway, required obligations
+
+==================================================
+5. INCOME MODE AWARENESS
+==================================================
+
+Overview must support multiple income states:
+
+- stable salary
+- variable income
+- freelance / gig
+- unemployed / no active income
+- transitional
+- one-time cash / temporary support
+
+Do not make stable paycheck income the default assumption for all layouts.
+
+If no active income is selected, Overview should shift away from paycheck-cycle framing and toward runway, obligation coverage, debt status, and shortfall visibility.
+
+==================================================
+6. DEBT SUMMARY REQUIREMENTS
+==================================================
+
+Debt visibility is a Phase 1 priority.
+
+Overview should provide a compact debt summary without replacing the Debt Hub.
+
+Potential summary signals:
+
+- total debt balance where known
+- number of active debt accounts
+- number current
+- number past due / missed / delinquent
+- minimums due soon
+- known cure amounts
+- unknown/missing data count
+- fees present
+
+Overview should route users into Debt Hub for detail.
+
+==================================================
+7. COMPETITIVE TARGET
+==================================================
+
+Market dashboards often show net worth, spending, cash flow, subscriptions, and goals.
+MoneyTrees must compete with that breadth while staying more adaptive.
+
+Overview should feel closer to a high-signal command center than a decorative dashboard.
+
+The aim is not to show every metric.
+The aim is to show the current state that matters for the user's active method and income situation.
+
+==================================================
+8. IMMEDIATE ACCEPTANCE STANDARD
+==================================================
+
+Overview Phase 1 is successful when an unemployed user can open the app and answer:
+
+1. What mode am I in?
+2. How much cash do I have available?
+3. How long can I cover known essentials?
+4. What obligations are unpaid or past due?
+5. What debts are active?
+6. Which debt accounts are current, missed, delinquent, closed, or unknown?
+7. What fees or minimums matter right now?
+8. Where do I go next to inspect or update the data?
+9. What can Atlas explain from the current truth?
+
+==================================================
+9. FINAL DIRECTIVE
+==================================================
+
+Overview should show the state clearly, adapt to the user's selected method and income mode, and route into the right workspace.
+
+Do not hardcode paycheck assumptions.
+Do not copy the old Notion workflow.
+Do not interpret beyond Overview's boundary.
+
+Make the first screen useful for stable users, irregular-income users, and unemployed users alike.
