@@ -1,0 +1,50 @@
+DIRECTOR MEMO
+FROM: director
+TO: overview
+DATE: 2026-05-13
+TOPIC: Phase Roadmap Completion Criteria — Phases 1-5
+
+Overview remains the command-center surface.
+
+PHASE 1
+- Show current financial state
+- Support unemployed/no-income workflows
+- Surface cash, runway, obligations, debt summaries
+- Route users into Bills, Debt, Reporting, and Atlas
+
+PHASE 1 COMPLETE WHEN
+- Users can quickly understand their financial state
+- Runway and obligations are visible
+- Debt summaries are understandable
+
+PHASE 2
+- Adapt Overview to all budgeting methods
+- Improve layout prioritization
+- Improve cash-flow visibility
+
+PHASE 2 COMPLETE WHEN
+- Overview adapts cleanly to multiple budgeting methods
+- Users can identify the most important signals quickly
+
+PHASE 3
+- Support richer analytical summaries from Reporting and Atlas
+- Improve trust-state visibility
+
+PHASE 3 COMPLETE WHEN
+- Users can understand what changed and why it matters
+- Atlas routing and trust states are understandable
+
+PHASE 4
+- Expand Overview to broader financial ecosystem data
+- Support investments, net worth, linked accounts
+
+PHASE 4 COMPLETE WHEN
+- Users can understand broader financial position without clutter
+
+PHASE 5
+- Support automation-aware summaries
+- Surface persistent financial patterns safely
+
+PHASE 5 COMPLETE WHEN
+- Overview remains high-signal despite ecosystem complexity
+- Automated insights remain understandable and inspectable
