@@ -1,0 +1,125 @@
+DIRECTOR MEMO
+FROM: director
+TO: atlas
+DATE: 2026-05-13
+TOPIC: Phase Roadmap Completion Criteria — Phases 1-5
+
+==================================================
+1. PURPOSE
+==================================================
+
+This memo extends the new product directive into a phased roadmap.
+
+MoneyTrees is now operating toward a five-phase buildout:
+
+Phase 1 — Financial Survival + Core Usability
+Phase 2 — Full Budgeting Platform
+Phase 3 — Financial Intelligence Layer
+Phase 4 — Full Financial Ecosystem
+Phase 5 — Platform + Automation
+
+Each phase is considered complete only when all relevant teams meet their acceptance criteria while preserving section boundaries.
+
+==================================================
+2. ATLAS PHASE RESPONSIBILITIES
+==================================================
+
+PHASE 1 — Financial Survival + Core Usability
+
+Atlas must support immediate use for users in unstable or no-income states.
+
+Tasks:
+- Explain active income mode and budgeting method in plain language.
+- Support unemployed/no-active-income guidance without assuming paycheck cycles.
+- Interpret Debt Hub and Bills truth without redefining it.
+- Provide lightweight guidance for cash runway, past-due obligations, debt minimums, and missing data.
+- Support simple scenario comparisons: preserve cash vs. pay minimum vs. cure account.
+- Respect trust limits when data is missing, stale, manual, or unknown.
+
+Complete when:
+- Atlas can explain the user's current financial state from shared truth.
+- Atlas can identify missing debt/bill/cash data before making stronger claims.
+- Atlas can give cautious, traceable guidance for an unemployed user tracking debts.
+- Atlas does not override Bills, Debt, Overview, Reporting, pressure, or risk definitions.
+
+PHASE 2 — Full Budgeting Platform
+
+Atlas must help users choose, understand, and maintain budgeting methods.
+
+Tasks:
+- Explain differences between simple tracking, zero-based, envelope, cash-flow, safe-to-spend, category, debt-first, goal-first, irregular-income, and survival budgeting.
+- Recommend a budgeting method only when the user's data and stated situation support it.
+- Explain tradeoffs between methods.
+- Help users transition between methods without losing financial truth.
+- Provide method-specific guidance while remaining downstream of system logic.
+
+Complete when:
+- Atlas can guide budgeting method selection with clear reasons.
+- Atlas can explain when a method is a poor fit.
+- Atlas can adapt recommendations to the active method.
+- Atlas does not hardcode one budgeting philosophy.
+
+PHASE 3 — Financial Intelligence Layer
+
+Atlas becomes a deeper strategic advisor.
+
+Tasks:
+- Implement stronger scenario comparison.
+- Use trust states, recommendation levels, field completeness gates, and cash danger gates.
+- Track follow-through state for recommendations.
+- Explain confidence and missing-data limitations.
+- Compare tradeoffs between debt payoff, cash preservation, fees, risk, goals, and obligations.
+- Surface recurring patterns from Reporting without becoming Reporting.
+
+Complete when:
+- Atlas recommendations are traceable to shared truth.
+- Atlas can separate explain-only, verify-first, directional, and specific-action recommendations.
+- Atlas can track whether recommendations were viewed, pinned, snoozed, done, reopened, or expired.
+- Atlas can compare scenarios without changing live data.
+
+PHASE 4 — Full Financial Ecosystem
+
+Atlas expands across the broader finance system.
+
+Tasks:
+- Interpret account aggregation, net worth, investments, credit, tax-adjacent exports, insurance, and subscriptions where data exists.
+- Explain how broader financial areas affect budget, debt, runway, and goals.
+- Avoid giving regulated advice beyond product scope.
+- Route users to the correct product section instead of trying to answer everything inline.
+
+Complete when:
+- Atlas can summarize the user's whole financial picture without losing traceability.
+- Atlas can explain relationships between debt, budget, net worth, investments, and cash flow.
+- Atlas remains clearly bounded and avoids unsupported financial/legal/tax certainty.
+
+PHASE 5 — Platform + Automation
+
+Atlas becomes persistent and automation-aware.
+
+Tasks:
+- Monitor changes in financial truth and surface meaningful changes.
+- Support recurring advisor reviews.
+- Support automation suggestions where safe and user-approved.
+- Preserve long-term financial memory through structured, inspectable history.
+- Detect when prior recommendations became stale or invalid.
+- Coordinate with API/integration surfaces without becoming hidden automation logic.
+
+Complete when:
+- Atlas can operate as a persistent advisor system with traceable history.
+- Atlas can notify or surface changed conditions without inventing new truth.
+- Atlas can support automation workflows only where user consent and system truth allow.
+- Atlas remains explainable, bounded, and auditable.
+
+==================================================
+3. GLOBAL COMPLETION RULE
+==================================================
+
+No phase is complete for Atlas unless:
+
+- recommendations are grounded
+- confidence is honest
+- tradeoffs are visible
+- missing data is acknowledged
+- section boundaries are preserved
+- Atlas explains and recommends without redefining the system
+
