@@ -1,0 +1,194 @@
+DIRECTOR MEMO
+FROM: director
+TO: atlas
+DATE: 2026-05-13
+TOPIC: New Product Directive — Flexible Budgeting Platform + Debt-First Readiness
+
+==================================================
+1. DIRECTIVE RESET
+==================================================
+
+MoneyTrees is no longer being framed around the user's former Notion template or a twice-per-month paycheck workflow.
+
+That prior workflow is historical context only. It should not be treated as the product blueprint.
+
+The new directive is broader:
+
+MoneyTrees must become a full-fledged personal finance product that can compete with leading budgeting and financial apps while adapting to different budgeting methods, income situations, and debt-pressure states.
+
+Core product position:
+MoneyTrees should adapt to how the user's money actually works.
+
+Immediate validation scenario:
+The user is currently unemployed and wants to start tracking financials now, specifically debts. The product must support users with no active paycheck, unstable income, cash runway concerns, and debt accounts that may be behind, near delinquency, closed, or still owed.
+
+==================================================
+2. PRODUCT PRINCIPLES
+==================================================
+
+1. Do not hardcode one budgeting philosophy.
+2. Do not assume stable employment or recurring paycheck timing.
+3. Do not replicate the Notion template.
+4. Do not make category budgeting the default center of the product.
+5. Support multiple budgeting methods as first-class modes.
+6. Treat debt tracking and debt-status clarity as a core wedge.
+7. Keep product surfaces aligned to their ownership boundaries.
+8. Make the app usable for immediate financial tracking before it becomes feature-complete.
+
+==================================================
+3. BUDGETING METHODS MONEYTREES MUST SUPPORT
+==================================================
+
+MoneyTrees should support a method-agnostic budget engine with selectable or blendable modes:
+
+- Simple tracking
+- Zero-based budgeting
+- Envelope budgeting
+- Cash-flow budgeting
+- Safe-to-spend budgeting
+- Category budgeting
+- Debt-first budgeting
+- Goal-first budgeting
+- Irregular-income budgeting
+- Survival / bare-minimum budgeting
+- Household / partner budgeting later
+
+The budget method should be a configurable layer, not a hardcoded app identity.
+
+==================================================
+4. INCOME MODES MONEYTREES MUST SUPPORT
+==================================================
+
+MoneyTrees must not assume stable salary income.
+
+Required income modes:
+
+- Stable salary
+- Variable income
+- Freelance / gig income
+- Unemployed / no active income
+- Transitional income
+- One-time cash / temporary support
+
+For unemployed/no-active-income mode, the product should emphasize:
+
+- current cash
+- known obligations
+- minimum survival costs
+- debt minimums
+- past-due states
+- cure amounts where available
+- cash runway
+- shortfall windows
+- debt risk status
+
+==================================================
+5. PHASE 1 PRODUCT SPINE
+==================================================
+
+Phase 1 should prioritize making MoneyTrees usable now.
+
+Required spine:
+
+1. Budget Method Selector
+   - User chooses or changes budgeting style.
+   - The app behavior adapts without rebuilding the full data model.
+
+2. Income Mode Selector
+   - Stable, variable, unemployed, gig/freelance, transitional.
+   - No active employment must be a normal state, not an edge case.
+
+3. Debt Hub v1
+   - Credit cards, loans, BNPL, collections/closed accounts where relevant.
+   - Track balance, APR, minimum due, due date, missed payments, account standing, delinquency risk, fees, cure amount, payment arrangements, and notes.
+
+4. Bills Truth Cleanup
+   - Clear due/payment states.
+   - Fees, partial payments, remaining obligation, variable amount handling, recurring templates.
+
+5. Cash Runway / Safe-to-Spend
+   - Calculate usable money based on method, current cash, obligations, reserves, and income mode.
+   - For unemployed users, runway is more important than paycheck planning.
+
+6. Overview Command Center
+   - Fast view of current financial state, obligations, past-due items, debt status, runway, and next routing.
+
+7. Atlas Guidance
+   - Atlas explains budgeting method fit, debt tradeoffs, scenario outcomes, and next moves based on shared truth only.
+
+==================================================
+6. TEAM-SPECIFIC DIRECTION
+==================================================
+
+ATLAS
+- Atlas must guide users through method selection and financial tradeoffs.
+- Atlas should explain why a budgeting method fits a user's current situation.
+- Atlas must support debt-first and unemployment scenarios without making unsupported claims.
+- Atlas should compare scenarios such as preserve cash vs. pay minimum vs. cure account.
+- Atlas must remain downstream of shared truth and avoid redefining debt, bill, risk, or pressure logic.
+
+BILLS
+- Bills remains the operational truth layer for obligations.
+- Improve bill records so debt payments, subscriptions, variable bills, partial payments, and late fees are cleanly tracked.
+- Bills should not become an advisor surface.
+- Bills must support the Debt Hub by preserving clean obligation/payment truth.
+
+DEBT
+- Debt Hub is now a core Phase 1 priority.
+- Build around account-level debt status, not just payoff goals.
+- Track current standing, missed payments, delinquency/closure/charge-off states, APR, minimum due, cure amounts, fees, and payment arrangements.
+- Credit-card visual cards and account detail views are part of the intended experience.
+
+OVERVIEW
+- Overview should become the fast command center for the user's current financial state.
+- It should show selected budget method, income mode, current cash/runway, unpaid obligations, past-due items, debt-status summary, and routing into Bills/Debt/Atlas.
+- Overview must prioritize signal through layout without inventing local urgency logic.
+
+REPORTING
+- Reporting should analyze budgeting method performance, debt movement, late fees, missed payments, obligation trends, and runway changes.
+- Reporting must stay analytical: what changed, compared to what, and why it matters.
+- Reporting should not recommend actions or become Atlas.
+
+==================================================
+7. COMPETITIVE TARGET
+==================================================
+
+MoneyTrees should combine:
+
+- the budgeting discipline of YNAB
+- the dashboard breadth of Monarch and Copilot
+- the cash-flow clarity of Simplifi and PocketGuard
+- the subscription/bill awareness of Rocket Money
+- the flexibility of Lunch Money and Tiller
+- the envelope option of Goodbudget
+- a stronger debt-status and debt-recovery experience than the market usually provides
+- a structured, traceable Atlas advisor layer instead of generic chatbot advice
+
+MoneyTrees should not copy any single competitor.
+The advantage is flexibility plus debt-aware guidance.
+
+==================================================
+8. IMMEDIATE ACCEPTANCE STANDARD
+==================================================
+
+MoneyTrees should be considered Phase 1 usable when an unemployed user can open the app and answer:
+
+1. How much cash do I have available?
+2. What obligations are due or past due?
+3. Which debts are at risk?
+4. What is the status of each debt account?
+5. What minimums, cure amounts, or fees matter right now?
+6. How long can I cover essentials with no active paycheck?
+7. Which budgeting method fits my current situation?
+8. What tradeoffs exist if I pay one debt versus preserving cash?
+
+==================================================
+9. FINAL DIRECTIVE
+==================================================
+
+Stop treating the old Notion workflow as the destination.
+Treat it only as evidence that users need flexibility.
+
+The destination is a flexible personal finance platform with strong debt tracking, method-aware budgeting, income-state awareness, and Atlas-guided interpretation.
+
+Build toward a product the user can start using immediately while unemployed, then expand toward full market parity and differentiation.
