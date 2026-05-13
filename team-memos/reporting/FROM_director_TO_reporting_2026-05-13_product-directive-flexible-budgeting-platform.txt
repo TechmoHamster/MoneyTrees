@@ -1,0 +1,183 @@
+DIRECTOR MEMO
+FROM: director
+TO: reporting
+DATE: 2026-05-13
+TOPIC: New Product Directive — Flexible Budgeting Platform + Debt-First Readiness
+
+==================================================
+1. DIRECTIVE RESET
+==================================================
+
+MoneyTrees is no longer being framed around the user's former Notion template or a twice-per-month paycheck workflow.
+
+That prior workflow is historical context only. It should not be treated as the product blueprint.
+
+The new directive is broader:
+
+MoneyTrees must become a full-fledged personal finance product that can compete with leading budgeting and financial apps while adapting to different budgeting methods, income situations, and debt-pressure states.
+
+Core product position:
+MoneyTrees should adapt to how the user's money actually works.
+
+Immediate validation scenario:
+The user is currently unemployed and wants to start tracking financials now, specifically debts. The product must support users with no active paycheck, unstable income, cash runway concerns, and debt accounts that may be behind, near delinquency, closed, or still owed.
+
+==================================================
+2. REPORTING ROLE UNDER THE NEW DIRECTIVE
+==================================================
+
+Reporting remains the analysis layer.
+
+Reporting should help the user understand:
+
+- what changed
+- compared to what
+- how the selected period looks
+- how debts moved
+- how fees changed
+- how obligations changed
+- how budgeting method performance changed
+- how runway changed where applicable
+
+Reporting must not become Atlas.
+Reporting must not recommend actions.
+Reporting must not invent local urgency, pressure, risk, or priority logic.
+
+==================================================
+3. REQUIRED REPORTING EXPANSION
+==================================================
+
+Reporting should support analysis across multiple budgeting methods and income modes.
+
+Budgeting method reporting should include, where applicable:
+
+- Zero-based: assigned, unassigned, overspent, category variance
+- Envelope: envelope balances, overspent envelopes, rollover behavior
+- Cash-flow: inflows, outflows, projected low points, shortfall windows
+- Safe-to-spend: usable money trend, obligation/reserve impact
+- Category: budgeted vs actual by category
+- Debt-first: minimums due, past-due amounts, fees, debt movement, status changes
+- Goal-first: funding progress, contribution consistency, target drift
+- Irregular income: income volatility, obligation coverage, reserve usage
+- Survival mode: essentials coverage, runway changes, unpaid required obligations
+
+Reporting should explain patterns only.
+Atlas handles what to do about them.
+
+==================================================
+4. DEBT REPORTING REQUIREMENTS
+==================================================
+
+Debt reporting is a Phase 1 priority.
+
+Required debt analysis areas:
+
+- total debt balance trend
+- debt account count
+- current vs past-due account counts
+- missed payment count
+- late fees over time
+- interest/fee cost drag where tracked
+- minimum payments due over time
+- payments made over time
+- payoff progress where enough data exists
+- status transitions over time
+- accounts with missing/unknown data
+- BNPL installment progress
+- closed-but-owed balances where tracked
+
+Reporting should not say which debt to pay first.
+That belongs to Atlas.
+
+==================================================
+5. UNEMPLOYED / NO ACTIVE INCOME REPORTING
+==================================================
+
+Reporting must work when the user has no active paycheck.
+
+For unemployed/no-active-income mode, useful Reporting reads include:
+
+- cash runway over time
+- obligations due during selected window
+- unpaid vs paid obligations
+- essentials coverage trend
+- minimum debt payments due
+- past-due debt count
+- late fees accrued
+- cash outflow by obligation type
+- shortfall windows
+- reserve depletion
+
+Reporting should avoid implying that normal recurring-income assumptions apply.
+
+==================================================
+6. PERIOD AND COMPARISON LOGIC
+==================================================
+
+Reporting must support flexible period logic, not just monthly reads.
+
+Needed range types:
+
+- week
+- month
+- quarter
+- year
+- custom range
+- budget cycle where configured
+- income cycle where configured
+- unemployment/runway window where relevant
+
+Every Reporting module must clearly preserve:
+
+1. selected period
+2. comparison period
+3. active budgeting method
+4. active income mode
+5. data completeness limits
+
+==================================================
+7. COMPETITIVE TARGET
+==================================================
+
+Competitors commonly offer spending reports, net worth charts, category breakdowns, and cash-flow summaries.
+
+MoneyTrees should compete by making Reporting method-aware and debt-aware.
+
+The differentiator is not more charts.
+The differentiator is better analytical truth:
+
+- budget method context
+- income-state context
+- debt-status history
+- fees and missed-payment analysis
+- runway movement
+- clean drill-down to Bills and Debt source records
+
+==================================================
+8. IMMEDIATE ACCEPTANCE STANDARD
+==================================================
+
+Reporting Phase 1 is successful when an unemployed user can answer:
+
+1. How did my cash runway change?
+2. How much did I owe during this period?
+3. How much did I pay?
+4. How much remains unpaid?
+5. How many debts are current, past due, delinquent, closed, or unknown?
+6. How much did fees cost me?
+7. Which debt statuses changed?
+8. What obligations drove the selected period?
+9. What data is missing or too sparse for reliable analysis?
+10. What should Atlas review next from this analytical truth?
+
+==================================================
+9. FINAL DIRECTIVE
+==================================================
+
+Reporting must expand beyond simple monthly summaries.
+
+Analyze financial patterns through the lens of the user's selected budgeting method, income mode, debt state, and reporting period.
+
+Keep the Reporting boundary clean:
+Observed change -> comparison baseline -> analytical meaning.
+Stop there.
