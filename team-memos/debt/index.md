@@ -1,13 +1,16 @@
 # Debt Memos Index
 
 ## Latest Memo
-- File: team-memos/debt/FROM_director_TO_debt_2026-04-30_product-capability-rundown-request.txt
-- Date: 2026-04-30
-- Topic: Product Capability Rundown Request
+- File: team-memos/debt/FROM_director_TO_debt_2026-05-13_product-directive-flexible-budgeting-platform.txt
+- Date: 2026-05-13
+- Topic: Product Directive Flexible Budgeting Platform
 
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/debt/FROM_director_TO_debt_2026-04-30_product-capability-rundown-request.txt
+  - Date: 2026-04-30
+  - Topic: Product Capability Rundown Request
 - File: team-memos/debt/FROM_reporting_TO_debt_2026-04-14_debt-v2-2-reporting-response.txt
   - Date: 2026-04-14
   - Topic: Debt V2 2 Reporting Response
@@ -35,9 +38,6 @@
 - File: team-memos/debt/FROM_debt_TO_debt_2026-04-13_v2b-review-concerns.txt
   - Date: 2026-04-13
   - Topic: V2B Review Concerns
-- File: team-memos/debt/FROM_investment-hq_TO_debt_2026-04-12_debt-ui-memo.txt
-  - Date: 2026-04-12
-  - Topic: Debt Ui Memo
 
 ---
 
