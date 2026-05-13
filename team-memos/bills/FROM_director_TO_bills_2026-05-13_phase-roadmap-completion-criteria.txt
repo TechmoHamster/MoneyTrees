@@ -1,0 +1,111 @@
+DIRECTOR MEMO
+FROM: director
+TO: bills
+DATE: 2026-05-13
+TOPIC: Phase Roadmap Completion Criteria — Phases 1-5
+
+==================================================
+1. BILLS ROLE ACROSS ALL PHASES
+==================================================
+
+Bills remains the operational truth layer for obligations and payments.
+
+Bills owns:
+- obligation records
+- payment records
+- recurring structures
+- fee tracking
+- partial payment truth
+- variable bill handling
+- obligation/payment relationships
+
+Bills does not become Atlas, Overview, Reporting, or Debt.
+
+==================================================
+2. PHASE RESPONSIBILITIES
+==================================================
+
+PHASE 1 — Financial Survival + Core Usability
+
+Tasks:
+- Build reliable obligation tracking.
+- Support recurring and one-time bills.
+- Support partial payments, late fees, remaining balances, and past-due states.
+- Support subscriptions, debt payments, loans, BNPL installments, and variable bills.
+- Support unemployed/no-income use cases.
+- Ensure Bills can power Overview, Debt, Reporting, and Atlas with clean truth.
+
+Complete when:
+- Users can track obligations and payments reliably.
+- Past-due and unpaid obligations are clear.
+- Debt-linked obligations preserve traceability.
+- Variable bills and partial payments work cleanly.
+- Bills can support debt-pressure workflows.
+
+PHASE 2 — Full Budgeting Platform
+
+Tasks:
+- Support all budgeting methods cleanly.
+- Improve recurring template logic.
+- Improve grouping/filtering/search.
+- Support envelope/category relationships where needed.
+- Support budgeting-cycle flexibility.
+- Improve bulk management workflows.
+
+Complete when:
+- Bills can operate cleanly under multiple budgeting methods.
+- Users can manage obligations at scale.
+- Recurring and variable workflows feel operationally stable.
+
+PHASE 3 — Financial Intelligence Layer
+
+Tasks:
+- Expose cleaner analytical metadata to Atlas and Reporting.
+- Preserve obligation/payment history for scenario analysis.
+- Support clearer state transitions.
+- Improve field completeness visibility.
+
+Complete when:
+- Bills truth supports trustworthy Atlas analysis.
+- Historical payment/obligation state changes are inspectable.
+- Bills remains authoritative and auditable.
+
+PHASE 4 — Full Financial Ecosystem
+
+Tasks:
+- Support linked financial accounts.
+- Improve recurring detection.
+- Support imported obligation/payment matching.
+- Support subscription/service/provider relationships.
+- Improve cross-product consistency.
+
+Complete when:
+- Bills can integrate with broader account ecosystems.
+- Imported data preserves traceability.
+- Manual and imported records coexist cleanly.
+
+PHASE 5 — Platform + Automation
+
+Tasks:
+- Support automation hooks safely.
+- Preserve auditability of automated changes.
+- Support automation review and rollback.
+- Preserve source-of-truth integrity during automation.
+
+Complete when:
+- Automated bill/payment updates remain inspectable.
+- Users can verify what changed and why.
+- Bills truth remains trustworthy under automation.
+
+==================================================
+3. GLOBAL COMPLETION RULE
+==================================================
+
+No phase is complete for Bills unless:
+
+- obligation truth is reliable
+- payment truth is traceable
+- recurring logic is stable
+- fee/partial-payment handling is inspectable
+- debt-linked records remain consistent
+- Bills preserves clean operational ownership
