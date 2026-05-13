@@ -1,13 +1,16 @@
 # Overview Memos Index
 
 ## Latest Memo
-- File: team-memos/overview/FROM_director_TO_overview_2026-05-13_product-directive-flexible-budgeting-platform.txt
+- File: team-memos/overview/FROM_director_TO_overview_2026-05-13_phase-roadmap-completion-criteria.txt
 - Date: 2026-05-13
-- Topic: Product Directive Flexible Budgeting Platform
+- Topic: Phase Roadmap Completion Criteria
 
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/overview/FROM_director_TO_overview_2026-05-13_product-directive-flexible-budgeting-platform.txt
+  - Date: 2026-05-13
+  - Topic: Product Directive Flexible Budgeting Platform
 - File: team-memos/overview/FROM_director_TO_overview_2026-04-30_product-capability-rundown-request.txt
   - Date: 2026-04-30
   - Topic: Product Capability Rundown Request
