@@ -1,0 +1,203 @@
+DIRECTOR MEMO
+FROM: director
+TO: bills
+DATE: 2026-05-13
+TOPIC: New Product Directive — Flexible Budgeting Platform + Debt-First Readiness
+
+==================================================
+1. DIRECTIVE RESET
+==================================================
+
+MoneyTrees is no longer being framed around the user's former Notion template or a twice-per-month paycheck workflow.
+
+That prior workflow is historical context only. It should not be treated as the product blueprint.
+
+The new directive is broader:
+
+MoneyTrees must become a full-fledged personal finance product that can compete with leading budgeting and financial apps while adapting to different budgeting methods, income situations, and debt-pressure states.
+
+Core product position:
+MoneyTrees should adapt to how the user's money actually works.
+
+Immediate validation scenario:
+The user is currently unemployed and wants to start tracking financials now, specifically debts. The product must support users with no active paycheck, unstable income, cash runway concerns, and debt accounts that may be behind, near delinquency, closed, or still owed.
+
+==================================================
+2. PRODUCT PRINCIPLES
+==================================================
+
+1. Do not hardcode one budgeting philosophy.
+2. Do not assume stable employment or recurring paycheck timing.
+3. Do not replicate the Notion template.
+4. Do not make category budgeting the default center of the product.
+5. Support multiple budgeting methods as first-class modes.
+6. Treat debt tracking and debt-status clarity as a core wedge.
+7. Keep product surfaces aligned to their ownership boundaries.
+8. Make the app usable for immediate financial tracking before it becomes feature-complete.
+
+==================================================
+3. BILLS TEAM DIRECTION
+==================================================
+
+Bills remains the operational truth layer for obligations.
+
+Bills must preserve clean, trustworthy records for:
+
+- bills
+- subscriptions
+- debt payments
+- credit-card minimum payments
+- loans
+- BNPL payments
+- variable bills
+- partial payments
+- fees
+- past-due obligations
+- remaining balances due
+
+Bills should not become a recommendation surface.
+Bills should not make advisory claims.
+Bills should not invent local urgency logic.
+
+Bills owns the record truth that Overview, Debt, Reporting, and Atlas consume.
+
+==================================================
+4. REQUIRED BILLS CAPABILITIES FOR PHASE 1
+==================================================
+
+1. Clear obligation statuses
+   - unpaid
+   - paid
+   - partially paid
+   - past due
+   - skipped / deferred where explicitly recorded
+   - canceled / inactive where applicable
+
+2. Payment detail capture
+   - amount paid
+   - paid date
+   - method
+   - note
+   - partial vs full clarity
+   - remaining amount
+
+3. Fee and cost breakdowns
+   - base amount
+   - late fee
+   - other fees
+   - total owed
+   - total paid
+   - remaining balance
+
+4. Recurring templates
+   - fixed subscriptions
+   - variable subscriptions/bills
+   - loan payments
+   - credit-card minimums
+   - BNPL installment schedules
+
+5. Variable bill support
+   - estimated amount
+   - actual invoice amount
+   - variance
+   - invoice received state
+   - update baseline option
+
+6. Debt-linked obligations
+   - bill/payment rows can connect to Debt Hub accounts
+   - payment state should update downstream debt views without hiding original bill truth
+
+7. Table-first workflow
+   - fast add/edit
+   - search/filter/sort/group
+   - clear row expansion
+   - bulk management where safe
+
+==================================================
+5. BUDGETING METHOD SUPPORT
+==================================================
+
+Bills must work across budgeting methods:
+
+- Zero-based budgeting
+- Envelope budgeting
+- Cash-flow budgeting
+- Safe-to-spend budgeting
+- Debt-first budgeting
+- Irregular-income budgeting
+- Survival / bare-minimum budgeting
+
+Bills should not be designed only for paycheck cycles.
+
+For unemployed/no-active-income users, Bills must make it easy to see:
+
+- what is due
+- what is past due
+- what amount is required
+- what amount is optional
+- what fees exist
+- what is linked to debt
+- what can be partially paid
+- what remains unpaid
+
+==================================================
+6. DEBT HUB DEPENDENCY
+==================================================
+
+Debt Hub depends on Bills preserving accurate payment and obligation truth.
+
+Bills must support:
+
+- minimum payment obligations
+- cure payments where entered
+- hardship/payment arrangement payments
+- late fees
+- missed payments
+- partial payments
+- closed accounts still owed
+- BNPL installments
+
+Bills should expose this data cleanly. Debt/Atlas can interpret it.
+
+==================================================
+7. COMPETITIVE TARGET
+==================================================
+
+Market apps commonly show upcoming bills and subscriptions.
+MoneyTrees must go deeper by making bill/payment truth operationally inspectable:
+
+- not just due dates
+- not just reminders
+- not just totals
+- full traceability of amount, fee, payment, status, and debt relationship
+
+This is how Bills helps MoneyTrees compete with Simplifi, PocketGuard, Rocket Money, Monarch, YNAB, Lunch Money, and Tiller without copying any one of them.
+
+==================================================
+8. IMMEDIATE ACCEPTANCE STANDARD
+==================================================
+
+Bills Phase 1 is successful when an unemployed user can open Bills and answer:
+
+1. What obligations are due?
+2. What is past due?
+3. What is linked to debt?
+4. What amount is required?
+5. What amount has been paid?
+6. What fees exist?
+7. What remains unpaid?
+8. Which records are recurring?
+9. Which records are variable/invoice-based?
+10. Which payment records feed the Debt Hub?
+
+==================================================
+9. FINAL DIRECTIVE
+==================================================
+
+Bills should remain the clean operational workspace.
+
+Do not chase dashboard behavior.
+Do not become Atlas.
+Do not overbuild recommendation language.
+
+Make obligation data easy to enter, easy to manage, and easy to trust across multiple budgeting methods and income states.
