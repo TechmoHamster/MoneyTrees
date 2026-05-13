@@ -1,13 +1,16 @@
 # Debt Memos Index
 
 ## Latest Memo
-- File: team-memos/debt/FROM_director_TO_debt_2026-05-13_product-directive-flexible-budgeting-platform.txt
+- File: team-memos/debt/FROM_director_TO_debt_2026-05-13_phase-roadmap-completion-criteria.txt
 - Date: 2026-05-13
-- Topic: Product Directive Flexible Budgeting Platform
+- Topic: Phase Roadmap Completion Criteria
 
 ---
 
 ## Previous Inbound Memos
+- File: team-memos/debt/FROM_director_TO_debt_2026-05-13_product-directive-flexible-budgeting-platform.txt
+  - Date: 2026-05-13
+  - Topic: Product Directive Flexible Budgeting Platform
 - File: team-memos/debt/FROM_director_TO_debt_2026-04-30_product-capability-rundown-request.txt
   - Date: 2026-04-30
   - Topic: Product Capability Rundown Request
@@ -35,9 +38,6 @@
 - File: team-memos/debt/FROM_investment-hq_TO_debt_2026-04-13_debt-v3-10-of-10-review.txt
   - Date: 2026-04-13
   - Topic: Debt V3 10 Of 10 Review
-- File: team-memos/debt/FROM_debt_TO_debt_2026-04-13_v2b-review-concerns.txt
-  - Date: 2026-04-13
-  - Topic: V2B Review Concerns
 
 ---
 
