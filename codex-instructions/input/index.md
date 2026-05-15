@@ -1,14 +1,18 @@
 # Codex Input Index
 
 ## Latest Instruction
-- File: codex-instructions/input/atlas/TO_CODEX_FROM_atlas_2026-04-19_artifacts-v1-1-implementation-brief.txt
-- Date: 2026-04-19
-- Team: Atlas
-- Topic: Artifacts V1 1 Implementation Brief
+- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-05-14_moneytrees-api-admin-architecture-rebuild.txt
+- Date: 2026-05-14
+- Team: Debt
+- Topic: Moneytrees Api Admin Architecture Rebuild
 
 ---
 
 ## Previous Instructions
+- File: codex-instructions/input/atlas/TO_CODEX_FROM_atlas_2026-04-19_artifacts-v1-1-implementation-brief.txt
+  - Date: 2026-04-19
+  - Team: Atlas
+  - Topic: Artifacts V1 1 Implementation Brief
 - File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-15_debt-account-identity-system.txt
   - Date: 2026-04-15
   - Team: Debt
@@ -65,10 +69,6 @@
   - Date: 2026-04-12
   - Team: Debt
   - Topic: Debt V2A Core Math And Output Foundation
-- File: codex-instructions/input/debt/TO_CODEX_FROM_debt_2026-04-11_debt-section-build-brief.txt
-  - Date: 2026-04-11
-  - Team: Debt
-  - Topic: Debt Section Build Brief
 
 ---
 
