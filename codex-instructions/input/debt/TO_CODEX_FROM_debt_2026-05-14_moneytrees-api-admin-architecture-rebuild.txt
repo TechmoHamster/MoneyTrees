@@ -1,0 +1,170 @@
+To: Codex
+From: Orion, Director (routed through Debt codex lane due current repo structure)
+Date: 2026-05-14
+Subject: MoneyTrees API + Admin Architecture Rebuild Directive
+
+Codex —
+
+This is an architectural directive.
+
+MoneyTrees is moving toward this target shape:
+- a front-facing user application
+- one MoneyTrees backend API / backend-for-frontend
+- Atlas operating behind that backend architecture
+- an internal admin panel for monitoring and operational review
+
+This is a controlled refactor request.
+It is not a request for a chaotic teardown.
+
+1. PRIMARY DIRECTION
+
+Build toward this model:
+
+Frontend App
+  -> MoneyTrees App API
+      -> domain services
+      -> Atlas service/module
+      -> persistence/data layer
+      -> protected admin operations where needed
+
+Core rule:
+The frontend should talk to one MoneyTrees backend.
+Do not make the browser coordinate multiple backend systems directly.
+
+2. API ORGANIZATION
+
+Organize the API by product/use-case routes, not by vague source buckets.
+
+Preferred route shape:
+- /api/dashboard
+- /api/bills
+- /api/debt
+- /api/reporting
+- /api/atlas
+- /api/health
+- /api/admin/... for protected internal operations where appropriate
+
+Interpretation:
+- dashboard = Overview-facing reads
+- bills = bill management and bill truth workflows
+- debt = debt account and debt-math workflows
+- reporting = analytical/reporting reads
+- atlas = advisor operations when directly invoked
+- health = system health check
+- admin = internal operational controls only
+
+3. FRONTEND RULE
+
+Preserve the front-facing product surfaces:
+- Overview
+- Bills
+- Debt
+- Reporting
+- Atlas user-facing surfaces
+
+This directive is about moving responsibility to the correct layer.
+It is not about deleting product identity.
+
+4. BACKEND RULE
+
+The MoneyTrees App API should own:
+- domain routing
+- shared contracts/types where appropriate
+- data access
+- orchestration across services
+- frontend-ready response shaping
+- Atlas invocation/orchestration
+- health/status visibility
+
+Do not push orchestration burden back into frontend code.
+
+5. ATLAS RULE
+
+Atlas remains downstream of shared truth.
+Atlas should sit behind the backend architecture.
+Atlas must not become a separate browser-managed system dependency.
+
+6. ADMIN PANEL RULE
+
+Build an internal admin/operations surface.
+Use the official ToolJet GitHub repo as the foundation/reference for this admin-panel work:
+- ToolJet/ToolJet
+
+This admin panel is internal-facing only.
+It should support monitoring, inspection, and operational review.
+
+It should NOT replace the public MoneyTrees user-facing app.
+
+7. CONTRACT RULE
+
+Do not rely on loose variable-name matching as the main integration strategy.
+Prefer:
+- stable route ownership
+- clear response contracts
+- typed payloads/schemas where practical
+- traceable data flow
+
+8. IMPLEMENTATION APPROACH
+
+Approach this as a controlled migration:
+- inspect current frontend-coupled logic
+- identify logic that should move into backend services/contracts
+- scaffold the backend/API structure
+- move orchestration responsibilities out of the frontend where appropriate
+- position Atlas behind the backend architecture
+- introduce the internal admin-panel foundation using ToolJet
+- preserve working value where possible during the transition
+
+Do not break working functionality carelessly.
+
+9. DELIVERABLES
+
+Return an architecture pass including, where possible:
+- backend/API structure or scaffold
+- route structure for the MoneyTrees API
+- service/module structure for bills, debt, reporting, and atlas orchestration
+- shared contracts/types introduced
+- admin-panel foundation work using ToolJet as directed
+- migration notes showing what moved from frontend responsibility to backend responsibility
+- blockers/risks/incomplete areas
+- proof of what changed
+
+10. OUTPUT PACKAGE
+
+Return the main Codex result to:
+- codex-instructions/output/debt/
+
+Requested output file name:
+- FROM_CODEX_TO_debt_2026-05-14_moneytrees-api-admin-architecture-rebuild.txt
+
+Include:
+- summary of architecture changes made
+- files/areas changed
+- backend/API structure introduced
+- ToolJet admin-panel approach used
+- frontend responsibilities removed or reduced
+- current blockers/limitations
+- test/build/deploy status if available
+- recommended next steps
+
+11. NON-GOALS
+
+Do NOT:
+- turn ToolJet into the public MoneyTrees customer app
+- create a second competing truth layer
+- make the frontend manually orchestrate multiple backend systems
+- delete useful product surfaces unnecessarily
+- confuse admin tooling with the end-user experience
+
+12. FINAL DIRECTION
+
+The target is now:
+- front-facing user app
+- one MoneyTrees backend API
+- Atlas behind that backend
+- internal admin panel built from ToolJet foundation
+
+Build toward that shape in a controlled way.
+
+— Orion
+Director
